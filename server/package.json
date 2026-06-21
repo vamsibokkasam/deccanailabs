@@ -1,0 +1,24 @@
+{
+  "name": "deccanailabs-server",
+  "version": "1.0.0",
+  "description": "Deccan AI Labs backend API",
+  "main": "server.js",
+  "scripts": {
+    "dev": "nodemon server.js",
+    "build": "echo \"No build step required for Express server\"",
+    "start": "node server.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "dependencies": {
+    "cors": "^2.8.6",
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1",
+    "mongoose": "^9.6.3"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.14"
+  }
+}

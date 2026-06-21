@@ -1,0 +1,16 @@
+services:
+  - type: web
+    name: deccanailabs-api
+    runtime: node
+    rootDir: server
+    buildCommand: npm install && npm run build
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: MONGODB_URI
+        sync: false
+      - key: CLIENT_URL
+        value: https://deccanailabs.vercel.app
+      - key: ADMIN_KEY
+        sync: false
