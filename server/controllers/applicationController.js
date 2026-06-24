@@ -145,7 +145,7 @@ export const updateApplicationStatus = async (req, res, next) => {
     res.json({
       success: true,
       message: "Status updated successfully",
-      data: application,
+      data: stripScreenshotFromApplication(application),
     });
   } catch (error) {
     next(error);
@@ -171,7 +171,19 @@ export const updatePaymentStatus = async (req, res, next) => {
       });
     }
 
-    const application = await InternshipApplication.findById(req.params.id);
+    const applicationStatus = paymentStatus === "verified" ? "accepted" : "rejected";
+
+    const application = await InternshipApplication.findByIdAndUpdate(
+      req.params.id,
+      {
+        $set: {
+          "payment.status": paymentStatus,
+          "payment.verifiedAt": new Date(),
+          status: applicationStatus,
+        },
+      },
+      { new: true, runValidators: false }
+    );
 
     if (!application) {
       return res.status(404).json({
@@ -180,24 +192,33 @@ export const updatePaymentStatus = async (req, res, next) => {
       });
     }
 
-    application.payment.status = paymentStatus;
-    application.payment.verifiedAt = new Date();
-
-    if (paymentStatus === "verified") {
-      application.status = "accepted";
-    } else if (paymentStatus === "rejected") {
-      application.status = "rejected";
-    }
-
-    await application.save();
-
     res.json({
       success: true,
       message:
         paymentStatus === "verified"
           ? "Payment verified and application accepted"
           : "Payment rejected",
-      data: application,
+      data: stripScreenshotFromApplication(application),
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const deleteApplication = async (req, res, next) => {
+  try {
+    const application = await InternshipApplication.findByIdAndDelete(req.params.id);
+
+    if (!application) {
+      return res.status(404).json({
+        success: false,
+        message: "Application not found",
+      });
+    }
+
+    res.json({
+      success: true,
+      message: "Application deleted successfully",
     });
   } catch (error) {
     next(error);

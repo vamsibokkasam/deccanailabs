@@ -13,6 +13,7 @@ import {
   ExternalLink,
   Eye,
   Image,
+  Loader2,
   Lock,
   Mail,
   Pencil,
@@ -31,6 +32,7 @@ import { BrandLockup } from "../components/Logo";
 import { inputClass } from "../utils/themeClasses";
 import {
   createProgram,
+  deleteApplication,
   deleteProgram,
   getAdminPrograms,
   getAdminStats,
@@ -550,7 +552,13 @@ function ScreenshotModal({ preview, onClose }) {
   );
 }
 
-function ApplicationsTable({ applications, onStatusChange, onPaymentStatusChange }) {
+function ApplicationsTable({
+  applications,
+  onStatusChange,
+  onPaymentStatusChange,
+  onDelete,
+  paymentActionId,
+}) {
   const [expandedId, setExpandedId] = useState(null);
   const [screenshotPreview, setScreenshotPreview] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
@@ -722,21 +730,39 @@ function ApplicationsTable({ applications, onStatusChange, onPaymentStatusChange
                           <>
                             <button
                               type="button"
-                              onClick={() => onPaymentStatusChange(app._id, "verified")}
-                              disabled={app.payment?.status === "verified"}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                onPaymentStatusChange(app._id, "verified");
+                              }}
+                              disabled={
+                                paymentActionId === app._id || app.payment?.status === "verified"
+                              }
                               className="p-1.5 rounded-lg text-green-400 hover:bg-green-500/15 disabled:opacity-40 transition"
                               title="Verify payment"
                             >
-                              <CheckCircle2 size={16} />
+                              {paymentActionId === app._id ? (
+                                <Loader2 size={16} className="animate-spin" />
+                              ) : (
+                                <CheckCircle2 size={16} />
+                              )}
                             </button>
                             <button
                               type="button"
-                              onClick={() => onPaymentStatusChange(app._id, "rejected")}
-                              disabled={app.payment?.status === "rejected"}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                onPaymentStatusChange(app._id, "rejected");
+                              }}
+                              disabled={
+                                paymentActionId === app._id || app.payment?.status === "rejected"
+                              }
                               className="p-1.5 rounded-lg text-red-400 hover:bg-red-500/15 disabled:opacity-40 transition"
                               title="Reject payment"
                             >
-                              <XCircle size={16} />
+                              {paymentActionId === app._id ? (
+                                <Loader2 size={16} className="animate-spin" />
+                              ) : (
+                                <XCircle size={16} />
+                              )}
                             </button>
                           </>
                         )}
@@ -746,6 +772,14 @@ function ApplicationsTable({ applications, onStatusChange, onPaymentStatusChange
                           className="px-2 py-1 rounded-lg text-xs text-muted hover:text-accent hover:bg-surface border border-border transition"
                         >
                           Details
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => onDelete(app._id)}
+                          className="p-1.5 rounded-lg text-red-400 hover:bg-red-500/15 transition"
+                          title="Delete application"
+                        >
+                          <Trash2 size={16} />
                         </button>
                       </div>
                     </td>
@@ -1271,6 +1305,7 @@ function AdminPage() {
   const [savingProgram, setSavingProgram] = useState(false);
   const [applicationFilters, setApplicationFilters] = useState(emptyApplicationFilters);
   const [contactFilters, setContactFilters] = useState(emptyContactFilters);
+  const [paymentActionId, setPaymentActionId] = useState(null);
 
   const loadData = async (key) => {
     setLoading(true);
@@ -1352,11 +1387,45 @@ function AdminPage() {
   };
 
   const handlePaymentStatusChange = async (id, paymentStatus) => {
+    setError("");
+    setPaymentActionId(id);
+
     try {
       const result = await updatePaymentStatus(id, paymentStatus, adminKey);
+      const updated = result.data;
+
       setApplications((prev) =>
-        prev.map((app) => (app._id === id ? result.data : app))
+        prev.map((app) =>
+          app._id === id
+            ? {
+                ...app,
+                status: updated.status,
+                payment: {
+                  ...app.payment,
+                  status: updated.payment?.status ?? paymentStatus,
+                  verifiedAt: updated.payment?.verifiedAt,
+                },
+              }
+            : app
+        )
       );
+      const statsRes = await getAdminStats(adminKey);
+      setStats(statsRes.data);
+    } catch (err) {
+      setError(err.message || "Failed to update payment status");
+    } finally {
+      setPaymentActionId(null);
+    }
+  };
+
+  const handleDeleteApplication = async (id) => {
+    if (!window.confirm("Delete this application? This action cannot be undone.")) {
+      return;
+    }
+
+    try {
+      await deleteApplication(id, adminKey);
+      setApplications((prev) => prev.filter((app) => app._id !== id));
       const statsRes = await getAdminStats(adminKey);
       setStats(statsRes.data);
     } catch (err) {
@@ -1765,6 +1834,8 @@ function AdminPage() {
               applications={filteredApplications}
               onStatusChange={handleStatusChange}
               onPaymentStatusChange={handlePaymentStatusChange}
+              onDelete={handleDeleteApplication}
+              paymentActionId={paymentActionId}
             />
           )}
         </div>

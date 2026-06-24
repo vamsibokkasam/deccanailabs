@@ -2,6 +2,7 @@ import express from "express";
 import {
   createApplication,
   createApplicationWithPayment,
+  deleteApplication,
   getApplications,
   updateApplicationStatus,
   updatePaymentStatus,
@@ -24,5 +25,6 @@ router.post(
 router.get("/", adminAuth, getApplications);
 router.patch("/:id/status", adminAuth, updateApplicationStatus);
 router.patch("/:id/payment-status", adminAuth, updatePaymentStatus);
+router.delete("/:id", adminAuth, deleteApplication);
 
 export default router;

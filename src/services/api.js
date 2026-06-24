@@ -10,18 +10,32 @@ class ApiError extends Error {
 async function request(endpoint, options = {}) {
   const { headers: optionHeaders, ...restOptions } = options;
 
-  const response = await fetch(`${API_URL}${endpoint}`, {
-    ...restOptions,
-    headers: {
-      "Content-Type": "application/json",
-      ...optionHeaders,
-    },
-  });
+  let response;
+  try {
+    response = await fetch(`${API_URL}${endpoint}`, {
+      ...restOptions,
+      headers: {
+        "Content-Type": "application/json",
+        ...optionHeaders,
+      },
+    });
+  } catch {
+    throw new ApiError("Network error. Check your connection and try again.");
+  }
 
-  const data = await response.json();
+  let data = {};
+  const contentType = response.headers.get("content-type") || "";
+
+  if (contentType.includes("application/json")) {
+    try {
+      data = await response.json();
+    } catch {
+      throw new ApiError("Invalid response from server");
+    }
+  }
 
   if (!response.ok) {
-    throw new ApiError(data.message || "Something went wrong", data.errors || {});
+    throw new ApiError(data.message || `Request failed (${response.status})`, data.errors || {});
   }
 
   return data;
@@ -98,6 +112,13 @@ export function updatePaymentStatus(id, paymentStatus, adminKey) {
     method: "PATCH",
     headers: adminHeaders(adminKey),
     body: JSON.stringify({ paymentStatus }),
+  });
+}
+
+export function deleteApplication(id, adminKey) {
+  return request(`/applications/${id}`, {
+    method: "DELETE",
+    headers: adminHeaders(adminKey),
   });
 }
 
