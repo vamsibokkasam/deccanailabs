@@ -1,5 +1,6 @@
+import mongoose from "mongoose";
 import InternshipApplication from "../models/InternshipApplication.js";
-import { generateApplicationId } from "../utils/applicationId.js";
+import { compareApplicationIds, generateApplicationId } from "../utils/applicationId.js";
 import { validatePaymentScreenshot } from "../utils/saveScreenshot.js";
 
 const stripScreenshotFromApplication = (application) => {
@@ -36,6 +37,8 @@ export const createApplication = async (req, res, next) => {
 };
 
 export const createApplicationWithPayment = async (req, res, next) => {
+  const session = await mongoose.startSession();
+
   try {
     const {
       fullName,
@@ -61,24 +64,36 @@ export const createApplicationWithPayment = async (req, res, next) => {
     }
 
     const screenshotData = validatePaymentScreenshot(screenshotBase64);
-    const applicationId = await generateApplicationId();
     const parsedFee = Number(feeAmount) || 599;
 
-    const application = await InternshipApplication.create({
-      applicationId,
-      fullName: fullName.trim(),
-      email: email.trim().toLowerCase(),
-      phone: phone.trim().replace(/\s/g, ""),
-      college: college.trim(),
-      program: program.trim(),
-      feeAmount: parsedFee,
-      payment: {
-        method: "upi",
-        transactionId: normalizedTxnId,
-        screenshotData,
-        status: "pending",
-      },
-      status: "pending",
+    let application;
+
+    await session.withTransaction(async () => {
+      const applicationId = await generateApplicationId(session);
+
+      const [created] = await InternshipApplication.create(
+        [
+          {
+            applicationId,
+            fullName: fullName.trim(),
+            email: email.trim().toLowerCase(),
+            phone: phone.trim().replace(/\s/g, ""),
+            college: college.trim(),
+            program: program.trim(),
+            feeAmount: parsedFee,
+            payment: {
+              method: "upi",
+              transactionId: normalizedTxnId,
+              screenshotData,
+              status: "pending",
+            },
+            status: "pending",
+          },
+        ],
+        { session }
+      );
+
+      application = created;
     });
 
     res.status(201).json({
@@ -98,12 +113,18 @@ export const createApplicationWithPayment = async (req, res, next) => {
       });
     }
     next(error);
+  } finally {
+    await session.endSession();
   }
 };
 
 export const getApplications = async (req, res, next) => {
   try {
-    const applications = await InternshipApplication.find().sort({ createdAt: -1 });
+    const applications = await InternshipApplication.find().lean();
+    applications.sort((left, right) =>
+      compareApplicationIds(left.applicationId, right.applicationId)
+    );
+
     res.json({ success: true, data: applications });
   } catch (error) {
     next(error);
