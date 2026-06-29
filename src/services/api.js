@@ -1,9 +1,50 @@
 const API_URL = import.meta.env.VITE_API_URL || "/api";
+const REQUEST_TIMEOUT_MS = 90_000;
 
 class ApiError extends Error {
   constructor(message, errors = {}) {
     super(message);
     this.errors = errors;
+  }
+}
+
+async function parseJsonResponse(response) {
+  const contentType = response.headers.get("content-type") || "";
+
+  if (!contentType.includes("application/json")) {
+    throw new ApiError(
+      response.ok
+        ? "Invalid response from server"
+        : `Request failed (${response.status}). The server may be waking up — try again in a minute.`
+    );
+  }
+
+  try {
+    return await response.json();
+  } catch {
+    throw new ApiError("Invalid response from server");
+  }
+}
+
+async function fetchWithTimeout(url, options = {}) {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
+
+  try {
+    return await fetch(url, {
+      ...options,
+      signal: controller.signal,
+    });
+  } catch (error) {
+    if (error.name === "AbortError") {
+      throw new ApiError(
+        "Request timed out. The server may be waking up — please wait a moment and try again."
+      );
+    }
+
+    throw new ApiError("Network error. Check your connection and try again.");
+  } finally {
+    clearTimeout(timeoutId);
   }
 }
 
@@ -60,7 +101,7 @@ export function submitApplication(formData) {
 }
 
 export async function submitApplicationWithPayment(payload) {
-  const response = await fetch(`${API_URL}/applications/with-payment`, {
+  const response = await fetchWithTimeout(`${API_URL}/applications/with-payment`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -68,7 +109,7 @@ export async function submitApplicationWithPayment(payload) {
     body: JSON.stringify(payload),
   });
 
-  const data = await response.json();
+  const data = await parseJsonResponse(response);
 
   if (!response.ok) {
     throw new ApiError(data.message || "Something went wrong", data.errors || {});

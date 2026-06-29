@@ -58,10 +58,8 @@ async function ensureCounterInitialized() {
   const existing = await SequenceCounter.findOne({ key: COUNTER_KEY }).lean();
   if (existing) return;
 
-  const maxSequence = await getMaxExistingSequence();
-
   try {
-    await SequenceCounter.create({ key: COUNTER_KEY, value: maxSequence });
+    await SequenceCounter.create({ key: COUNTER_KEY, value: 0 });
   } catch (error) {
     if (error.code !== 11000) {
       throw error;

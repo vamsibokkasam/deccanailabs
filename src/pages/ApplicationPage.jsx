@@ -20,6 +20,7 @@ import qr499 from "../assets/499.jpg";
 import qr599 from "../assets/599.jpg";
 import FormField from "../components/FormField";
 import { submitApplicationWithPayment } from "../services/api";
+import { compressImageFile } from "../utils/compressImage";
 import { inputClass } from "../utils/themeClasses";
 import {
   sanitizeNameInput,
@@ -33,14 +34,11 @@ import {
   resolveCourseTitle,
 } from "../utils/courseSlug";
 
-function readFileAsDataUrl(file) {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(reader.result);
-    reader.onerror = reject;
-    reader.readAsDataURL(file);
-  });
-}
+const SUBMIT_STATUS = {
+  PREPARING: "Preparing your payment screenshot...",
+  UPLOADING: "Submitting your application...",
+  WAKING: "Connecting to server (this can take up to a minute on first request)...",
+};
 
 const STEPS = [
   { id: 1, label: "Registration" },
@@ -222,6 +220,7 @@ function ApplicationPage() {
   const [step, setStep] = useState(0);
   const [previewUrl, setPreviewUrl] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [submitStatus, setSubmitStatus] = useState(SUBMIT_STATUS.PREPARING);
   const [submitError, setSubmitError] = useState("");
   const [fieldErrors, setFieldErrors] = useState({});
   const [submittedApplicationId, setSubmittedApplicationId] = useState("");
@@ -311,11 +310,18 @@ function ApplicationPage() {
     }
 
     setSubmitting(true);
+    setSubmitStatus(SUBMIT_STATUS.PREPARING);
     setSubmitError("");
     setFieldErrors({});
 
+    const wakeUpTimer = window.setTimeout(() => {
+      setSubmitStatus(SUBMIT_STATUS.WAKING);
+    }, 8000);
+
     try {
-      const screenshotBase64 = await readFileAsDataUrl(formData.screenshot);
+      const screenshotBase64 = await compressImageFile(formData.screenshot);
+      setSubmitStatus(SUBMIT_STATUS.UPLOADING);
+
       const result = await submitApplicationWithPayment({
         fullName: formData.fullName,
         email: formData.email,
@@ -327,6 +333,10 @@ function ApplicationPage() {
         screenshotBase64,
       });
 
+      if (!result?.data?.applicationId) {
+        throw new Error("Application submitted but no ID was returned. Please contact support.");
+      }
+
       setSubmittedApplicationId(result.data.applicationId);
       setStep(4);
     } catch (error) {
@@ -335,7 +345,9 @@ function ApplicationPage() {
         setFieldErrors(error.errors);
       }
     } finally {
+      window.clearTimeout(wakeUpTimer);
       setSubmitting(false);
+      setSubmitStatus(SUBMIT_STATUS.PREPARING);
     }
   };
 
@@ -622,7 +634,10 @@ function ApplicationPage() {
             <h2 className="text-2xl md:text-3xl font-medium text-fg mb-3">
               Verifying Application
             </h2>
-            <p className="text-muted">Please wait while we process your submission...</p>
+            <p className="text-muted">{submitStatus}</p>
+            {submitError && (
+              <p className="text-red-400 text-sm mt-6 max-w-md mx-auto">{submitError}</p>
+            )}
           </div>
         )}
 
