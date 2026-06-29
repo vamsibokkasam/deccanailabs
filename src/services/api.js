@@ -1,4 +1,6 @@
-const API_URL = import.meta.env.VITE_API_URL || "/api";
+import { getApiBaseUrl } from "../config/api.js";
+
+const API_URL = getApiBaseUrl();
 const REQUEST_TIMEOUT_MS = 90_000;
 
 class ApiError extends Error {

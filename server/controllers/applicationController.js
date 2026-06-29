@@ -132,7 +132,7 @@ export const updateApplicationStatus = async (req, res, next) => {
     const application = await InternshipApplication.findByIdAndUpdate(
       req.params.id,
       { status },
-      { new: true, runValidators: true }
+      { returnDocument: "after", runValidators: true }
     );
 
     if (!application) {
@@ -182,7 +182,7 @@ export const updatePaymentStatus = async (req, res, next) => {
           status: applicationStatus,
         },
       },
-      { new: true, runValidators: false }
+      { returnDocument: "after", runValidators: false }
     );
 
     if (!application) {

@@ -73,7 +73,7 @@ export async function generateApplicationId() {
   const counter = await SequenceCounter.findOneAndUpdate(
     { key: COUNTER_KEY },
     { $inc: { value: 1 } },
-    { new: true }
+    { returnDocument: "after" }
   );
 
   if (!counter || counter.value > MAX_SEQUENCE) {

@@ -50,7 +50,7 @@ export const updateProgram = async (req, res, next) => {
         ...(duration !== undefined && { duration: duration.trim() }),
         ...(isActive !== undefined && { isActive }),
       },
-      { new: true, runValidators: true }
+      { returnDocument: "after", runValidators: true }
     );
 
     if (!program) {
@@ -75,7 +75,7 @@ export const deleteProgram = async (req, res, next) => {
     const program = await Program.findByIdAndUpdate(
       req.params.id,
       { isActive: false },
-      { new: true }
+      { returnDocument: "after" }
     );
 
     if (!program) {
