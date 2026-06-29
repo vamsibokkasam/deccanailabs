@@ -1,7 +1,26 @@
 /**
  * Public, indexable routes for sitemap.xml.
- * Excludes /admin and /internship/apply/* (noindex).
+ * Excludes /admin (noindex). Internship apply pages are included.
  */
+
+function courseTitleToSlug(title) {
+  return String(title)
+    .trim()
+    .toLowerCase()
+    .replace(/&/g, "and")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
+
+export const INTERNSHIP_COURSE_TITLES = [
+  "Python Development",
+  "Java Development",
+  "Web Development",
+  "AI & Machine Learning",
+  "Data Science",
+  "Cyber Security",
+];
+
 export const SITEMAP_ROUTES = [
   { path: "/", changefreq: "weekly", priority: "1.0" },
   { path: "/about", changefreq: "monthly", priority: "0.9" },
@@ -12,8 +31,13 @@ export const SITEMAP_ROUTES = [
   { path: "/privacy-policy", changefreq: "yearly", priority: "0.4" },
   { path: "/terms-and-conditions", changefreq: "yearly", priority: "0.4" },
   { path: "/help-support", changefreq: "monthly", priority: "0.6" },
+  ...INTERNSHIP_COURSE_TITLES.map((title) => ({
+    path: `/internship/apply/${courseTitleToSlug(title)}`,
+    changefreq: "weekly",
+    priority: "0.7",
+  })),
 ];
 
 export const DEFAULT_SITE_URL = "https://deccanailabs.vercel.app";
 
-export const SITEMAP_DISALLOW_PATHS = ["/admin", "/internship/apply/"];
+export const SITEMAP_DISALLOW_PATHS = ["/admin"];

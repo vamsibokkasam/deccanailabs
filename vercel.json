@@ -1,16 +1,9 @@
-{
-  "rewrites": [
-    {
-      "source": "/sitemap.xml",
-      "destination": "https://deccanailabs-api.onrender.com/sitemap.xml"
-    },
-    {
-      "source": "/robots.txt",
-      "destination": "https://deccanailabs-api.onrender.com/robots.txt"
-    },
-    { "source": "/(.*)", "destination": "/index.html" }
-  ],
-  "redirects": [
-    { "source": "/contacts", "destination": "/contact", "permanent": true }
-  ]
-}
+{
+  "rewrites": [
+    { "source": "/(.*)", "destination": "/index.html" }
+  ],
+  "redirects": [
+    { "source": "/contacts", "destination": "/contact", "permanent": true }
+  ]
+}
+
