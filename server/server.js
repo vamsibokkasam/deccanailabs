@@ -8,6 +8,7 @@ import contactRoutes from "./routes/contactRoutes.js";
 import applicationRoutes from "./routes/applicationRoutes.js";
 import programRoutes from "./routes/programRoutes.js";
 import adminRoutes from "./routes/adminRoutes.js";
+import sitemapRoutes from "./routes/sitemapRoutes.js";
 import errorHandler from "./middleware/errorHandler.js";
 import ensureDb from "./middleware/ensureDb.js";
 import corsMiddleware, { getAllowedOrigins } from "./config/cors.js";
@@ -24,6 +25,8 @@ app.use(corsMiddleware);
 app.use(express.json({ limit: JSON_BODY_LIMIT }));
 app.use(express.urlencoded({ extended: true, limit: JSON_BODY_LIMIT }));
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
+
+app.use(sitemapRoutes);
 
 app.get("/api/health", (req, res) => {
   const db = getDbStatus();

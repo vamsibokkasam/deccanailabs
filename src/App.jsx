@@ -2,6 +2,7 @@ import { Routes, Route } from "react-router-dom";
 
 import MainLayout from "./layouts/MainLayout";
 import ScrollToTop from "./components/ScrollToTop";
+import RouteSeo from "./components/RouteSeo";
 
 import Home from "./pages/Home";
 import AboutPage from "./pages/AboutPage";
@@ -18,6 +19,7 @@ function App() {
   return (
     <>
       <ScrollToTop />
+      <RouteSeo />
       <Routes>
       <Route path="/" element={<MainLayout />}>
 

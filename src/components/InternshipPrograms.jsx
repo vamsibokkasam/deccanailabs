@@ -14,6 +14,8 @@ import ProgramIcon from "./ProgramIcon";
 
 import { useNavigate } from "react-router-dom";
 
+import { courseTitleToSlug } from "../utils/courseSlug";
+
 const fallbackPrograms = [
 
   "Web Development",
@@ -250,10 +252,8 @@ function InternshipPrograms() {
               <button
 
                 onClick={() =>
-  navigate(
-    `/internship/apply/${encodeURIComponent(program.title)}`
-  )
-}
+                  navigate(`/internship/apply/${courseTitleToSlug(program.title)}`)
+                }
 
                 className="theme-btn-primary px-5 py-3"
 

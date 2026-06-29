@@ -1,4 +1,6 @@
-export const SITE_LOGO_SRC = "/BLACK%20LOGO.png";
+import { SITE_LOGO_PATH } from "../config/branding.js";
+
+export const SITE_LOGO_SRC = SITE_LOGO_PATH;
 
 export function BrandLogo({ className = "h-10 w-auto object-contain" }) {
   return (

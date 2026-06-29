@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import {
   ArrowLeft,
   ArrowRight,
@@ -27,6 +27,11 @@ import {
   validatePaymentVerificationForm,
   validateRegistrationForm,
 } from "../utils/validation";
+import {
+  courseTitleToSlug,
+  KNOWN_COURSE_TITLES,
+  resolveCourseTitle,
+} from "../utils/courseSlug";
 
 function readFileAsDataUrl(file) {
   return new Promise((resolve, reject) => {
@@ -213,6 +218,7 @@ function SummaryRow({ label, value }) {
 
 function ApplicationPage() {
   const { courseName } = useParams();
+  const navigate = useNavigate();
   const [step, setStep] = useState(0);
   const [previewUrl, setPreviewUrl] = useState("");
   const [submitting, setSubmitting] = useState(false);
@@ -228,12 +234,23 @@ function ApplicationPage() {
     screenshot: null,
   });
 
+  const resolvedCourseTitle = resolveCourseTitle(courseName, [
+    ...Object.keys(courseDetails),
+    ...KNOWN_COURSE_TITLES,
+  ]);
+  const canonicalSlug = courseTitleToSlug(resolvedCourseTitle);
+
   const selectedCourse =
-    courseDetails[decodeURIComponent(courseName)] ||
-    courseDetails["Python Development"];
+    courseDetails[resolvedCourseTitle] || courseDetails["Python Development"];
 
   const feeAmount =
     parseInt(String(selectedCourse.fee).replace(/\D/g, ""), 10) || 599;
+
+  useEffect(() => {
+    if (courseName && canonicalSlug && courseName !== canonicalSlug) {
+      navigate(`/internship/apply/${canonicalSlug}`, { replace: true });
+    }
+  }, [courseName, canonicalSlug, navigate]);
 
   useEffect(() => {
     window.scrollTo({ top: 0, left: 0, behavior: "smooth" });
@@ -304,7 +321,7 @@ function ApplicationPage() {
         email: formData.email,
         phone: formData.phone,
         college: formData.college,
-        program: selectedCourse.title,
+        program: resolvedCourseTitle,
         transactionId: formData.transactionId,
         feeAmount,
         screenshotBase64,
