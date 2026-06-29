@@ -1,9 +1,11 @@
-{
-  "rewrites": [
-    { "source": "/(.*)", "destination": "/index.html" }
-  ],
-  "redirects": [
-    { "source": "/contacts", "destination": "/contact", "permanent": true }
-  ]
-}
-
+{
+  "rewrites": [
+    {
+      "source": "/((?!sitemap\\.xml|robots\\.txt).*)",
+      "destination": "/index.html"
+    }
+  ],
+  "redirects": [
+    { "source": "/contacts", "destination": "/contact", "permanent": true }
+  ]
+}
