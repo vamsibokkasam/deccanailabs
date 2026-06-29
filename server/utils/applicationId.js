@@ -1,7 +1,10 @@
 import InternshipApplication from "../models/InternshipApplication.js";
+import SequenceCounter from "../models/SequenceCounter.js";
 
 const ID_PREFIX = "DCAL";
-const MAX_DAILY_SEQUENCE = 26 * 999;
+const COUNTER_KEY = "applicationId";
+const MAX_SEQUENCE = 26 * 999;
+const APPLICATION_ID_PATTERN = /^DCAL-\d{8}-[A-Z]\d{3}$/;
 
 function formatDatePart(date = new Date()) {
   const dd = String(date.getDate()).padStart(2, "0");
@@ -17,7 +20,7 @@ function formatSequence(sequenceNumber) {
   const numberPart = (index % 999) + 1;
 
   if (letterIndex > 25) {
-    throw new Error("Daily application ID limit reached.");
+    throw new Error("Application ID limit reached.");
   }
 
   const letter = String.fromCharCode(65 + letterIndex);
@@ -34,36 +37,53 @@ function parseSequenceSuffix(suffix) {
   return letterIndex * 999 + numberPart;
 }
 
-export async function generateApplicationId() {
-  const datePart = formatDatePart();
-  const idPrefix = `${ID_PREFIX}-${datePart}-`;
-
-  const latest = await InternshipApplication.findOne({
-    applicationId: new RegExp(`^${ID_PREFIX}-${datePart}-[A-Z]\\d{3}$`),
+async function getMaxExistingSequence() {
+  const applications = await InternshipApplication.find({
+    applicationId: APPLICATION_ID_PATTERN,
   })
-    .sort({ applicationId: -1 })
     .select("applicationId")
     .lean();
 
-  let nextSequence = 1;
-  if (latest?.applicationId) {
-    const suffix = latest.applicationId.slice(idPrefix.length);
-    nextSequence = parseSequenceSuffix(suffix) + 1;
+  let maxSequence = 0;
+
+  for (const { applicationId } of applications) {
+    const suffix = applicationId.split("-").pop();
+    maxSequence = Math.max(maxSequence, parseSequenceSuffix(suffix));
   }
 
-  if (nextSequence > MAX_DAILY_SEQUENCE) {
-    throw new Error("Daily application ID limit reached.");
-  }
+  return maxSequence;
+}
 
-  for (let attempt = 0; attempt < 10; attempt++) {
-    const suffix = formatSequence(nextSequence + attempt);
-    const applicationId = `${idPrefix}${suffix}`;
-    const exists = await InternshipApplication.exists({ applicationId });
+async function ensureCounterInitialized() {
+  const existing = await SequenceCounter.findOne({ key: COUNTER_KEY }).lean();
+  if (existing) return;
 
-    if (!exists) {
-      return applicationId;
+  const maxSequence = await getMaxExistingSequence();
+
+  try {
+    await SequenceCounter.create({ key: COUNTER_KEY, value: maxSequence });
+  } catch (error) {
+    if (error.code !== 11000) {
+      throw error;
     }
   }
+}
 
-  throw new Error("Unable to generate application ID. Please try again.");
+export async function generateApplicationId() {
+  await ensureCounterInitialized();
+
+  const counter = await SequenceCounter.findOneAndUpdate(
+    { key: COUNTER_KEY },
+    { $inc: { value: 1 } },
+    { new: true }
+  );
+
+  if (!counter || counter.value > MAX_SEQUENCE) {
+    throw new Error("Application ID limit reached.");
+  }
+
+  const datePart = formatDatePart();
+  const suffix = formatSequence(counter.value);
+
+  return `${ID_PREFIX}-${datePart}-${suffix}`;
 }

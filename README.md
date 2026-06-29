@@ -1,6 +1,6 @@
-# Deccan AI Labs
+# DECCAN AI labs
 
-A full-stack web application for **Deccan AI Labs** — an AI education and internship platform. The site showcases programs, accepts contact inquiries and internship applications, and includes an admin dashboard to manage submissions and programs.
+A full-stack web application for **DECCAN AI labs** — an AI education and internship platform. The site showcases programs, accepts contact inquiries and internship applications, and includes an admin dashboard to manage submissions and programs.
 
 ## Features
 
@@ -308,4 +308,4 @@ If routes like `/contact` or `/admin` return 404 in production, add `vercel.json
 
 ## License
 
-This project is private. All rights reserved © 2026 Deccan AI Labs.
+This project is private. All rights reserved © 2026 DECCAN AI labs.

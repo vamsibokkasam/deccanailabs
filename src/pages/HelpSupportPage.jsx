@@ -5,7 +5,7 @@ function HelpSupportPage() {
   return (
     <LegalPageLayout label="SUPPORT" title="Help & Support">
       <p>
-        At Deccan AI Labs, we are committed to providing timely assistance and
+        At DECCAN AI labs, we are committed to providing timely assistance and
         support to our students, interns, applicants, and website visitors.
       </p>
 
@@ -24,7 +24,7 @@ function HelpSupportPage() {
 
       <LegalSection title="Contact Information">
         <div className="space-y-4">
-          <p className="font-medium text-fg">Deccan AI Labs Support Team</p>
+          <p className="font-medium text-fg">DECCAN AI labs Support Team</p>
           <p>
             <span className="text-fg">Phone: </span>
             <a href="tel:+916303207231" className="hover:text-accent transition">

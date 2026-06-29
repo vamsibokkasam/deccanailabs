@@ -27,7 +27,7 @@ function WhyChooseUs() {
       <div className="max-w-7xl mx-auto">
         <div className="text-center mb-16">
           <p className="theme-label mb-4">WHY CHOOSE US</p>
-          <h2 className="theme-heading">Why Choose Deccan AI Labs?</h2>
+          <h2 className="theme-heading">Why Choose DECCAN AI labs?</h2>
           <p className="mt-6 text-lg text-muted max-w-3xl mx-auto">
             We focus on innovation, practical learning, mentorship,
             and industry-relevant experiences.

@@ -5,6 +5,7 @@ import ScrollToTop from "./components/ScrollToTop";
 
 import Home from "./pages/Home";
 import AboutPage from "./pages/AboutPage";
+import TeamPage from "./pages/TeamPage";
 import ProgramsPage from "./pages/ProgramsPage";
 import InternshipsPage from "./pages/InternshipsPage";
 import ContactPage from "./pages/ContactPage";
@@ -25,6 +26,11 @@ function App() {
         <Route
           path="about"
           element={<AboutPage />}
+        />
+
+        <Route
+          path="team"
+          element={<TeamPage />}
         />
 
         <Route

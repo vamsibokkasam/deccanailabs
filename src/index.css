@@ -110,4 +110,58 @@ h6 {
     @apply border border-border hover:border-accent transition px-6 py-3 rounded-xl text-fg;
   }
 
+  .reviews-track {
+    overflow: hidden;
+    -webkit-mask-image: linear-gradient(
+      to right,
+      transparent,
+      black 6%,
+      black 94%,
+      transparent
+    );
+    mask-image: linear-gradient(
+      to right,
+      transparent,
+      black 6%,
+      black 94%,
+      transparent
+    );
+  }
+
+  .reviews-marquee {
+    animation: reviews-scroll 50s linear infinite;
+  }
+
+  .reviews-marquee:hover {
+    animation-play-state: paused;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .reviews-track {
+      overflow-x: auto;
+      -webkit-mask-image: none;
+      mask-image: none;
+      scroll-snap-type: x mandatory;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(148, 163, 184, 0.5) transparent;
+    }
+
+    .reviews-marquee {
+      animation: none;
+    }
+
+    .reviews-track article {
+      scroll-snap-align: start;
+    }
+  }
+}
+
+@keyframes reviews-scroll {
+  from {
+    transform: translateX(0);
+  }
+
+  to {
+    transform: translateX(-50%);
+  }
 }

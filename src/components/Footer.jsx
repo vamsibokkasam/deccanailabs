@@ -126,7 +126,7 @@ function Footer() {
 
         <div className="mt-12 pt-8 border-t border-border flex flex-col sm:flex-row justify-between items-center gap-4">
           <p className="text-muted/70 text-sm text-center sm:text-left">
-            © {new Date().getFullYear()} Deccan AI Labs. All Rights Reserved.
+            © {new Date().getFullYear()} DECCAN AI labs. All Rights Reserved.
           </p>
           <Link
             to="/admin"

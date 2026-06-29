@@ -1,3 +1,6 @@
+import { Link } from "react-router-dom";
+import { Users } from "lucide-react";
+
 function About() {
   return (
     <section className="theme-section">
@@ -8,7 +11,7 @@ function About() {
           <h2 className="theme-heading mb-8">About Us</h2>
 
           <p className="text-lg text-muted leading-relaxed">
-            Deccan AI Labs is a technology-driven organization dedicated to
+            DECCAN AI labs is a technology-driven organization dedicated to
             advancing innovation, developing future-ready talent, and creating
             impactful learning ecosystems through Artificial Intelligence,
             emerging technologies, and industry-integrated professional
@@ -17,7 +20,7 @@ function About() {
 
           <p className="mt-6 text-lg text-muted leading-relaxed">
             Founded with the vision of bridging the gap between education and
-            industry, Deccan AI Labs serves as a catalyst for transformation by
+            industry, DECCAN AI labs serves as a catalyst for transformation by
             empowering individuals and organizations with the knowledge, skills,
             and opportunities required to thrive in a rapidly evolving digital
             world.
@@ -39,22 +42,28 @@ function About() {
             <div className="shrink-0">
               <img
                 src="/1000354279.jpg"
-                alt="B. Vamsi — CEO & Founder of Deccan AI Labs"
+                alt="B. Vamsi — CEO & Founder of DECCAN AI labs"
                 className="w-56 h-56 md:w-64 md:h-64 object-cover object-top rounded-2xl border border-border shadow-xl"
               />
             </div>
 
-            <div className="text-center md:text-left">
+            <div className="text-center md:text-left flex-1">
               <h4 className="text-2xl font-medium text-fg">B. Vamsi</h4>
-              <p className="text-accent font-bold mt-1">
-                CEO & Founder
-              </p>
-              <p className="text-muted text-sm mt-1">Deccan AI Labs</p>
+              <p className="text-accent font-bold mt-1">CEO & Founder</p>
+              <p className="text-muted text-sm mt-1">DECCAN AI labs</p>
               <p className="text-muted leading-relaxed mt-6 max-w-xl">
-                Leading Deccan AI Labs with a vision to bridge education and
+                Leading DECCAN AI labs with a vision to bridge education and
                 industry through AI-driven innovation, hands-on internships, and
                 programs that prepare learners for real-world success.
               </p>
+
+              <Link
+                to="/team"
+                className="theme-btn-primary inline-flex items-center gap-2 mt-8"
+              >
+                <Users size={18} />
+                Meet our Team
+              </Link>
             </div>
           </div>
         </div>

@@ -1,7 +1,7 @@
 {
   "name": "deccanailabs-server",
   "version": "1.0.0",
-  "description": "Deccan AI Labs backend API",
+  "description": "DECCAN AI labs backend API",
   "main": "server.js",
   "scripts": {
     "dev": "nodemon server.js",

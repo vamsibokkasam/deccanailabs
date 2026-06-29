@@ -4,7 +4,7 @@ export function BrandLogo({ className = "h-10 w-auto object-contain" }) {
   return (
     <img
       src={SITE_LOGO_SRC}
-      alt="DeccanAILabs"
+      alt="DECCAN AI labs"
       className={className}
       decoding="async"
     />
@@ -14,11 +14,11 @@ export function BrandLogo({ className = "h-10 w-auto object-contain" }) {
 export function BrandName({ className = "text-xl" }) {
   return (
     <span className={`font-bold tracking-tight whitespace-nowrap ${className}`}>
-      <span className="text-fg">Deccan</span>
+      <span className="text-fg">DECCAN </span>
       <span className="bg-gradient-to-r from-accent to-accent-warm bg-clip-text text-transparent">
-        AI
+        AI{" "}
       </span>
-      <span className="text-fg">Labs</span>
+      <span className="text-fg">labs</span>
     </span>
   );
 }

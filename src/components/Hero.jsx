@@ -10,7 +10,7 @@ function Hero() {
 
           <div>
             <p className="theme-label mb-4 tracking-wider">
-              DECCAN AI LABS
+              DECCAN AI labs
             </p>
 
             <h1 className="text-5xl md:text-7xl font-medium leading-[1.15] tracking-tight">

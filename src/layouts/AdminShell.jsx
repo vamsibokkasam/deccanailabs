@@ -155,7 +155,7 @@ function AdminShell({
           }`}
         >
           {collapsed ? (
-            <SidebarTooltip label="DeccanAILabs Admin" show={collapsed}>
+            <SidebarTooltip label="DECCAN AI labs Admin" show={collapsed}>
               <Link
                 to="/"
                 className="hidden lg:inline-flex items-center justify-center"

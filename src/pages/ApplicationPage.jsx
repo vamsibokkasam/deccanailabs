@@ -344,7 +344,7 @@ function ApplicationPage() {
             <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-accent via-accent-warm to-accent" />
 
             <span className="inline-flex items-center px-4 py-1.5 rounded-full bg-accent/10 border border-accent/20 text-accent text-sm font-medium mb-6">
-              Deccan AI Labs Internship Program
+              DECCAN AI labs Internship Program
             </span>
 
             <h2 className="text-3xl md:text-4xl font-medium text-fg mb-4 leading-tight">
