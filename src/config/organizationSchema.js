@@ -1,8 +1,8 @@
 import { SITE_LOGO_PATH } from "./branding.js";
+import { BRAND_ALTERNATE_NAMES, getSiteUrl } from "./site.js";
 import { DEFAULT_DESCRIPTION } from "./seo.js";
 
 export const ORGANIZATION_NAME = "DeccanAILabs";
-export const ORGANIZATION_URL = "https://deccanailabs.vercel.app";
 
 export const ORGANIZATION_EMAIL = "deccanailabs212@gmail.com";
 export const ORGANIZATION_PHONE = "+91-63032-07231";
@@ -12,11 +12,6 @@ export const ORGANIZATION_SOCIAL_PROFILES = [
   "https://www.linkedin.com/in/deccanailabs",
 ];
 
-export function getSiteUrl() {
-  const configured = import.meta.env.VITE_SITE_URL?.trim();
-  return (configured || ORGANIZATION_URL).replace(/\/$/, "");
-}
-
 export function buildOrganizationJsonLd(siteUrl = getSiteUrl()) {
   const baseUrl = siteUrl.replace(/\/$/, "");
 
@@ -24,6 +19,7 @@ export function buildOrganizationJsonLd(siteUrl = getSiteUrl()) {
     "@context": "https://schema.org",
     "@type": "Organization",
     name: ORGANIZATION_NAME,
+    alternateName: BRAND_ALTERNATE_NAMES,
     url: baseUrl,
     logo: `${baseUrl}${SITE_LOGO_PATH}`,
     description: DEFAULT_DESCRIPTION,
@@ -46,5 +42,23 @@ export function buildOrganizationJsonLd(siteUrl = getSiteUrl()) {
       },
     ],
     sameAs: ORGANIZATION_SOCIAL_PROFILES,
+  };
+}
+
+export function buildWebSiteJsonLd(siteUrl = getSiteUrl()) {
+  const baseUrl = siteUrl.replace(/\/$/, "");
+
+  return {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    name: ORGANIZATION_NAME,
+    alternateName: BRAND_ALTERNATE_NAMES,
+    url: baseUrl,
+    description: DEFAULT_DESCRIPTION,
+    publisher: {
+      "@type": "Organization",
+      name: ORGANIZATION_NAME,
+      url: baseUrl,
+    },
   };
 }

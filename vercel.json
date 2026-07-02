@@ -6,6 +6,12 @@
     }
   ],
   "redirects": [
-    { "source": "/contacts", "destination": "/contact", "permanent": true }
+    { "source": "/contacts", "destination": "/contact", "permanent": true },
+    {
+      "source": "/:path*",
+      "has": [{ "type": "host", "value": "deccanailabs.vercel.app" }],
+      "destination": "https://deccanailabs.com/:path*",
+      "permanent": true
+    }
   ]
 }

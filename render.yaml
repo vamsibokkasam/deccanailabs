@@ -11,8 +11,8 @@ services:
       - key: MONGODB_URI
         sync: false
       - key: CLIENT_URL
-        value: https://deccanailabs.vercel.app
+        value: https://deccanailabs.com,https://www.deccanailabs.com
       - key: SITE_URL
-        value: https://deccanailabs.vercel.app
+        value: https://deccanailabs.com
       - key: ADMIN_KEY
         sync: false

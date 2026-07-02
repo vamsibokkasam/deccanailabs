@@ -38,6 +38,6 @@ export const SITEMAP_ROUTES = [
   })),
 ];
 
-export const DEFAULT_SITE_URL = "https://deccanailabs.vercel.app";
+export const DEFAULT_SITE_URL = "https://deccanailabs.com";
 
 export const SITEMAP_DISALLOW_PATHS = ["/admin"];

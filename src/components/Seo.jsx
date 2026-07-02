@@ -1,5 +1,8 @@
 import { useEffect } from "react";
-import { buildOrganizationJsonLd } from "../config/organizationSchema";
+import {
+  buildOrganizationJsonLd,
+  buildWebSiteJsonLd,
+} from "../config/organizationSchema";
 import {
   DEFAULT_DESCRIPTION,
   DEFAULT_KEYWORDS,
@@ -9,8 +12,10 @@ import {
   TWITTER_CARD,
   TWITTER_SITE,
 } from "../config/seo";
+import { getSiteUrl } from "../config/site.js";
 
 const ORGANIZATION_JSON_LD_ID = "organization-jsonld";
+const WEBSITE_JSON_LD_ID = "website-jsonld";
 function upsertMeta(attribute, key, content) {
   if (!content) return;
 
@@ -74,7 +79,7 @@ function Seo({ title, description, keywords, path, noindex = false }) {
   const pageKeywords = keywords || DEFAULT_KEYWORDS;
 
   useEffect(() => {
-    const siteUrl = import.meta.env.VITE_SITE_URL || window.location.origin;
+    const siteUrl = getSiteUrl();
     const ogImageUrl = getOgImageUrl(siteUrl);
     const canonicalPath = path?.startsWith("/") ? path : `/${path || ""}`;
     const pageUrl =
@@ -107,6 +112,7 @@ function Seo({ title, description, keywords, path, noindex = false }) {
     }
 
     upsertJsonLd(ORGANIZATION_JSON_LD_ID, buildOrganizationJsonLd(siteUrl));
+    upsertJsonLd(WEBSITE_JSON_LD_ID, buildWebSiteJsonLd(siteUrl));
   }, [pageTitle, pageDescription, pageKeywords, path, noindex]);
 
   return null;

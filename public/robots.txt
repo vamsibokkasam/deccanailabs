@@ -2,4 +2,4 @@ User-agent: *
 Allow: /
 Disallow: /admin
 
-Sitemap: https://deccanailabs.vercel.app/sitemap.xml
+Sitemap: https://deccanailabs.com/sitemap.xml

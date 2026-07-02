@@ -27,6 +27,10 @@ const isAllowedOrigin = (origin) => {
     if (hostname.endsWith(".vercel.app") || hostname === "vercel.app") {
       return true;
     }
+
+    if (hostname === "deccanailabs.com" || hostname.endsWith(".deccanailabs.com")) {
+      return true;
+    }
   } catch {
     return false;
   }

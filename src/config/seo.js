@@ -18,7 +18,7 @@ export const DEFAULT_DESCRIPTION =
   "DECCAN AI labs offers technology courses, industry-focused internships, and hands-on training in AI, web development, Python, Java, data science, cyber security, and more.";
 
 export const DEFAULT_KEYWORDS =
-  "DECCAN AI labs, DeccanAILabs, technology courses, internships, skill development, AI training, web development, Python, Java, data science, cyber security, online internships India, tech education";
+  "DeccanAILabs, Deccan AI Labs, Deccan AI, DECCAN AI labs, DeccanAILabs official website, technology courses, internships, skill development, AI training, web development, Python, Java, data science, cyber security, online internships India, tech education";
 
 export function getOgImageUrl(siteUrl) {
   const base = siteUrl.replace(/\/$/, "");
@@ -64,9 +64,9 @@ const ROUTE_SEO = {
   "/": {
     title: SITE_TITLE,
     description:
-      "Join DECCAN AI labs for technology courses, internships, and industry training in AI, web development, Python, Java, data science, cyber security, and more.",
+      "DeccanAILabs (Deccan AI Labs) — official website for technology courses, internships, and industry training in AI, web development, Python, Java, data science, cyber security, and more.",
     keywords:
-      "DECCAN AI labs, technology courses, internships India, AI training, web development internship, Python course, Java course, data science, cyber security, skill development",
+      "DeccanAILabs, Deccan AI Labs, Deccan AI, DECCAN AI labs official website, technology courses, internships India, AI training, web development internship, Python course, Java course, data science, cyber security, skill development",
   },
   "/about": {
     title: buildPageTitle("About Us"),

@@ -43,12 +43,12 @@ function HelpSupportPage() {
           <p>
             <span className="text-fg">Website: </span>
             <a
-              href="https://deccanailabs.vercel.app"
+              href="https://deccanailabs.com"
               target="_blank"
               rel="noopener noreferrer"
               className="hover:text-accent transition"
             >
-              https://deccanailabs.vercel.app
+              https://deccanailabs.com
             </a>
           </p>
         </div>

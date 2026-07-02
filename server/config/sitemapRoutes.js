@@ -10,14 +10,4 @@ export const STATIC_SITEMAP_ROUTES = [
   { path: "/help-support", changefreq: "monthly", priority: "0.6" },
 ];
 
-export const DEFAULT_SITE_URL = "https://deccanailabs.vercel.app";
-
-export function getSiteUrl() {
-  const configured = process.env.SITE_URL?.trim();
-  if (configured) return configured.replace(/\/$/, "");
-
-  const clientUrl = process.env.CLIENT_URL?.split(",")[0]?.trim();
-  if (clientUrl) return clientUrl.replace(/\/$/, "");
-
-  return DEFAULT_SITE_URL;
-}
+export { getSiteUrl, OFFICIAL_SITE_URL as DEFAULT_SITE_URL } from "./site.js";
