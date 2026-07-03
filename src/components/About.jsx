@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import { Users } from "lucide-react";
+import { BRAND_FAQ } from "../config/site";
 
 function About() {
   return (
@@ -11,25 +12,45 @@ function About() {
           <h2 className="theme-heading mb-8">About Us</h2>
 
           <p className="text-lg text-muted leading-relaxed">
-            DECCAN AI labs is a technology-driven organization dedicated to
-            advancing innovation, developing future-ready talent, and creating
-            impactful learning ecosystems through Artificial Intelligence,
-            emerging technologies, and industry-integrated professional
-            development.
+            DECCAN AI labs (DeccanAILabs) is an India-based technology education
+            and training platform. We help students and early-career professionals build practical skills through
+            mentor-led internships, project-based learning, and industry-focused
+            courses in AI, programming, data science, and cyber security.
           </p>
 
           <p className="mt-6 text-lg text-muted leading-relaxed">
             Founded with the vision of bridging the gap between education and
             industry, DECCAN AI labs serves as a catalyst for transformation by
-            empowering individuals and organizations with the knowledge, skills,
-            and opportunities required to thrive in a rapidly evolving digital
-            world.
+            empowering learners with the knowledge, skills, and opportunities
+            required to thrive in a rapidly evolving digital world.
+          </p>
+
+          <p className="mt-6 text-sm text-subtle leading-relaxed border-l-2 border-accent/40 pl-4">
+            DeccanAILabs at deccanailabs.com is an independent education
+            platform. It is not affiliated with any other unrelated companies
+            that may use similar names in the global artificial intelligence
+            industry.
           </p>
 
           <p className="mt-6 text-lg text-fg font-medium leading-relaxed">
             We believe that the future belongs to those who continuously learn,
             innovate, and adapt.
           </p>
+        </div>
+
+        <div className="theme-card rounded-3xl p-8 md:p-12 mt-12">
+          <p className="theme-label mb-4">FAQ</p>
+          <h3 className="text-2xl md:text-3xl font-medium text-fg mb-8">
+            Frequently Asked Questions
+          </h3>
+          <div className="space-y-6 max-w-3xl">
+            {BRAND_FAQ.map(({ question, answer }) => (
+              <div key={question} className="border-b border-border pb-6 last:border-0">
+                <h4 className="text-lg font-medium text-fg mb-2">{question}</h4>
+                <p className="text-muted leading-relaxed">{answer}</p>
+              </div>
+            ))}
+          </div>
         </div>
 
         <div className="theme-card rounded-3xl p-8 md:p-12 mt-12">

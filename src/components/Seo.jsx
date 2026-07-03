@@ -1,5 +1,6 @@
 import { useEffect } from "react";
 import {
+  buildFaqJsonLd,
   buildOrganizationJsonLd,
   buildWebSiteJsonLd,
 } from "../config/organizationSchema";
@@ -16,6 +17,7 @@ import { getSiteUrl } from "../config/site.js";
 
 const ORGANIZATION_JSON_LD_ID = "organization-jsonld";
 const WEBSITE_JSON_LD_ID = "website-jsonld";
+const FAQ_JSON_LD_ID = "faq-jsonld";
 function upsertMeta(attribute, key, content) {
   if (!content) return;
 
@@ -113,6 +115,12 @@ function Seo({ title, description, keywords, path, noindex = false }) {
 
     upsertJsonLd(ORGANIZATION_JSON_LD_ID, buildOrganizationJsonLd(siteUrl));
     upsertJsonLd(WEBSITE_JSON_LD_ID, buildWebSiteJsonLd(siteUrl));
+
+    if (path === "/" || path === "/about") {
+      upsertJsonLd(FAQ_JSON_LD_ID, buildFaqJsonLd());
+    } else {
+      document.head.querySelector(`script[data-jsonld="${FAQ_JSON_LD_ID}"]`)?.remove();
+    }
   }, [pageTitle, pageDescription, pageKeywords, path, noindex]);
 
   return null;

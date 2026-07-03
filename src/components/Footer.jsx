@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import { Mail, MapPin, Phone } from "lucide-react";
+import { ORGANIZATION_LOCATION } from "../config/site";
 import { BrandText } from "./Logo";
 import { SocialIconRow } from "./SocialLinks";
 
@@ -33,7 +34,7 @@ const contactDetails = [
   {
     icon: MapPin,
     label: "Location",
-    value: "Bengaluru, Karnataka, India",
+    value: ORGANIZATION_LOCATION,
   },
 ];
 

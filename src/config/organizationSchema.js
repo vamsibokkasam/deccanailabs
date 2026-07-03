@@ -1,6 +1,10 @@
 import { SITE_LOGO_PATH } from "./branding.js";
-import { BRAND_ALTERNATE_NAMES, getSiteUrl } from "./site.js";
-import { DEFAULT_DESCRIPTION } from "./seo.js";
+import {
+  BRAND_ALTERNATE_NAMES,
+  BRAND_FAQ,
+  ORGANIZATION_DESCRIPTION,
+  getSiteUrl,
+} from "./site.js";
 
 export const ORGANIZATION_NAME = "DeccanAILabs";
 
@@ -17,18 +21,30 @@ export function buildOrganizationJsonLd(siteUrl = getSiteUrl()) {
 
   return {
     "@context": "https://schema.org",
-    "@type": "Organization",
+    "@type": ["Organization", "EducationalOrganization"],
     name: ORGANIZATION_NAME,
     alternateName: BRAND_ALTERNATE_NAMES,
     url: baseUrl,
     logo: `${baseUrl}${SITE_LOGO_PATH}`,
-    description: DEFAULT_DESCRIPTION,
+    description: ORGANIZATION_DESCRIPTION,
     email: ORGANIZATION_EMAIL,
     telephone: ORGANIZATION_PHONE,
+    areaServed: {
+      "@type": "Country",
+      name: "India",
+    },
+    knowsAbout: [
+      "Artificial Intelligence training",
+      "Machine Learning internships",
+      "Web Development courses",
+      "Python programming",
+      "Java development",
+      "Data Science",
+      "Cyber Security",
+      "Technology education India",
+    ],
     address: {
       "@type": "PostalAddress",
-      addressLocality: "Bengaluru",
-      addressRegion: "Karnataka",
       addressCountry: "IN",
     },
     contactPoint: [
@@ -54,11 +70,27 @@ export function buildWebSiteJsonLd(siteUrl = getSiteUrl()) {
     name: ORGANIZATION_NAME,
     alternateName: BRAND_ALTERNATE_NAMES,
     url: baseUrl,
-    description: DEFAULT_DESCRIPTION,
+    description: ORGANIZATION_DESCRIPTION,
+    inLanguage: "en-IN",
     publisher: {
-      "@type": "Organization",
+      "@type": "EducationalOrganization",
       name: ORGANIZATION_NAME,
       url: baseUrl,
     },
+  };
+}
+
+export function buildFaqJsonLd() {
+  return {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: BRAND_FAQ.map(({ question, answer }) => ({
+      "@type": "Question",
+      name: question,
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: answer,
+      },
+    })),
   };
 }

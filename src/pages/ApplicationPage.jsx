@@ -17,7 +17,7 @@ import {
 } from "lucide-react";
 import qr399 from "../assets/399.jpg";
 import qr499 from "../assets/499.jpg";
-import qr599 from "../assets/599.jpg";
+import aimlQr from "../assets/AIML_QR.jpg";
 import FormField from "../components/FormField";
 import { submitApplicationWithPayment } from "../services/api";
 import { compressImageFile } from "../utils/compressImage";
@@ -81,8 +81,9 @@ const courseDetails = {
   },
   "AI & Machine Learning": {
     title: "AI & Machine Learning Internship",
-    fee: "₹599",
-    qrCode: qr599,
+    hideFee: true,
+    qrCode: aimlQr,
+    upiId: "vamsib170-1@okicici",
     duration: "45 Days",
     description:
       "Explore Artificial Intelligence and Machine Learning concepts through practical implementation and real-world use cases.",
@@ -242,8 +243,9 @@ function ApplicationPage() {
   const selectedCourse =
     courseDetails[resolvedCourseTitle] || courseDetails["Python Development"];
 
-  const feeAmount =
-    parseInt(String(selectedCourse.fee).replace(/\D/g, ""), 10) || 599;
+  const feeAmount = selectedCourse.hideFee
+    ? 0
+    : parseInt(String(selectedCourse.fee).replace(/\D/g, ""), 10) || 599;
 
   useEffect(() => {
     if (courseName && canonicalSlug && courseName !== canonicalSlug) {
@@ -386,7 +388,9 @@ function ApplicationPage() {
 
             <div className="flex flex-wrap justify-center gap-4 mb-10">
               <StatCard icon={Clock} value={selectedCourse.duration} label="Training" />
-              <StatCard icon={IndianRupee} value={selectedCourse.fee} label="Fee" />
+              {!selectedCourse.hideFee && (
+                <StatCard icon={IndianRupee} value={selectedCourse.fee} label="Fee" />
+              )}
               <StatCard icon={Award} value="Certificate" label="Provided" />
             </div>
 
@@ -505,7 +509,9 @@ function ApplicationPage() {
             />
 
             <div className="flex flex-wrap justify-center gap-4 mb-8">
-              <StatCard icon={IndianRupee} value={selectedCourse.fee} label="Internship Fee" />
+              {!selectedCourse.hideFee && (
+                <StatCard icon={IndianRupee} value={selectedCourse.fee} label="Internship Fee" />
+              )}
               <StatCard icon={Clock} value={selectedCourse.duration} label="Duration" />
             </div>
 
@@ -524,19 +530,27 @@ function ApplicationPage() {
               <div className="inline-block p-3 rounded-2xl bg-white mb-4">
                 <img
                   src={selectedCourse.qrCode}
-                  alt={`UPI QR code for ${selectedCourse.fee}`}
+                  alt={
+                    selectedCourse.hideFee
+                      ? "UPI payment QR code"
+                      : `UPI QR code for ${selectedCourse.fee}`
+                  }
                   className="w-56 md:w-64 rounded-lg"
                 />
               </div>
               <p className="font-medium text-lg text-fg">
-                Scan & Pay {selectedCourse.fee}
+                {selectedCourse.hideFee
+                  ? "Scan to pay with any UPI app"
+                  : `Scan & Pay ${selectedCourse.fee}`}
               </p>
               <p className="text-sm text-muted mt-2 max-w-xs mx-auto">
                 After payment, continue to upload your transaction ID and screenshot.
               </p>
               <div className="mt-4 inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-input border border-border">
                 <span className="text-subtle text-sm">UPI ID:</span>
-                <span className="text-accent font-medium">deccanailabs@upi</span>
+                <span className="text-accent font-medium">
+                  {selectedCourse.upiId ?? "deccanailabs@upi"}
+                </span>
               </div>
             </div>
 

@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { getPrograms, submitContact } from "../services/api";
+import { ORGANIZATION_LOCATION } from "../config/site";
 import { validateContactForm, sanitizeNameInput } from "../utils/validation";
 import { inputClass } from "../utils/themeClasses";
 import FormField from "./FormField";
@@ -108,7 +109,7 @@ function Contact() {
 
             <div className="mb-8">
               <h3 className="text-xl font-medium text-fg mb-2">Location</h3>
-              <p className="text-muted">Bengaluru, Karnataka, India</p>
+              <p className="text-muted">{ORGANIZATION_LOCATION}</p>
             </div>
 
             <SocialLinks />

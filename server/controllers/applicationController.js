@@ -64,7 +64,8 @@ export const createApplicationWithPayment = async (req, res, next) => {
     }
 
     const screenshotData = validatePaymentScreenshot(screenshotBase64);
-    const parsedFee = Number(feeAmount) || 599;
+    const numericFee = Number(feeAmount);
+    const parsedFee = Number.isFinite(numericFee) ? numericFee : 599;
 
     let application;
 

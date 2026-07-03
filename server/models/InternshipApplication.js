@@ -48,7 +48,7 @@ const internshipApplicationSchema = new mongoose.Schema(
     feeAmount: {
       type: Number,
       default: 599,
-      min: [1, "Fee amount must be positive"],
+      min: [0, "Fee amount cannot be negative"],
     },
     payment: {
       method: {
