@@ -22,8 +22,8 @@ const contactDetails = [
   {
     icon: Mail,
     label: "Email",
-    value: "deccanailabs212@gmail.com",
-    href: "mailto:deccanailabs212@gmail.com",
+    value: "careers@deccanailabs.com",
+    href: "mailto:careers@deccanailabs.com",
   },
   {
     icon: Phone,

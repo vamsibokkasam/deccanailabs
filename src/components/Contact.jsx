@@ -99,7 +99,7 @@ function Contact() {
           <div className="theme-card p-8">
             <div className="mb-8">
               <h3 className="text-xl font-medium text-fg mb-2">Email</h3>
-              <p className="text-muted">deccanailabs212@gmail.com</p>
+              <p className="text-muted">careers@deccanailabs.com</p>
             </div>
 
             <div className="mb-8">

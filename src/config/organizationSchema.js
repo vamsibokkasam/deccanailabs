@@ -8,7 +8,7 @@ import {
 
 export const ORGANIZATION_NAME = "DeccanAILabs";
 
-export const ORGANIZATION_EMAIL = "deccanailabs212@gmail.com";
+export const ORGANIZATION_EMAIL = "careers@deccanailabs.com";
 export const ORGANIZATION_PHONE = "+91-63032-07231";
 
 export const ORGANIZATION_SOCIAL_PROFILES = [

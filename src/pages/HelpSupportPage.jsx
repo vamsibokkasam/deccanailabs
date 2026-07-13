@@ -34,10 +34,10 @@ function HelpSupportPage() {
           <p>
             <span className="text-fg">Email: </span>
             <a
-              href="mailto:deccanailabs212@gmail.com"
+              href="mailto:careers@deccanailabs.com"
               className="hover:text-accent transition"
             >
-              deccanailabs212@gmail.com
+              careers@deccanailabs.com
             </a>
           </p>
           <p>

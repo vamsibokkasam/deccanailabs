@@ -15,9 +15,8 @@ import {
   Upload,
   User,
 } from "lucide-react";
-import qr399 from "../assets/399.jpg";
 import qr499 from "../assets/499.jpg";
-import aimlQr from "../assets/AIML_QR.jpg";
+import qr599 from "../assets/599.jpg";
 import FormField from "../components/FormField";
 import { submitApplicationWithPayment } from "../services/api";
 import { compressImageFile } from "../utils/compressImage";
@@ -57,32 +56,35 @@ const BENEFITS = [
 const courseDetails = {
   "Python Development": {
     title: "Python Development Internship",
-    fee: "₹499",
-    qrCode: qr499,
+    fee: "₹599",
+    qrCode: qr599,
+    upiId: "vamsib170-1@okicici",
     duration: "45 Days",
     description:
       "Learn Python through practical projects, mentor guidance, and hands-on experience that prepares you for real-world development.",
   },
   "Java Development": {
     title: "Java Development Internship",
-    fee: "₹499",
-    qrCode: qr499,
+    fee: "₹599",
+    qrCode: qr599,
+    upiId: "vamsib170-1@okicici",
     duration: "45 Days",
     description:
       "Build strong Java programming skills, work on real-time applications, and gain industry-focused development experience.",
   },
   "Web Development": {
     title: "Web Development Internship",
-    fee: "₹399",
-    qrCode: qr399,
+    fee: "₹499",
+    qrCode: qr499,
+    upiId: "vamsib170-1@okicici",
     duration: "45 Days",
     description:
       "Learn modern web development with HTML, CSS, JavaScript, and project-based learning guided by experienced mentors.",
   },
   "AI & Machine Learning": {
     title: "AI & Machine Learning Internship",
-    hideFee: true,
-    qrCode: aimlQr,
+    fee: "₹599",
+    qrCode: qr599,
     upiId: "vamsib170-1@okicici",
     duration: "45 Days",
     description:
@@ -90,16 +92,18 @@ const courseDetails = {
   },
   "Data Science": {
     title: "Data Science Internship",
-    fee: "₹499",
-    qrCode: qr499,
+    fee: "₹599",
+    qrCode: qr599,
+    upiId: "vamsib170-1@okicici",
     duration: "45 Days",
     description:
       "Learn data analysis, visualization, and problem-solving techniques using industry-relevant tools and datasets.",
   },
   "Cyber Security": {
     title: "Cyber Security Internship",
-    fee: "₹499",
-    qrCode: qr499,
+    fee: "₹599",
+    qrCode: qr599,
+    upiId: "vamsib170-1@okicici",
     duration: "45 Days",
     description:
       "Understand cybersecurity fundamentals, threat detection, and security practices through practical learning.",
