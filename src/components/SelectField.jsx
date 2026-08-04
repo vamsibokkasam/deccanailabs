@@ -2,6 +2,22 @@ import { useEffect, useRef, useState } from "react";
 import { ChevronDown } from "lucide-react";
 import { inputClass } from "../utils/themeClasses";
 
+function normalizeOptions(options) {
+  return (options || []).map((option) => {
+    if (option && typeof option === "object") {
+      return {
+        value: String(option.value ?? ""),
+        label: String(option.label ?? option.value ?? ""),
+      };
+    }
+
+    return {
+      value: String(option ?? ""),
+      label: String(option ?? ""),
+    };
+  });
+}
+
 function SelectField({
   name,
   value,
@@ -12,6 +28,7 @@ function SelectField({
 }) {
   const [open, setOpen] = useState(false);
   const containerRef = useRef(null);
+  const normalized = normalizeOptions(options);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -24,8 +41,11 @@ function SelectField({
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const selectOption = (option) => {
-    onChange({ target: { name, value: option } });
+  const selected = normalized.find((option) => option.value === String(value ?? ""));
+  const displayLabel = selected?.label || "";
+
+  const selectOption = (optionValue) => {
+    onChange({ target: { name, value: optionValue } });
     setOpen(false);
   };
 
@@ -38,8 +58,8 @@ function SelectField({
         aria-expanded={open}
         className={`${inputClass(hasError)} flex items-center justify-between gap-3 text-left`}
       >
-        <span className={value ? "text-fg" : "text-subtle"}>
-          {value || placeholder}
+        <span className={displayLabel ? "text-fg" : "text-subtle"}>
+          {displayLabel || placeholder}
         </span>
         <ChevronDown
           size={18}
@@ -52,18 +72,22 @@ function SelectField({
           role="listbox"
           className="absolute z-30 mt-2 w-full max-h-52 overflow-y-auto rounded-lg border border-border bg-surface shadow-xl"
         >
-          {options.map((option) => (
-            <li key={option} role="option" aria-selected={value === option}>
+          {normalized.map((option) => (
+            <li
+              key={option.value || "__empty"}
+              role="option"
+              aria-selected={String(value ?? "") === option.value}
+            >
               <button
                 type="button"
-                onClick={() => selectOption(option)}
+                onClick={() => selectOption(option.value)}
                 className={`w-full px-4 py-3 text-left text-[15px] transition ${
-                  value === option
+                  String(value ?? "") === option.value
                     ? "bg-accent/15 text-accent font-medium"
                     : "text-fg hover:bg-white/5"
                 }`}
               >
-                {option}
+                {option.label}
               </button>
             </li>
           ))}

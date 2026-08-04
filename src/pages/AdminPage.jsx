@@ -1,6 +1,7 @@
 import { Fragment, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import {
+  Award,
   BarChart3,
   BookOpen,
   CheckCircle2,
@@ -10,9 +11,11 @@ import {
   ChevronUp,
   Clock,
   Copy,
+  Download,
   ExternalLink,
   Eye,
   Image,
+  Layers,
   Loader2,
   Lock,
   Mail,
@@ -27,17 +30,21 @@ import {
   XCircle,
 } from "lucide-react";
 import FormField from "../components/FormField";
+import BatchesSection from "../components/admin/BatchesSection";
 import AdminShell from "../layouts/AdminShell";
 import { BrandLockup } from "../components/Logo";
 import { inputClass } from "../utils/themeClasses";
 import {
+  completeApplication,
   createProgram,
   deleteApplication,
   deleteProgram,
+  fetchCertificatePdf,
   getAdminPrograms,
   getAdminStats,
   getApplications,
   getContacts,
+  openCertificatePdfBlob,
   updateApplicationStatus,
   updatePaymentStatus,
   updateProgram,
@@ -52,6 +59,7 @@ const statusColors = {
   reviewed: "bg-blue-500/20 text-blue-400 border-blue-500/30",
   accepted: "bg-green-500/20 text-green-400 border-green-500/30",
   rejected: "bg-red-500/20 text-red-400 border-red-500/30",
+  completed: "bg-cyan-500/20 text-cyan-300 border-cyan-500/30",
 };
 
 const paymentStatusColors = {
@@ -60,7 +68,32 @@ const paymentStatusColors = {
   rejected: "bg-red-500/20 text-red-400 border-red-500/30",
 };
 
-const applicationStatusOptions = ["pending", "reviewed", "accepted", "rejected"];
+const applicationStatusOptions = [
+  "pending",
+  "reviewed",
+  "accepted",
+  "rejected",
+  "completed",
+];
+
+const editableApplicationStatuses = ["pending", "reviewed", "accepted", "rejected"];
+
+function toDateInputValue(value) {
+  if (!value) return "";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "";
+  return date.toISOString().slice(0, 10);
+}
+
+function certificateFilename(certNo) {
+  return `${String(certNo || "certificate").replace(/\//g, "-")}.pdf`;
+}
+
+function getApplicationCertificate(app) {
+  if (!app?.certificate) return null;
+  if (typeof app.certificate === "object") return app.certificate;
+  return { _id: app.certificate, certNo: app.certNo };
+}
 
 const APPLICATIONS_PAGE_SIZE = 10;
 
@@ -552,12 +585,208 @@ function ScreenshotModal({ preview, onClose }) {
   );
 }
 
+function CompleteCertificateModal({ application, saving, onClose, onSubmit }) {
+  const [form, setForm] = useState(() => ({
+    registrationNo: application?.registrationNo || "",
+    department: application?.department || "",
+    college: application?.college || "",
+    internshipDomain: application?.program || "",
+    startDate: toDateInputValue(application?.internshipStartDate),
+    endDate: toDateInputValue(application?.internshipEndDate),
+  }));
+  const [localError, setLocalError] = useState("");
+
+  useEffect(() => {
+    if (!application) return undefined;
+
+    const onKeyDown = (event) => {
+      if (event.key === "Escape" && !saving) onClose();
+    };
+
+    document.addEventListener("keydown", onKeyDown);
+    document.body.style.overflow = "hidden";
+
+    return () => {
+      document.removeEventListener("keydown", onKeyDown);
+      document.body.style.overflow = "";
+    };
+  }, [application, onClose, saving]);
+
+  if (!application) return null;
+
+  const handleChange = (event) => {
+    const { name, value } = event.target;
+    setForm((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleSubmit = (event) => {
+    event.preventDefault();
+    setLocalError("");
+
+    if (!form.registrationNo.trim() || !form.department.trim() || !form.college.trim()) {
+      setLocalError("Registration number, department, and college are required.");
+      return;
+    }
+
+    if (!form.startDate || !form.endDate) {
+      setLocalError("Internship start and end dates are required.");
+      return;
+    }
+
+    if (new Date(form.endDate) < new Date(form.startDate)) {
+      setLocalError("End date must be on or after the start date.");
+      return;
+    }
+
+    onSubmit({
+      registrationNo: form.registrationNo.trim(),
+      department: form.department.trim(),
+      college: form.college.trim(),
+      internshipDomain: form.internshipDomain.trim() || application.program,
+      startDate: form.startDate,
+      endDate: form.endDate,
+    });
+  };
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center modal-overlay px-4 py-8"
+      onClick={() => {
+        if (!saving) onClose();
+      }}
+      role="dialog"
+      aria-modal="true"
+      aria-label="Issue internship certificate"
+    >
+      <div
+        className="w-full max-w-xl bg-surface border border-border rounded-2xl shadow-2xl max-h-[90vh] overflow-auto"
+        onClick={(event) => event.stopPropagation()}
+      >
+        <div className="flex items-start justify-between gap-4 p-5 border-b border-border">
+          <div>
+            <h3 className="text-lg font-medium text-fg">Issue Certificate</h3>
+            <p className="text-muted text-sm mt-1">
+              Complete internship for <span className="text-fg">{application.fullName}</span>
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            disabled={saving}
+            className="p-2 rounded-lg text-muted hover:text-fg hover:bg-card transition disabled:opacity-40"
+            aria-label="Close"
+          >
+            <X size={20} />
+          </button>
+        </div>
+
+        <form onSubmit={handleSubmit} className="p-5 space-y-4">
+          {localError && (
+            <p className="text-sm text-red-400 bg-red-500/10 border border-red-500/20 rounded-xl px-3 py-2">
+              {localError}
+            </p>
+          )}
+
+          <FormField label="Registration No.">
+            <input
+              className={inputClass}
+              name="registrationNo"
+              value={form.registrationNo}
+              onChange={handleChange}
+              placeholder="College registration number"
+              required
+            />
+          </FormField>
+
+          <FormField label="Department">
+            <input
+              className={inputClass}
+              name="department"
+              value={form.department}
+              onChange={handleChange}
+              placeholder="Computer Science & Engineering"
+              required
+            />
+          </FormField>
+
+          <FormField label="College">
+            <input
+              className={inputClass}
+              name="college"
+              value={form.college}
+              onChange={handleChange}
+              required
+            />
+          </FormField>
+
+          <FormField label="Internship Domain">
+            <input
+              className={inputClass}
+              name="internshipDomain"
+              value={form.internshipDomain}
+              onChange={handleChange}
+              placeholder={application.program}
+            />
+          </FormField>
+
+          <div className="grid sm:grid-cols-2 gap-4">
+            <FormField label="Start Date">
+              <input
+                type="date"
+                className={inputClass}
+                name="startDate"
+                value={form.startDate}
+                onChange={handleChange}
+                required
+              />
+            </FormField>
+            <FormField label="End Date">
+              <input
+                type="date"
+                className={inputClass}
+                name="endDate"
+                value={form.endDate}
+                onChange={handleChange}
+                required
+              />
+            </FormField>
+          </div>
+
+          <div className="flex flex-wrap justify-end gap-3 pt-2">
+            <button
+              type="button"
+              onClick={onClose}
+              disabled={saving}
+              className="px-4 py-2 rounded-xl border border-border text-muted hover:text-fg transition disabled:opacity-40"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={saving}
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-accent text-white font-medium hover:bg-accent-hover transition disabled:opacity-60"
+            >
+              {saving ? <Loader2 size={16} className="animate-spin" /> : <Award size={16} />}
+              {saving ? "Issuing…" : "Complete & Issue"}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}
+
 function ApplicationsTable({
   applications,
   onStatusChange,
   onPaymentStatusChange,
   onDelete,
+  onRequestComplete,
+  onViewCertificate,
+  onDownloadCertificate,
   paymentActionId,
+  completeActionId,
+  certificateActionId,
 }) {
   const [expandedId, setExpandedId] = useState(null);
   const [screenshotPreview, setScreenshotPreview] = useState(null);
@@ -610,7 +839,7 @@ function ApplicationsTable({
     <>
     <div className="theme-card overflow-hidden">
       <div className="overflow-x-auto">
-        <table className="w-full min-w-[960px] text-sm">
+        <table className="w-full min-w-[1200px] text-sm">
           <thead>
             <tr className="border-b border-border bg-surface/60">
               <th className="w-10 px-3 py-3" aria-label="Expand row" />
@@ -627,7 +856,13 @@ function ApplicationsTable({
                 College
               </th>
               <th className="text-left px-4 py-3 text-subtle text-xs font-medium uppercase tracking-wider">
+                Department
+              </th>
+              <th className="text-left px-4 py-3 text-subtle text-xs font-medium uppercase tracking-wider">
                 Program
+              </th>
+              <th className="text-left px-4 py-3 text-subtle text-xs font-medium uppercase tracking-wider">
+                Batch
               </th>
               <th className="text-left px-4 py-3 text-subtle text-xs font-medium uppercase tracking-wider">
                 Fee
@@ -692,8 +927,16 @@ function ApplicationsTable({
                     <td className="px-4 py-3 text-muted max-w-[140px]">
                       <span className="line-clamp-2">{app.college || "—"}</span>
                     </td>
+                    <td className="px-4 py-3 text-muted max-w-[140px]">
+                      <span className="line-clamp-2">{app.department || "—"}</span>
+                    </td>
                     <td className="px-4 py-3 text-fg max-w-[120px]">
                       <span className="line-clamp-2">{app.program}</span>
+                    </td>
+                    <td className="px-4 py-3 text-muted max-w-[140px]">
+                      <span className="line-clamp-2">
+                        {app.batchId?.name || "—"}
+                      </span>
                     </td>
                     <td className="px-4 py-3 text-fg whitespace-nowrap">
                       {app.feeAmount ? `₹${app.feeAmount}` : "—"}
@@ -786,7 +1029,7 @@ function ApplicationsTable({
                   </tr>
                   {isExpanded && (
                     <tr className="border-b border-border bg-surface/20">
-                      <td colSpan={11} className="px-4 py-5">
+                      <td colSpan={13} className="px-4 py-5">
                         <div className="grid lg:grid-cols-[1fr_auto] gap-6">
                           <div className="space-y-5">
                             {app.payment?.transactionId && (
@@ -815,12 +1058,13 @@ function ApplicationsTable({
                                 Application Status
                               </p>
                               <div className="flex flex-wrap gap-2">
-                                {["pending", "reviewed", "accepted", "rejected"].map((status) => (
+                                {editableApplicationStatuses.map((status) => (
                                   <button
                                     key={status}
                                     type="button"
                                     onClick={() => onStatusChange(app._id, status)}
-                                    className={`px-3 py-1.5 rounded-lg text-xs font-medium border capitalize transition ${
+                                    disabled={app.status === "completed"}
+                                    className={`px-3 py-1.5 rounded-lg text-xs font-medium border capitalize transition disabled:opacity-40 ${
                                       app.status === status
                                         ? statusColors[status]
                                         : "bg-surface border-border text-muted hover:bg-card hover:text-fg"
@@ -829,8 +1073,81 @@ function ApplicationsTable({
                                     {status}
                                   </button>
                                 ))}
+                                <button
+                                  type="button"
+                                  onClick={() => onRequestComplete(app)}
+                                  disabled={
+                                    completeActionId === app._id ||
+                                    app.status === "completed" ||
+                                    app.payment?.status !== "verified" ||
+                                    app.status !== "accepted"
+                                  }
+                                  className={`px-3 py-1.5 rounded-lg text-xs font-medium border capitalize transition inline-flex items-center gap-1.5 disabled:opacity-40 ${
+                                    app.status === "completed"
+                                      ? statusColors.completed
+                                      : "bg-surface border-border text-muted hover:bg-card hover:text-fg"
+                                  }`}
+                                  title={
+                                    app.payment?.status !== "verified"
+                                      ? "Verify payment first"
+                                      : app.status !== "accepted" && app.status !== "completed"
+                                        ? "Accept application first"
+                                        : "Issue certificate and mark completed"
+                                  }
+                                >
+                                  {completeActionId === app._id ? (
+                                    <Loader2 size={12} className="animate-spin" />
+                                  ) : (
+                                    <Award size={12} />
+                                  )}
+                                  completed
+                                </button>
                               </div>
                             </div>
+
+                            {app.status === "completed" && getApplicationCertificate(app)?.certNo && (
+                              <div>
+                                <p className="text-subtle text-xs uppercase tracking-wider mb-2">
+                                  Certificate
+                                </p>
+                                <p className="text-accent font-mono text-xs mb-3">
+                                  {getApplicationCertificate(app).certNo}
+                                </p>
+                                <div className="flex flex-wrap gap-2">
+                                  <button
+                                    type="button"
+                                    onClick={() => onViewCertificate(getApplicationCertificate(app).certNo)}
+                                    disabled={
+                                      certificateActionId ===
+                                      getApplicationCertificate(app)?.certNo
+                                    }
+                                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs border border-border text-accent hover:border-accent/40 transition disabled:opacity-40"
+                                  >
+                                    {certificateActionId ===
+                                    getApplicationCertificate(app)?.certNo ? (
+                                      <Loader2 size={12} className="animate-spin" />
+                                    ) : (
+                                      <Eye size={12} />
+                                    )}
+                                    View PDF
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={() =>
+                                      onDownloadCertificate(getApplicationCertificate(app).certNo)
+                                    }
+                                    disabled={
+                                      certificateActionId ===
+                                      getApplicationCertificate(app)?.certNo
+                                    }
+                                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs border border-border text-fg hover:border-accent/40 transition disabled:opacity-40"
+                                  >
+                                    <Download size={12} />
+                                    Download PDF
+                                  </button>
+                                </div>
+                              </div>
+                            )}
 
                             {app.message && (
                               <div>
@@ -1134,6 +1451,7 @@ const statusMeta = {
   reviewed: { label: "Reviewed", icon: Eye, bar: "bg-blue-400", ring: "ring-blue-500/20" },
   accepted: { label: "Accepted", icon: CheckCircle2, bar: "bg-green-400", ring: "ring-green-500/20" },
   rejected: { label: "Rejected", icon: XCircle, bar: "bg-red-400", ring: "ring-red-500/20" },
+  completed: { label: "Completed", icon: Award, bar: "bg-cyan-400", ring: "ring-cyan-500/20" },
 };
 
 function DashboardPanel({ title, subtitle, icon: Icon, children, action }) {
@@ -1226,7 +1544,7 @@ function StatusBreakdownChart({ statusCounts, totalApplications, onStatusClick }
 
   return (
     <div className="flex-1 flex flex-col gap-5">
-      <div className="grid grid-cols-2 gap-3 flex-1">
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 flex-1">
         {statuses.map(({ key, label, icon: Icon, count }) => {
           const percentage = totalApplications
             ? Math.round((count / totalApplications) * 100)
@@ -1306,6 +1624,9 @@ function AdminPage() {
   const [applicationFilters, setApplicationFilters] = useState(emptyApplicationFilters);
   const [contactFilters, setContactFilters] = useState(emptyContactFilters);
   const [paymentActionId, setPaymentActionId] = useState(null);
+  const [completeActionId, setCompleteActionId] = useState(null);
+  const [certificateActionId, setCertificateActionId] = useState(null);
+  const [actionNotice, setActionNotice] = useState({ type: "", message: "" });
 
   const loadData = async (key) => {
     setLoading(true);
@@ -1375,14 +1696,83 @@ function AdminPage() {
 
   const handleStatusChange = async (id, status) => {
     try {
-      await updateApplicationStatus(id, status, adminKey);
+      const result = await updateApplicationStatus(id, status, adminKey);
       setApplications((prev) =>
-        prev.map((app) => (app._id === id ? { ...app, status } : app))
+        prev.map((app) => (app._id === id ? { ...app, ...result.data } : app))
       );
       const statsRes = await getAdminStats(adminKey);
       setStats(statsRes.data);
     } catch (err) {
       setError(err.message);
+    }
+  };
+
+  const handleCompleteApplication = async (application) => {
+    if (!application?._id) return;
+
+    setCompleteActionId(application._id);
+    setError("");
+    setActionNotice({ type: "", message: "" });
+
+    try {
+      const result = await completeApplication(application._id, adminKey);
+      setApplications((prev) =>
+        prev.map((app) =>
+          app._id === application._id ? { ...app, ...result.data } : app
+        )
+      );
+      const statsRes = await getAdminStats(adminKey);
+      setStats(statsRes.data);
+
+      if (result.emailWarning) {
+        setActionNotice({
+          type: "warning",
+          message: `${result.message}. ${result.emailWarning}`,
+        });
+      } else {
+        setActionNotice({
+          type: "success",
+          message: result.message || "Application completed successfully",
+        });
+      }
+    } catch (err) {
+      setError(err.message || "Failed to complete application");
+    } finally {
+      setCompleteActionId(null);
+    }
+  };
+
+  const handleViewCertificate = async (certNo) => {
+    setCertificateActionId(certNo);
+    setError("");
+
+    try {
+      const blob = await fetchCertificatePdf(certNo, adminKey, { download: false });
+      openCertificatePdfBlob(blob, {
+        download: false,
+        filename: certificateFilename(certNo),
+      });
+    } catch (err) {
+      setError(err.message || "Failed to open certificate PDF");
+    } finally {
+      setCertificateActionId(null);
+    }
+  };
+
+  const handleDownloadCertificate = async (certNo) => {
+    setCertificateActionId(certNo);
+    setError("");
+
+    try {
+      const blob = await fetchCertificatePdf(certNo, adminKey, { download: true });
+      openCertificatePdfBlob(blob, {
+        download: true,
+        filename: certificateFilename(certNo),
+      });
+    } catch (err) {
+      setError(err.message || "Failed to download certificate PDF");
+    } finally {
+      setCertificateActionId(null);
     }
   };
 
@@ -1835,14 +2225,32 @@ function AdminPage() {
               onStatusChange={handleStatusChange}
               onPaymentStatusChange={handlePaymentStatusChange}
               onDelete={handleDeleteApplication}
+              onRequestComplete={handleCompleteApplication}
+              onViewCertificate={handleViewCertificate}
+              onDownloadCertificate={handleDownloadCertificate}
               paymentActionId={paymentActionId}
+              completeActionId={completeActionId}
+              certificateActionId={certificateActionId}
             />
           )}
         </div>
       );
     }
 
-    return (
+    if (activeTab === "batches") {
+      return (
+        <BatchesSection
+          adminKey={adminKey}
+          programs={programs}
+          onApplicationsChange={() =>
+            getApplications(adminKey).then((res) => setApplications(res.data))
+          }
+        />
+      );
+    }
+
+    if (activeTab === "programs") {
+      return (
       <div className="space-y-8">
         <div className="theme-card p-6">
           <div className="flex items-center gap-2 mb-6">
@@ -1971,7 +2379,10 @@ function AdminPage() {
               )}
             </div>
           </div>
-    );
+      );
+    }
+
+    return null;
   };
 
   return (
@@ -1991,6 +2402,17 @@ function AdminPage() {
         {error && (
           <p className="text-red-400 mb-6 bg-red-500/10 border border-red-500/20 rounded-xl py-3 px-4 text-sm">
             {error}
+          </p>
+        )}
+        {actionNotice.message && (
+          <p
+            className={`mb-6 rounded-xl py-3 px-4 text-sm border ${
+              actionNotice.type === "success"
+                ? "text-green-400 bg-green-500/10 border-green-500/20"
+                : "text-yellow-300 bg-yellow-500/10 border-yellow-500/20"
+            }`}
+          >
+            {actionNotice.message}
           </p>
         )}
         {renderContent()}

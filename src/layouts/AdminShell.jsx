@@ -4,6 +4,7 @@ import {
   BookOpen,
   ExternalLink,
   LayoutDashboard,
+  Layers,
   LogOut,
   Mail,
   Menu,
@@ -22,6 +23,7 @@ const navItems = [
   { id: "dashboard", label: "Dashboard", icon: LayoutDashboard },
   { id: "applications", label: "Applications", icon: UserCheck, countKey: "applications" },
   { id: "contacts", label: "Contacts", icon: Mail, countKey: "contacts" },
+  { id: "batches", label: "Batches", icon: Layers },
   { id: "programs", label: "Programs", icon: BookOpen, countKey: "programs" },
 ];
 
@@ -29,6 +31,7 @@ const pageTitles = {
   dashboard: "Dashboard Overview",
   applications: "Internship Applications",
   contacts: "Contact Messages",
+  batches: "Batch Management",
   programs: "Program Management",
 };
 

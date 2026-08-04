@@ -1,7 +1,10 @@
 import mongoose from "mongoose";
 import InternshipApplication from "../models/InternshipApplication.js";
+import Certificate from "../models/Certificate.js";
 import { compareApplicationIds, generateApplicationId } from "../utils/applicationId.js";
 import { validatePaymentScreenshot } from "../utils/saveScreenshot.js";
+import { issueCertificateForApplication } from "../services/certificateIssuance.js";
+import { sendCertificateEmail } from "../services/certificateEmail.js";
 
 const stripScreenshotFromApplication = (application) => {
   const data = application.toObject ? application.toObject() : { ...application };
@@ -16,12 +19,14 @@ const stripScreenshotFromApplication = (application) => {
 
 export const createApplication = async (req, res, next) => {
   try {
-    const { fullName, email, phone, program, message } = req.body;
+    const { fullName, email, phone, program, message, college, department } = req.body;
 
     const application = await InternshipApplication.create({
       fullName: fullName.trim(),
       email: email.trim().toLowerCase(),
       phone: phone.trim().replace(/\s/g, ""),
+      college: college?.trim() || "",
+      department: department?.trim() || "",
       program: program.trim(),
       message: message?.trim() || "",
     });
@@ -45,6 +50,7 @@ export const createApplicationWithPayment = async (req, res, next) => {
       email,
       phone,
       college,
+      department,
       program,
       transactionId,
       feeAmount,
@@ -80,6 +86,7 @@ export const createApplicationWithPayment = async (req, res, next) => {
             email: email.trim().toLowerCase(),
             phone: phone.trim().replace(/\s/g, ""),
             college: college.trim(),
+            department: department.trim(),
             program: program.trim(),
             feeAmount: parsedFee,
             payment: {
@@ -121,7 +128,10 @@ export const createApplicationWithPayment = async (req, res, next) => {
 
 export const getApplications = async (req, res, next) => {
   try {
-    const applications = await InternshipApplication.find().lean();
+    const applications = await InternshipApplication.find()
+      .populate("certificate")
+      .populate("batchId", "name startDate endDate programTitle")
+      .lean();
     applications.sort((left, right) =>
       compareApplicationIds(left.applicationId, right.applicationId)
     );
@@ -144,10 +154,33 @@ export const updateApplicationStatus = async (req, res, next) => {
       });
     }
 
+    if (status === "completed") {
+      return res.status(400).json({
+        success: false,
+        message:
+          "Use PATCH /api/applications/:id/complete to mark an application completed and issue a certificate",
+      });
+    }
+
     if (!validStatuses.includes(status)) {
       return res.status(400).json({
         success: false,
         message: "Status must be pending, reviewed, accepted, or rejected",
+      });
+    }
+
+    const existing = await InternshipApplication.findById(req.params.id);
+    if (!existing) {
+      return res.status(404).json({
+        success: false,
+        message: "Application not found",
+      });
+    }
+
+    if (existing.status === "completed") {
+      return res.status(400).json({
+        success: false,
+        message: "Completed applications cannot change status. Revoke the certificate instead.",
       });
     }
 
@@ -157,13 +190,6 @@ export const updateApplicationStatus = async (req, res, next) => {
       { returnDocument: "after", runValidators: true }
     );
 
-    if (!application) {
-      return res.status(404).json({
-        success: false,
-        message: "Application not found",
-      });
-    }
-
     res.json({
       success: true,
       message: "Status updated successfully",
@@ -171,6 +197,147 @@ export const updateApplicationStatus = async (req, res, next) => {
     });
   } catch (error) {
     next(error);
+  }
+};
+
+export const completeApplication = async (req, res, next) => {
+  const session = await mongoose.startSession();
+
+  try {
+    let application;
+    let certificate;
+
+    await session.withTransaction(async () => {
+      application = await InternshipApplication.findById(req.params.id).session(session);
+
+      if (!application) {
+        const notFoundError = new Error("Application not found");
+        notFoundError.statusCode = 404;
+        throw notFoundError;
+      }
+
+      if (application.status === "completed" && application.certificate) {
+        certificate = await Certificate.findById(application.certificate).session(session);
+        if (certificate) return;
+      }
+
+      if (application.payment?.status !== "verified") {
+        const paymentError = new Error(
+          "Payment must be verified before issuing a certificate"
+        );
+        paymentError.statusCode = 400;
+        throw paymentError;
+      }
+
+      if (!["accepted", "completed"].includes(application.status)) {
+        const statusError = new Error(
+          "Only accepted applications can be marked completed"
+        );
+        statusError.statusCode = 400;
+        throw statusError;
+      }
+
+      const details = {
+        registrationNo: (
+          application.registrationNo ||
+          application.applicationId ||
+          ""
+        ).trim(),
+        department: (application.department || "").trim(),
+        college: (application.college || "").trim(),
+        internshipDomain: (application.program || "").trim(),
+        startDate: application.internshipStartDate,
+        endDate: application.internshipEndDate,
+      };
+
+      const missingDetails = [];
+      if (!details.registrationNo) missingDetails.push("registration/application ID");
+      if (!details.college) missingDetails.push("college");
+      if (!details.department) missingDetails.push("department");
+      if (!details.internshipDomain) missingDetails.push("internship domain");
+      if (!details.startDate || !details.endDate) {
+        missingDetails.push("batch start/end dates");
+      }
+
+      if (missingDetails.length) {
+        const detailsError = new Error(
+          `Cannot issue certificate. Missing: ${missingDetails.join(
+            ", "
+          )}. Assign the student to a batch and complete the application details first.`
+        );
+        detailsError.statusCode = 400;
+        throw detailsError;
+      }
+
+      if (new Date(details.endDate) < new Date(details.startDate)) {
+        const datesError = new Error(
+          "The assigned batch end date must be on or after its start date"
+        );
+        datesError.statusCode = 400;
+        throw datesError;
+      }
+
+      certificate = await issueCertificateForApplication(application, details, session);
+
+      application.registrationNo = details.registrationNo;
+      application.department = details.department;
+      application.college = details.college;
+      application.internshipStartDate = details.startDate;
+      application.internshipEndDate = details.endDate;
+      application.status = "completed";
+      application.completedAt = new Date();
+      application.certificate = certificate._id;
+      await application.save({ session });
+    });
+
+    const responseData = stripScreenshotFromApplication(application);
+    responseData.certificate = certificate;
+
+    let emailSent = false;
+    let emailWarning = null;
+
+    if (certificate && application?.email && !application.certificateEmailedAt) {
+      try {
+        await sendCertificateEmail({ application, certificate });
+        application.certificateEmailedAt = new Date();
+        await application.save();
+        emailSent = true;
+        responseData.certificateEmailedAt = application.certificateEmailedAt;
+      } catch (emailError) {
+        console.error("Certificate email failed:", emailError.message);
+        emailWarning = emailError.message || "Failed to send certificate email";
+      }
+    }
+
+    res.json({
+      success: true,
+      message: emailSent
+        ? "Application completed and certificate emailed successfully"
+        : emailWarning
+          ? "Application completed, but the certificate email could not be sent"
+          : "Application completed and certificate issued",
+      emailSent,
+      emailWarning,
+      data: responseData,
+    });
+  } catch (error) {
+    if (error.statusCode) {
+      return res.status(error.statusCode).json({
+        success: false,
+        message: error.message,
+      });
+    }
+
+    if (error.code === 11000) {
+      return res.status(409).json({
+        success: false,
+        message: "A certificate already exists for this application",
+      });
+    }
+
+    next(error);
+  } finally {
+    await session.endSession();
   }
 };
 
@@ -193,6 +360,21 @@ export const updatePaymentStatus = async (req, res, next) => {
       });
     }
 
+    const existing = await InternshipApplication.findById(req.params.id);
+    if (!existing) {
+      return res.status(404).json({
+        success: false,
+        message: "Application not found",
+      });
+    }
+
+    if (existing.status === "completed") {
+      return res.status(400).json({
+        success: false,
+        message: "Cannot change payment status for a completed application",
+      });
+    }
+
     const applicationStatus = paymentStatus === "verified" ? "accepted" : "rejected";
 
     const application = await InternshipApplication.findByIdAndUpdate(
@@ -206,13 +388,6 @@ export const updatePaymentStatus = async (req, res, next) => {
       },
       { returnDocument: "after", runValidators: false }
     );
-
-    if (!application) {
-      return res.status(404).json({
-        success: false,
-        message: "Application not found",
-      });
-    }
 
     res.json({
       success: true,
@@ -229,14 +404,23 @@ export const updatePaymentStatus = async (req, res, next) => {
 
 export const deleteApplication = async (req, res, next) => {
   try {
-    const application = await InternshipApplication.findByIdAndDelete(req.params.id);
+    const existing = await InternshipApplication.findById(req.params.id);
 
-    if (!application) {
+    if (!existing) {
       return res.status(404).json({
         success: false,
         message: "Application not found",
       });
     }
+
+    if (existing.status === "completed" || existing.certificate) {
+      return res.status(400).json({
+        success: false,
+        message: "Cannot delete an application that has an issued certificate",
+      });
+    }
+
+    await InternshipApplication.findByIdAndDelete(req.params.id);
 
     res.json({
       success: true,

@@ -34,6 +34,27 @@ const internshipApplicationSchema = new mongoose.Schema(
       trim: true,
       maxlength: [200, "College name must not exceed 200 characters"],
     },
+    registrationNo: {
+      type: String,
+      trim: true,
+      maxlength: [100, "Registration number must not exceed 100 characters"],
+    },
+    department: {
+      type: String,
+      trim: true,
+      maxlength: [200, "Department must not exceed 200 characters"],
+    },
+    internshipStartDate: {
+      type: Date,
+    },
+    internshipEndDate: {
+      type: Date,
+    },
+    batchId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Batch",
+      default: null,
+    },
     program: {
       type: String,
       required: [true, "Program is required"],
@@ -77,8 +98,18 @@ const internshipApplicationSchema = new mongoose.Schema(
     },
     status: {
       type: String,
-      enum: ["pending", "reviewed", "accepted", "rejected"],
+      enum: ["pending", "reviewed", "accepted", "rejected", "completed"],
       default: "pending",
+    },
+    completedAt: {
+      type: Date,
+    },
+    certificateEmailedAt: {
+      type: Date,
+    },
+    certificate: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Certificate",
     },
   },
   { timestamps: true }

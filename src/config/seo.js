@@ -147,6 +147,17 @@ export function getSeoForPath(pathname) {
     });
   }
 
+  if (pathname.startsWith("/verify/")) {
+    return withDefaults({
+      title: buildPageTitle("Verify Certificate"),
+      description:
+        "Verify a DECCAN AI labs internship certificate and view official recipient and program details.",
+      keywords:
+        "verify internship certificate, DECCAN AI labs certificate verification, certificate QR check",
+      noindex: true,
+    });
+  }
+
   if (ROUTE_SEO[pathname]) {
     return withDefaults(ROUTE_SEO[pathname]);
   }

@@ -25,7 +25,13 @@ export const getStats = async (req, res, next) => {
 
     const totalPrograms = await Program.countDocuments({ isActive: true });
 
-    const statusCounts = { pending: 0, reviewed: 0, accepted: 0, rejected: 0 };
+    const statusCounts = {
+      pending: 0,
+      reviewed: 0,
+      accepted: 0,
+      rejected: 0,
+      completed: 0,
+    };
     statusBreakdown.forEach(({ status, count }) => {
       statusCounts[status] = count;
     });

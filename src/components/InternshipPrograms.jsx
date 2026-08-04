@@ -4,7 +4,7 @@ import { X } from "lucide-react";
 
 import { getPrograms, submitApplication } from "../services/api";
 
-import { validateApplicationForm } from "../utils/validation";
+import { validateRegistrationForm } from "../utils/validation";
 
 import { inputClass } from "../utils/themeClasses";
 
@@ -61,6 +61,10 @@ function InternshipPrograms() {
 
     phone: "",
 
+    college: "",
+
+    department: "",
+
     message: "",
 
   });
@@ -97,7 +101,7 @@ function InternshipPrograms() {
 
     setSelectedProgram(program);
 
-    setFormData({ fullName: "", email: "", phone: "", message: "" });
+    setFormData({ fullName: "", email: "", phone: "", college: "", department: "", message: "" });
 
     setFieldErrors({});
 
@@ -141,7 +145,7 @@ function InternshipPrograms() {
 
 
 
-    const errors = validateApplicationForm(formData);
+    const errors = validateRegistrationForm(formData);
 
     if (Object.keys(errors).length > 0) {
 
@@ -175,7 +179,7 @@ function InternshipPrograms() {
 
       setStatus({ type: "success", message: result.message });
 
-      setFormData({ fullName: "", email: "", phone: "", message: "" });
+      setFormData({ fullName: "", email: "", phone: "", college: "", department: "", message: "" });
 
     } catch (error) {
 
@@ -380,6 +384,50 @@ function InternshipPrograms() {
                   placeholder="Phone Number (10 digits)"
 
                   className={inputClass(fieldErrors.phone)}
+
+                />
+
+              </FormField>
+
+
+
+              <FormField error={fieldErrors.college}>
+
+                <input
+
+                  type="text"
+
+                  name="college"
+
+                  value={formData.college}
+
+                  onChange={handleChange}
+
+                  placeholder="College Name"
+
+                  className={inputClass(fieldErrors.college)}
+
+                />
+
+              </FormField>
+
+
+
+              <FormField error={fieldErrors.department}>
+
+                <input
+
+                  type="text"
+
+                  name="department"
+
+                  value={formData.department}
+
+                  onChange={handleChange}
+
+                  placeholder="Department (e.g. Computer Science)"
+
+                  className={inputClass(fieldErrors.department)}
 
                 />
 

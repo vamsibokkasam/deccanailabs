@@ -49,8 +49,10 @@ export function validateContact(data) {
 
 export function validateApplication(data) {
   const errors = {};
-  const { fullName, email, phone, program, message } = data;
+  const { fullName, email, phone, program, message, college, department } = data;
   const NAME_REGEX = /^[a-zA-Z\s.'-]{2,100}$/;
+  const COLLEGE_REGEX = /^[a-zA-Z0-9\s.'&,()-]{2,200}$/;
+  const DEPARTMENT_REGEX = /^[a-zA-Z0-9\s.'&,()-]{2,200}$/;
 
   if (!fullName?.trim()) {
     errors.fullName = "Full name is required";
@@ -78,6 +80,18 @@ export function validateApplication(data) {
     errors.program = "Program is required";
   }
 
+  if (!college?.trim()) {
+    errors.college = "College name is required";
+  } else if (!COLLEGE_REGEX.test(college.trim())) {
+    errors.college = "Enter a valid college name";
+  }
+
+  if (!department?.trim()) {
+    errors.department = "Department is required";
+  } else if (!DEPARTMENT_REGEX.test(department.trim())) {
+    errors.department = "Enter a valid department name";
+  }
+
   if (message?.trim() && message.trim().length > 1000) {
     errors.message = "Message must not exceed 1000 characters";
   }
@@ -87,15 +101,8 @@ export function validateApplication(data) {
 
 export function validateApplicationWithPayment(data) {
   const errors = validateApplication(data);
-  const { college, transactionId, screenshotBase64 } = data;
-  const COLLEGE_REGEX = /^[a-zA-Z0-9\s.'&,()-]{2,200}$/;
+  const { transactionId, screenshotBase64 } = data;
   const UPI_TXN_REGEX = /^\d{12}$/;
-
-  if (!college?.trim()) {
-    errors.college = "College name is required";
-  } else if (!COLLEGE_REGEX.test(college.trim())) {
-    errors.college = "Enter a valid college name";
-  }
 
   if (!transactionId?.trim()) {
     errors.transactionId = "UPI transaction ID is required";
@@ -105,6 +112,43 @@ export function validateApplicationWithPayment(data) {
 
   if (!screenshotBase64?.trim()) {
     errors.screenshotBase64 = "Payment screenshot is required";
+  }
+
+  return errors;
+}
+
+export function validateBatch(data) {
+  const errors = {};
+  const { programId, name, startDate, endDate } = data;
+
+  if (!programId || !String(programId).trim()) {
+    errors.programId = "Program is required";
+  }
+
+  if (!name?.trim()) {
+    errors.name = "Batch name is required";
+  } else if (name.trim().length > 120) {
+    errors.name = "Batch name must not exceed 120 characters";
+  }
+
+  if (!startDate) {
+    errors.startDate = "Start date is required";
+  }
+
+  if (!endDate) {
+    errors.endDate = "End date is required";
+  }
+
+  if (startDate && endDate) {
+    const parsedStart = new Date(startDate);
+    const parsedEnd = new Date(endDate);
+    if (
+      !Number.isNaN(parsedStart.getTime()) &&
+      !Number.isNaN(parsedEnd.getTime()) &&
+      parsedEnd < parsedStart
+    ) {
+      errors.endDate = "End date must be on or after the start date";
+    }
   }
 
   return errors;

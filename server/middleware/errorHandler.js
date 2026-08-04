@@ -17,9 +17,15 @@ const errorHandler = (err, req, res, next) => {
   }
 
   if (err.code === 11000) {
+    const field = Object.keys(err.keyPattern || {})[0];
+    const message =
+      field === "certNo"
+        ? "A certificate with this certificate number already exists"
+        : "This transaction ID has already been submitted";
+
     return res.status(409).json({
       success: false,
-      message: "This transaction ID has already been submitted",
+      message,
     });
   }
 

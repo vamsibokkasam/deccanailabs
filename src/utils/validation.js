@@ -88,6 +88,7 @@ export function validateApplicationForm(data) {
 }
 
 const COLLEGE_REGEX = /^[a-zA-Z0-9\s.'&,()-]{2,200}$/;
+const DEPARTMENT_REGEX = /^[a-zA-Z0-9\s.'&,()-]{2,200}$/;
 const UPI_TXN_REGEX = /^\d{12}$/;
 
 export function sanitizeUpiTransactionId(value) {
@@ -96,12 +97,18 @@ export function sanitizeUpiTransactionId(value) {
 
 export function validateRegistrationForm(data) {
   const errors = validateApplicationForm(data);
-  const { college } = data;
+  const { college, department } = data;
 
   if (!college?.trim()) {
     errors.college = "College name is required";
   } else if (!COLLEGE_REGEX.test(college.trim())) {
     errors.college = "Enter a valid college name (letters, numbers, spaces only)";
+  }
+
+  if (!department?.trim()) {
+    errors.department = "Department is required";
+  } else if (!DEPARTMENT_REGEX.test(department.trim())) {
+    errors.department = "Enter a valid department name (letters, numbers, spaces only)";
   }
 
   return errors;
@@ -115,6 +122,35 @@ export function validatePaymentVerificationForm(data) {
     errors.transactionId = "UPI transaction ID is required";
   } else if (!UPI_TXN_REGEX.test(transactionId.trim())) {
     errors.transactionId = "Enter a valid 12-digit UPI transaction ID";
+  }
+
+  return errors;
+}
+
+export function validateBatchForm(data) {
+  const errors = {};
+  const { programId, name, startDate, endDate } = data;
+
+  if (!programId) {
+    errors.programId = "Select a program";
+  }
+
+  if (!name?.trim()) {
+    errors.name = "Batch name is required";
+  } else if (name.trim().length > 120) {
+    errors.name = "Batch name must not exceed 120 characters";
+  }
+
+  if (!startDate) {
+    errors.startDate = "Start date is required";
+  }
+
+  if (!endDate) {
+    errors.endDate = "End date is required";
+  }
+
+  if (startDate && endDate && new Date(endDate) < new Date(startDate)) {
+    errors.endDate = "End date must be on or after the start date";
   }
 
   return errors;

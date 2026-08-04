@@ -16,3 +16,9 @@ services:
         value: https://deccanailabs.com
       - key: ADMIN_KEY
         sync: false
+      - key: RESEND_API_KEY
+        sync: false
+      - key: MAIL_FROM
+        value: "DECCAN AI Labs <certificates@deccanailabs.com>"
+      - key: MAIL_REPLY_TO
+        value: careers@deccanailabs.com

@@ -15,6 +15,7 @@ import PrivacyPolicyPage from "./pages/PrivacyPolicyPage";
 import TermsPage from "./pages/TermsPage";
 import HelpSupportPage from "./pages/HelpSupportPage";
 import ApplicationPage from "./pages/ApplicationPage";
+import CertificateVerifyPage from "./pages/CertificateVerifyPage";
 function App() {
   return (
     <>
@@ -64,10 +65,14 @@ function App() {
           path="help-support"
           element={<HelpSupportPage />}
         />
-<Route
-  path="internship/apply/:courseName"
-  element={<ApplicationPage />}
-/>
+        <Route
+          path="internship/apply/:courseName"
+          element={<ApplicationPage />}
+        />
+        <Route
+          path="verify/*"
+          element={<CertificateVerifyPage />}
+        />
       </Route>
 
       <Route path="admin" element={<AdminPage />} />

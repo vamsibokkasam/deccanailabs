@@ -8,6 +8,7 @@ import {
   Check,
   CheckCircle2,
   Clock,
+  GraduationCap,
   IndianRupee,
   Loader2,
   Mail,
@@ -234,6 +235,7 @@ function ApplicationPage() {
     email: "",
     phone: "",
     college: "",
+    department: "",
     transactionId: "",
     screenshot: null,
   });
@@ -333,6 +335,7 @@ function ApplicationPage() {
         email: formData.email,
         phone: formData.phone,
         college: formData.college,
+        department: formData.department,
         program: resolvedCourseTitle,
         transactionId: formData.transactionId,
         feeAmount,
@@ -492,6 +495,20 @@ function ApplicationPage() {
                   />
                 </div>
               </FormField>
+
+              <FormField label="Department" error={fieldErrors.department}>
+                <div className="relative">
+                  <GraduationCap className="absolute left-4 top-1/2 -translate-y-1/2 text-subtle" size={18} />
+                  <input
+                    type="text"
+                    name="department"
+                    placeholder="e.g. Computer Science & Engineering"
+                    value={formData.department}
+                    onChange={handleChange}
+                    className={`${inputClass(!!fieldErrors.department)} pl-11`}
+                  />
+                </div>
+              </FormField>
             </div>
 
             <ActionButtons
@@ -528,6 +545,7 @@ function ApplicationPage() {
               <SummaryRow label="Email" value={formData.email} />
               <SummaryRow label="Phone" value={formData.phone} />
               <SummaryRow label="College" value={formData.college} />
+              <SummaryRow label="Department" value={formData.department} />
             </div>
 
             <div className="bg-surface border border-border rounded-2xl p-6 md:p-8 text-center mb-6 max-w-md mx-auto">
@@ -680,6 +698,7 @@ function ApplicationPage() {
               <SummaryRow label="Email" value={formData.email} />
               <SummaryRow label="Phone" value={formData.phone} />
               <SummaryRow label="College" value={formData.college} />
+              <SummaryRow label="Department" value={formData.department} />
             </div>
 
             <div className="border border-accent/30 bg-accent/5 rounded-2xl p-6 max-w-md mx-auto mb-6">

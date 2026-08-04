@@ -8,6 +8,7 @@ import contactRoutes from "./routes/contactRoutes.js";
 import applicationRoutes from "./routes/applicationRoutes.js";
 import programRoutes from "./routes/programRoutes.js";
 import adminRoutes from "./routes/adminRoutes.js";
+import certificateRoutes from "./routes/certificateRoutes.js";
 import sitemapRoutes from "./routes/sitemapRoutes.js";
 import errorHandler from "./middleware/errorHandler.js";
 import ensureDb from "./middleware/ensureDb.js";
@@ -43,6 +44,7 @@ app.use("/api/contacts", ensureDb, contactRoutes);
 app.use("/api/applications", ensureDb, applicationRoutes);
 app.use("/api/programs", ensureDb, programRoutes);
 app.use("/api/admin", ensureDb, adminRoutes);
+app.use("/api/certificates", ensureDb, certificateRoutes);
 
 app.use(errorHandler);
 
