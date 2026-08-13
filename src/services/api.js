@@ -95,11 +95,22 @@ export function submitContact(formData) {
   });
 }
 
-export function submitApplication(formData) {
-  return request("/applications", {
+export async function submitApplication(formData) {
+  const response = await fetchWithTimeout(`${API_URL}/applications`, {
     method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
     body: JSON.stringify(formData),
   });
+
+  const data = await parseJsonResponse(response);
+
+  if (!response.ok) {
+    throw new ApiError(data.message || "Something went wrong", data.errors || {});
+  }
+
+  return data;
 }
 
 export async function submitApplicationWithPayment(payload) {

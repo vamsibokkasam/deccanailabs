@@ -140,7 +140,7 @@ export function getSeoForPath(pathname) {
       title: buildPageTitle(`${courseName} Internship Application`),
       description:
         COURSE_DESCRIPTIONS[courseName] ||
-        `Apply for the ${courseName} internship at DECCAN AI labs. Complete registration, payment, and verification online.`,
+        `Apply for the ${courseName} internship at DECCAN AI labs. Complete registration online.`,
       keywords:
         COURSE_KEYWORDS[courseName] ||
         `${courseName} internship, DECCAN AI labs internship application, online internship apply`,

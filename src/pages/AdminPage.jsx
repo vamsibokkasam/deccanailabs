@@ -942,7 +942,7 @@ function ApplicationsTable({
                       {app.feeAmount ? `₹${app.feeAmount}` : "—"}
                     </td>
                     <td className="px-4 py-3">
-                      {app.payment?.status ? (
+                      {app.payment?.transactionId && app.payment?.status ? (
                         <StatusBadge
                           label={app.payment.status}
                           className={paymentStatusColors[app.payment.status]}
@@ -1079,7 +1079,8 @@ function ApplicationsTable({
                                   disabled={
                                     completeActionId === app._id ||
                                     app.status === "completed" ||
-                                    app.payment?.status !== "verified" ||
+                                    (Boolean(app.payment?.transactionId) &&
+                                      app.payment?.status !== "verified") ||
                                     app.status !== "accepted"
                                   }
                                   className={`px-3 py-1.5 rounded-lg text-xs font-medium border capitalize transition inline-flex items-center gap-1.5 disabled:opacity-40 ${
@@ -1088,6 +1089,7 @@ function ApplicationsTable({
                                       : "bg-surface border-border text-muted hover:bg-card hover:text-fg"
                                   }`}
                                   title={
+                                    app.payment?.transactionId &&
                                     app.payment?.status !== "verified"
                                       ? "Verify payment first"
                                       : app.status !== "accepted" && app.status !== "completed"

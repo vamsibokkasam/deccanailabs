@@ -68,14 +68,13 @@ const internshipApplicationSchema = new mongoose.Schema(
     },
     feeAmount: {
       type: Number,
-      default: 599,
+      default: 0,
       min: [0, "Fee amount cannot be negative"],
     },
     payment: {
       method: {
         type: String,
         enum: ["upi"],
-        default: "upi",
       },
       transactionId: {
         type: String,
@@ -90,7 +89,6 @@ const internshipApplicationSchema = new mongoose.Schema(
       status: {
         type: String,
         enum: ["pending", "verified", "rejected"],
-        default: "pending",
       },
       verifiedAt: {
         type: Date,

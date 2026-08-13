@@ -18,17 +18,34 @@ const stripScreenshotFromApplication = (application) => {
 };
 
 export const createApplication = async (req, res, next) => {
+  const session = await mongoose.startSession();
+
   try {
     const { fullName, email, phone, program, message, college, department } = req.body;
 
-    const application = await InternshipApplication.create({
-      fullName: fullName.trim(),
-      email: email.trim().toLowerCase(),
-      phone: phone.trim().replace(/\s/g, ""),
-      college: college?.trim() || "",
-      department: department?.trim() || "",
-      program: program.trim(),
-      message: message?.trim() || "",
+    let application;
+
+    await session.withTransaction(async () => {
+      const applicationId = await generateApplicationId(session);
+
+      const [created] = await InternshipApplication.create(
+        [
+          {
+            applicationId,
+            fullName: fullName.trim(),
+            email: email.trim().toLowerCase(),
+            phone: phone.trim().replace(/\s/g, ""),
+            college: college?.trim() || "",
+            department: department?.trim() || "",
+            program: program.trim(),
+            message: message?.trim() || "",
+            feeAmount: 0,
+          },
+        ],
+        { session }
+      );
+
+      application = created;
     });
 
     res.status(201).json({
@@ -37,7 +54,15 @@ export const createApplication = async (req, res, next) => {
       data: application,
     });
   } catch (error) {
+    if (error.message?.includes("application ID")) {
+      return res.status(400).json({
+        success: false,
+        message: error.message,
+      });
+    }
     next(error);
+  } finally {
+    await session.endSession();
   }
 };
 
@@ -221,7 +246,10 @@ export const completeApplication = async (req, res, next) => {
         if (certificate) return;
       }
 
-      if (application.payment?.status !== "verified") {
+      if (
+        application.payment?.transactionId &&
+        application.payment?.status !== "verified"
+      ) {
         const paymentError = new Error(
           "Payment must be verified before issuing a certificate"
         );
