@@ -141,6 +141,13 @@ export function verifyAdmin(adminKey) {
   });
 }
 
+export function adminLogin(identifier, password) {
+  return request("/admin/login", {
+    method: "POST",
+    body: JSON.stringify({ identifier, password }),
+  });
+}
+
 export function getContacts(adminKey) {
   return request("/contacts", {
     headers: adminHeaders(adminKey),

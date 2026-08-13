@@ -34,7 +34,7 @@ export const DOMAIN_LINE_POS = {
   domainColor: "#1a3a6b",
   domainFontSize: 24,
   prefix:
-    "Has successfully completed the internship at DECCAN AI Labs in ",
+    "Has successfully completed the internship at DECCAN AI LABS in ",
 };
 
 export const DATE_LINE_POS = { y: 592, fontSize: 23, color: "#222222" };

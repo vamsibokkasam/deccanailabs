@@ -17,12 +17,10 @@ import {
   Image,
   Layers,
   Loader2,
-  Lock,
   Mail,
   Pencil,
   Plus,
   Search,
-  Shield,
   Trash2,
   TrendingUp,
   UserCheck,
@@ -31,8 +29,8 @@ import {
 } from "lucide-react";
 import FormField from "../components/FormField";
 import BatchesSection from "../components/admin/BatchesSection";
+import AdminLogin from "../components/admin/AdminLogin";
 import AdminShell from "../layouts/AdminShell";
-import { BrandLockup } from "../components/Logo";
 import { inputClass } from "../utils/themeClasses";
 import {
   completeApplication,
@@ -49,10 +47,12 @@ import {
   updatePaymentStatus,
   updateProgram,
   verifyAdmin,
+  adminLogin,
 } from "../services/api";
 import { validateProgramForm } from "../utils/validation";
 
 const ADMIN_KEY_STORAGE = "deccanailabs_admin_key";
+const emptyLoginForm = { identifier: "", password: "" };
 
 const statusColors = {
   pending: "bg-yellow-500/20 text-yellow-400 border-yellow-500/30",
@@ -865,9 +865,6 @@ function ApplicationsTable({
                 Batch
               </th>
               <th className="text-left px-4 py-3 text-subtle text-xs font-medium uppercase tracking-wider">
-                Fee
-              </th>
-              <th className="text-left px-4 py-3 text-subtle text-xs font-medium uppercase tracking-wider">
                 Payment
               </th>
               <th className="text-left px-4 py-3 text-subtle text-xs font-medium uppercase tracking-wider">
@@ -937,9 +934,6 @@ function ApplicationsTable({
                       <span className="line-clamp-2">
                         {app.batchId?.name || "—"}
                       </span>
-                    </td>
-                    <td className="px-4 py-3 text-fg whitespace-nowrap">
-                      {app.feeAmount ? `₹${app.feeAmount}` : "—"}
                     </td>
                     <td className="px-4 py-3">
                       {app.payment?.transactionId && app.payment?.status ? (
@@ -1029,7 +1023,7 @@ function ApplicationsTable({
                   </tr>
                   {isExpanded && (
                     <tr className="border-b border-border bg-surface/20">
-                      <td colSpan={13} className="px-4 py-5">
+                      <td colSpan={12} className="px-4 py-5">
                         <div className="grid lg:grid-cols-[1fr_auto] gap-6">
                           <div className="space-y-5">
                             {app.payment?.transactionId && (
@@ -1079,9 +1073,9 @@ function ApplicationsTable({
                                   disabled={
                                     completeActionId === app._id ||
                                     app.status === "completed" ||
+                                    app.status !== "accepted" ||
                                     (Boolean(app.payment?.transactionId) &&
-                                      app.payment?.status !== "verified") ||
-                                    app.status !== "accepted"
+                                      app.payment?.status !== "verified")
                                   }
                                   className={`px-3 py-1.5 rounded-lg text-xs font-medium border capitalize transition inline-flex items-center gap-1.5 disabled:opacity-40 ${
                                     app.status === "completed"
@@ -1608,7 +1602,7 @@ function AdminPage() {
   const [adminKey, setAdminKey] = useState(
     () => sessionStorage.getItem(ADMIN_KEY_STORAGE) || ""
   );
-  const [inputKey, setInputKey] = useState("");
+  const [loginForm, setLoginForm] = useState(emptyLoginForm);
   const [authenticated, setAuthenticated] = useState(false);
   const [activeTab, setActiveTab] = useState("dashboard");
   const [contacts, setContacts] = useState([]);
@@ -1618,6 +1612,10 @@ function AdminPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [loginError, setLoginError] = useState("");
+  const [loginLoading, setLoginLoading] = useState(false);
+  const [checkingSession, setCheckingSession] = useState(
+    () => Boolean(sessionStorage.getItem(ADMIN_KEY_STORAGE)),
+  );
   const [programForm, setProgramForm] = useState(emptyProgramForm);
   const [editingProgram, setEditingProgram] = useState(null);
   const [fieldErrors, setFieldErrors] = useState({});
@@ -1657,8 +1655,12 @@ function AdminPage() {
   };
 
   useEffect(() => {
-    if (!adminKey) return;
+    if (!adminKey) {
+      setCheckingSession(false);
+      return;
+    }
 
+    setCheckingSession(true);
     verifyAdmin(adminKey)
       .then(() => {
         setAuthenticated(true);
@@ -1667,28 +1669,43 @@ function AdminPage() {
       .catch(() => {
         sessionStorage.removeItem(ADMIN_KEY_STORAGE);
         setAdminKey("");
+      })
+      .finally(() => {
+        setCheckingSession(false);
       });
   }, []);
 
   const handleLogin = async (e) => {
     e.preventDefault();
     setLoginError("");
+    setLoginLoading(true);
 
     try {
-      await verifyAdmin(inputKey);
-      sessionStorage.setItem(ADMIN_KEY_STORAGE, inputKey);
-      setAdminKey(inputKey);
+      const result = await adminLogin(
+        loginForm.identifier.trim(),
+        loginForm.password,
+      );
+      const token = result.data?.token;
+      if (!token) {
+        throw new Error("Login failed. No session token received.");
+      }
+
+      sessionStorage.setItem(ADMIN_KEY_STORAGE, token);
+      setAdminKey(token);
       setAuthenticated(true);
-      loadData(inputKey);
+      setLoginForm(emptyLoginForm);
+      loadData(token);
     } catch (err) {
       setLoginError(err.message);
+    } finally {
+      setLoginLoading(false);
     }
   };
 
   const handleLogout = () => {
     sessionStorage.removeItem(ADMIN_KEY_STORAGE);
     setAdminKey("");
-    setInputKey("");
+    setLoginForm(emptyLoginForm);
     setAuthenticated(false);
     setContacts([]);
     setApplications([]);
@@ -1938,60 +1955,14 @@ function AdminPage() {
 
   if (!authenticated) {
     return (
-      <section className="min-h-screen bg-bg flex items-center justify-center px-6 py-20 relative overflow-hidden">
-        <div className="absolute inset-0 pointer-events-none">
-          <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[500px] h-[500px] bg-accent/8 rounded-full blur-3xl" />
-          <div className="absolute bottom-0 right-0 w-[300px] h-[300px] bg-accent-warm/5 rounded-full blur-3xl" />
-        </div>
-
-        <div className="w-full max-w-md relative">
-          <div className="text-center mb-8">
-            <BrandLockup
-              className="inline-flex items-center gap-3 justify-center"
-              logoClassName="h-14 w-auto object-contain"
-              textClassName="text-2xl"
-            />
-            <p className="text-subtle text-sm mt-3">Secure admin access</p>
-          </div>
-
-          <div className="theme-card p-8 rounded-3xl border border-border/80">
-            <div className="flex items-center gap-3 mb-2">
-              <div className="w-12 h-12 rounded-2xl bg-accent/10 border border-accent/20 flex items-center justify-center">
-                <Lock className="text-accent" size={22} />
-              </div>
-              <div>
-                <h1 className="text-xl font-medium text-fg">Admin Login</h1>
-                <p className="text-subtle text-sm">Enter your admin key</p>
-              </div>
-            </div>
-
-            <form onSubmit={handleLogin} className="space-y-4 mt-6">
-              <input
-                type="password"
-                value={inputKey}
-                onChange={(e) => setInputKey(e.target.value)}
-                placeholder="Admin Key"
-                required
-                className="w-full bg-input border border-border rounded-xl p-4 text-fg placeholder-subtle focus:border-accent/50 focus:outline-none transition"
-              />
-
-              {loginError && (
-                <p className="text-red-400 text-sm bg-red-500/10 border border-red-500/20 rounded-xl py-2 px-3">
-                  {loginError}
-                </p>
-              )}
-
-              <button
-                type="submit"
-                className="w-full theme-btn-primary py-4 font-medium flex items-center justify-center gap-2"
-              >
-                <Shield size={18} />
-                Access Dashboard
-              </button>
-            </form>
-          </div>
-        </div>
-      </section>
+      <AdminLogin
+        loginForm={loginForm}
+        setLoginForm={setLoginForm}
+        loginError={loginError}
+        onSubmit={handleLogin}
+        loading={loginLoading}
+        checkingSession={checkingSession}
+      />
     );
   }
 

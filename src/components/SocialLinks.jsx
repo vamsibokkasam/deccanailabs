@@ -54,7 +54,7 @@ const socialLinks = [
   },
   {
     name: "WhatsApp",
-    href: "https://wa.me/qr/M6W3557XA7BOF1",
+    href: "https://wa.me/919845428526",
     Icon: WhatsAppIcon,
     hoverBg: "hover:bg-[#25D366]/15 hover:border-[#25D366]/50",
     iconClass: "text-[#25D366]",

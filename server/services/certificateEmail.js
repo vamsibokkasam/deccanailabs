@@ -53,7 +53,8 @@ function buildCertificateEmailHtml({
           <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width:620px;background:#ffffff;border-radius:16px;overflow:hidden;border:1px solid #e5e7eb;">
             <tr>
               <td style="padding:28px 32px;background:linear-gradient(135deg,#0f172a,#1e3a8a);color:#ffffff;">
-                <p style="margin:0 0 8px;font-size:13px;letter-spacing:0.08em;text-transform:uppercase;opacity:0.85;">DECCAN AI Labs</p>
+                <p style="margin:0 0 4px;font-size:13px;letter-spacing:0.08em;text-transform:uppercase;opacity:0.85;">DECCAN AI LABS</p>
+                <p style="margin:0 0 10px;font-size:11px;letter-spacing:0.14em;text-transform:uppercase;opacity:0.7;">Private Limited</p>
                 <h1 style="margin:0;font-size:24px;line-height:1.4;font-weight:600;">Internship Certificate Issued</h1>
               </td>
             </tr>
@@ -61,7 +62,7 @@ function buildCertificateEmailHtml({
               <td style="padding:32px;">
                 <p style="margin:0 0 16px;font-size:16px;line-height:1.6;">Dear ${recipientName},</p>
                 <p style="margin:0 0 16px;font-size:15px;line-height:1.7;">
-                  Congratulations on successfully completing your internship with <strong>DECCAN AI Labs</strong>.
+                  Congratulations on successfully completing your internship with <strong>DECCAN AI LABS</strong>.
                   Your official internship certificate is attached to this email as a PDF.
                 </p>
                 <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="margin:24px 0;background:#f8fafc;border:1px solid #e5e7eb;border-radius:12px;">
@@ -88,7 +89,7 @@ function buildCertificateEmailHtml({
                 </p>
                 <p style="margin:24px 0 0;font-size:14px;line-height:1.7;">
                   Best regards,<br />
-                  <strong>DECCAN AI Labs Team</strong><br />
+                  <strong>DECCAN AI LABS Team</strong><br />
                   <a href="mailto:careers@deccanailabs.com" style="color:#2563eb;">careers@deccanailabs.com</a>
                 </p>
               </td>
@@ -133,7 +134,7 @@ export async function sendCertificateEmail({ application, certificate }) {
     from,
     to: application.email.trim(),
     replyTo,
-    subject: `Your DECCAN AI Labs Internship Certificate – ${application.program || certificate.internshipDomain}`,
+    subject: `Your DECCAN AI LABS Internship Certificate – ${application.program || certificate.internshipDomain}`,
     html,
     attachments: [
       {

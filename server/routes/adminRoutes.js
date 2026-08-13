@@ -1,5 +1,5 @@
 import express from "express";
-import { verifyAdmin, getStats } from "../controllers/adminController.js";
+import { loginAdmin, verifyAdmin, getStats } from "../controllers/adminController.js";
 import {
   getAllPrograms,
   createProgram,
@@ -20,6 +20,7 @@ import { validateBatch, validateProgram } from "../utils/validation.js";
 
 const router = express.Router();
 
+router.post("/login", loginAdmin);
 router.get("/verify", adminAuth, verifyAdmin);
 router.get("/stats", adminAuth, getStats);
 

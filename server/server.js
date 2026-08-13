@@ -34,7 +34,7 @@ app.get("/api/health", (req, res) => {
 
   res.json({
     status: "ok",
-    message: "DECCAN AI labs API is running",
+    message: "DECCAN AI LABS API is running",
     database: db.status,
     ...(db.error && { databaseError: db.error }),
   });

@@ -158,7 +158,7 @@ function AdminShell({
           }`}
         >
           {collapsed ? (
-            <SidebarTooltip label="DECCAN AI labs Admin" show={collapsed}>
+            <SidebarTooltip label="DECCAN AI LABS Admin" show={collapsed}>
               <Link
                 to="/"
                 className="hidden lg:inline-flex items-center justify-center"
@@ -173,7 +173,7 @@ function AdminShell({
 
           <div className={collapsed ? "lg:hidden" : ""}>
             <Link to="/" className="inline-flex">
-              <BrandLockup logoClassName="h-10 w-auto object-contain" textClassName="text-lg" />
+              <BrandLockup logoClassName="h-10 w-auto object-contain" textClassName="text-lg" showLegal={false} />
             </Link>
             <div className="flex items-center gap-2 mt-3">
               <span className="flex items-center gap-1.5 text-xs font-medium text-accent bg-accent/10 border border-accent/20 px-2.5 py-1 rounded-full">
@@ -267,7 +267,7 @@ function AdminShell({
             </button>
 
             <div className="min-w-0">
-              <BrandName className="text-sm hidden sm:block" />
+              <BrandName className="text-sm hidden sm:block" showLegal={false} />
               <h1 className="text-lg md:text-xl font-medium text-fg truncate mt-0.5">
                 {pageTitles[activeTab]}
               </h1>

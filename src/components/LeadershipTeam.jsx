@@ -1,6 +1,37 @@
 import { Link } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
 
+export const TEAM_MEMBERS = [
+  {
+    name: "B VAMSI",
+    title: "CEO & Founder",
+    imageSrc: "/1000354279.jpg",
+    imagePosition: "center 18%",
+    bio: "Leading DECCAN AI LABS with a vision to bridge education and industry through AI-driven innovation and hands-on learning.",
+  },
+  {
+    name: "K GANESH",
+    title: "Co-Founder & Marketing",
+    imageSrc: "/Ganesh_Profile.jpeg",
+    imagePosition: "38% 24%",
+    bio: "Drives brand growth, outreach, and strategic marketing to connect students with transformative opportunities.",
+  },
+  {
+    name: "U KEERTHI PRIYA",
+    title: "MD & HR",
+    imageSrc: "/Keerthi_photo.png",
+    imagePosition: "center 20%",
+    bio: "Oversees operations and human resources, building a strong culture across programs and internal teams.",
+  },
+  {
+    name: "M BALAJI",
+    title: "CTO & BDM",
+    imageSrc: "/Balaji_Professional_Photo.png",
+    imagePosition: "center 20%",
+    bio: "Leads technology strategy and business development to create scalable growth and industry partnerships.",
+  },
+];
+
 function getInitials(name) {
   return name
     .split(/\s+/)
@@ -46,37 +77,6 @@ function TeamMemberCard({ name, title, bio, imageSrc, imagePosition = "center to
   );
 }
 
-const teamMembers = [
-  {
-    name: "B VAMSI",
-    title: "CEO & Founder",
-    imageSrc: "/1000354279.jpg",
-    imagePosition: "center 18%",
-    bio: "Leading DECCAN AI labs with a vision to bridge education and industry through AI-driven innovation and hands-on learning.",
-  },
-  {
-    name: "K GANESH",
-    title: "Co-Founder & Marketing",
-    imageSrc: "/Ganesh_Professional_Photo.jpg",
-    imagePosition: "center 22%",
-    bio: "Drives brand growth, outreach, and strategic marketing to connect students with transformative opportunities.",
-  },
-  {
-    name: "U KEERTHI PRIYA",
-    title: "MD & HR",
-    imageSrc: "/Keerthi_photo.png",
-    imagePosition: "center 20%",
-    bio: "Oversees operations and human resources, building a strong culture across programs and internal teams.",
-  },
-  {
-    name: "M BALAJI",
-    title: "CTO & BDM",
-    imageSrc: "/Balaji_Professional_Photo.png",
-    imagePosition: "center 20%",
-    bio: "Leads technology strategy and business development to create scalable growth and industry partnerships.",
-  },
-];
-
 function LeadershipTeam() {
   return (
     <section className="relative theme-section min-h-[85vh] overflow-hidden">
@@ -106,7 +106,7 @@ function LeadershipTeam() {
         </div>
 
         <div className="grid sm:grid-cols-2 xl:grid-cols-4 gap-6 md:gap-8">
-          {teamMembers.map((member) => (
+          {TEAM_MEMBERS.map((member) => (
             <TeamMemberCard key={member.name} {...member} />
           ))}
         </div>

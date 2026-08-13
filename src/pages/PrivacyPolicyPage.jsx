@@ -4,7 +4,7 @@ function PrivacyPolicyPage() {
   return (
     <LegalPageLayout label="LEGAL" title="Privacy Policy">
       <p>
-        At DECCAN AI labs, we value the privacy of our students, interns,
+        At DECCAN AI LABS, we value the privacy of our students, interns,
         website visitors, and users. This Privacy Policy explains how we
         collect, use, and protect your information when you visit our website
         or participate in our programs.
@@ -41,7 +41,7 @@ function PrivacyPolicyPage() {
 
       <LegalSection title="3. Data Protection">
         <p>
-          DECCAN AI labs takes reasonable measures to protect user information
+          DECCAN AI LABS takes reasonable measures to protect user information
           from unauthorized access, misuse, or disclosure.
         </p>
       </LegalSection>
@@ -71,7 +71,7 @@ function PrivacyPolicyPage() {
       <LegalSection title="7. Internship Applications">
         <p>
           Submission of an internship application does not guarantee selection.
-          DECCAN AI labs reserves the right to accept or reject applications
+          DECCAN AI LABS reserves the right to accept or reject applications
           based on program requirements.
         </p>
       </LegalSection>

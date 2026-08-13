@@ -17,7 +17,10 @@ import {
 import FormField from "../components/FormField";
 import { submitApplication } from "../services/api";
 import { inputClass } from "../utils/themeClasses";
-import { sanitizeNameInput, validateRegistrationForm } from "../utils/validation";
+import {
+  sanitizeNameInput,
+  validateRegistrationForm,
+} from "../utils/validation";
 import {
   courseTitleToSlug,
   KNOWN_COURSE_TITLES,
@@ -28,6 +31,11 @@ const SUBMIT_STATUS = {
   UPLOADING: "Submitting your application...",
   WAKING: "Connecting to server (this can take up to a minute on first request)...",
 };
+
+const STEPS = [
+  { id: 1, label: "Registration" },
+  { id: 2, label: "Complete" },
+];
 
 const BENEFITS = [
   "Real-Time Projects",
@@ -74,6 +82,52 @@ const courseDetails = {
       "Understand cybersecurity fundamentals, threat detection, and security practices through practical learning.",
   },
 };
+
+function StepIndicator({ step }) {
+  return (
+    <div className="mb-10 px-2">
+      <div className="flex items-start justify-center max-w-md mx-auto">
+        {STEPS.map((item, index) => {
+          const isComplete = step > item.id;
+          const isActive = step === item.id;
+
+          return (
+            <div key={item.id} className="flex items-start flex-1 last:flex-none">
+              <div className="flex flex-col items-center min-w-[72px]">
+                <div
+                  className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-semibold border-2 transition-all duration-300 ${
+                    isComplete
+                      ? "bg-accent border-accent text-white shadow-lg shadow-accent/30"
+                      : isActive
+                        ? "bg-accent/15 border-accent text-accent"
+                        : "bg-surface border-border text-subtle"
+                  }`}
+                >
+                  {isComplete ? <Check size={18} strokeWidth={2.5} /> : item.id}
+                </div>
+                <span
+                  className={`mt-2 text-xs font-medium text-center leading-tight ${
+                    isActive || isComplete ? "text-accent" : "text-subtle"
+                  }`}
+                >
+                  {item.label}
+                </span>
+              </div>
+
+              {index < STEPS.length - 1 && (
+                <div
+                  className={`h-0.5 flex-1 mt-5 mx-1 rounded-full transition-colors duration-300 ${
+                    step > item.id ? "bg-accent" : "bg-border"
+                  }`}
+                />
+              )}
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
 
 function StepHeader({ title, subtitle }) {
   return (
@@ -246,17 +300,19 @@ function ApplicationPage() {
         <div className="text-center mb-8">
           <p className="theme-label mb-3">Apply Now</p>
           <h1 className="theme-heading">Internship Application</h1>
-          {step === 1 && (
+          {step > 0 && step < 2 && (
             <p className="text-muted mt-3">{selectedCourse.title}</p>
           )}
         </div>
+
+        {step > 0 && step < 2 && <StepIndicator step={step} />}
 
         {step === 0 && (
           <div className="theme-card rounded-3xl p-8 md:p-12 text-center relative overflow-hidden">
             <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-accent via-accent-warm to-accent" />
 
             <span className="inline-flex items-center px-4 py-1.5 rounded-full bg-accent/10 border border-accent/20 text-accent text-sm font-medium mb-6">
-              DECCAN AI labs Internship Program
+              DECCAN AI LABS Internship Program
             </span>
 
             <h2 className="text-3xl md:text-4xl font-medium text-fg mb-4 leading-tight">
@@ -291,7 +347,7 @@ function ApplicationPage() {
               onClick={() => setStep(1)}
               className="theme-btn-primary px-10 py-4 text-base font-medium inline-flex items-center gap-2"
             >
-              Apply Now
+              Register Now
               <ArrowRight size={20} />
             </button>
           </div>
@@ -301,7 +357,7 @@ function ApplicationPage() {
           <div className="theme-card rounded-3xl p-8 md:p-10">
             <StepHeader
               title="Student Registration"
-              subtitle="Please provide your details to complete the internship application."
+              subtitle="Please provide your details to complete your internship application."
             />
 
             <div className="max-w-lg mx-auto space-y-5">
@@ -388,6 +444,12 @@ function ApplicationPage() {
               )}
             </div>
 
+            {submitError && (
+              <p className="text-red-400 text-sm text-center bg-red-500/10 border border-red-500/20 rounded-xl py-3 px-4 max-w-lg mx-auto mt-6">
+                {submitError}
+              </p>
+            )}
+
             <ActionButtons
               onBack={() => {
                 setFieldErrors({});
@@ -425,8 +487,8 @@ function ApplicationPage() {
             </h2>
 
             <p className="text-muted max-w-lg mx-auto mb-8 leading-relaxed">
-              Thank you for applying for the {selectedCourse.title}. Your
-              registration has been submitted successfully.
+              Thank you for applying for the {selectedCourse.title}. Your details
+              have been submitted successfully.
             </p>
 
             <div className="bg-surface border border-border rounded-2xl p-6 max-w-md mx-auto mb-6 text-left">
@@ -442,10 +504,6 @@ function ApplicationPage() {
               <p className="text-subtle text-sm mb-2">Application ID</p>
               <p className="text-2xl md:text-3xl font-semibold text-accent tracking-wide">
                 {submittedApplicationId}
-              </p>
-              <p className="mt-4 inline-flex items-center gap-2 text-accent text-sm font-medium">
-                <Clock size={16} />
-                Application Received
               </p>
             </div>
 
@@ -467,7 +525,8 @@ function ApplicationPage() {
             </div>
 
             <p className="text-subtle text-sm">
-              We will contact you through email or phone with the next steps.
+              You will receive an update through email or phone, usually within
+              24 hours.
             </p>
           </div>
         )}

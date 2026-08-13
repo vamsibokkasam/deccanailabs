@@ -1,51 +1,43 @@
 import { Link } from "react-router-dom";
-import heroImage from "../assets/hero-image.png";
+import DeccoMascot from "./decco/DeccoMascot";
 
+/**
+ * Equal 50/50 hero: left copy + right Decco video, one viewport tall.
+ */
 function Hero() {
   return (
-    <section className="min-h-screen hero-bg text-fg flex items-center">
-      <div className="max-w-7xl mx-auto px-6 py-20">
+    <section className="hero-bg text-fg">
+      <div className="hero-inner">
+        <div className="hero-copy">
+          <p className="theme-label mb-1 tracking-wider">DECCAN AI LABS</p>
+          <p className="hero-copy-kicker text-muted text-xs uppercase tracking-[0.18em] mb-3">
+            Private Limited
+          </p>
 
-        <div className="grid lg:grid-cols-2 gap-12 items-center">
+          <h1 className="hero-copy-title font-medium leading-[1.12] tracking-tight">
+            Building The Future With
+            <span className="block text-accent">Artificial Intelligence</span>
+          </h1>
 
-          <div>
-            <p className="theme-label mb-4 tracking-wider">
-              DECCAN AI labs
-            </p>
+          <p className="hero-copy-body mt-4 leading-relaxed text-muted">
+            Empowering students and professionals through AI innovation,
+            internships, research opportunities, and real-world industry
+            projects.
+          </p>
 
-            <h1 className="text-5xl md:text-7xl font-medium leading-[1.15] tracking-tight">
-              Building The Future With
-              <span className="block text-accent">
-                Artificial Intelligence
-              </span>
-            </h1>
-
-            <p className="mt-6 text-[17px] leading-relaxed text-muted max-w-xl">
-              Empowering students and professionals through
-              AI innovation, internships, research opportunities,
-              and real-world industry projects.
-            </p>
-
-            <div className="mt-8 flex flex-wrap gap-4">
-              <Link to="/internships" className="theme-btn-primary">
-                Explore Internships
-              </Link>
-              <Link to="/contact" className="theme-btn-outline">
-                Contact Us
-              </Link>
-            </div>
+          <div className="hero-copy-actions mt-6 flex flex-wrap gap-3">
+            <Link to="/internships" className="theme-btn-primary">
+              Explore Internships
+            </Link>
+            <Link to="/contact" className="theme-btn-outline">
+              Contact Us
+            </Link>
           </div>
-
-          <div>
-            <img
-              src={heroImage}
-              alt="AI Innovation"
-              className="w-full max-w-lg mx-auto drop-shadow-2xl"
-            />
-          </div>
-
         </div>
 
+        <div className="hero-decco-stage">
+          <DeccoMascot />
+        </div>
       </div>
     </section>
   );

@@ -1,93 +1,46 @@
-import { Link } from "react-router-dom";
-import { Users } from "lucide-react";
-import { BRAND_FAQ } from "../config/site";
+import { ORGANIZATION_CIN } from "../config/branding";
+import Reveal from "./Reveal";
 
 function About() {
   return (
-    <section className="theme-section">
+    <section className="about-section theme-section">
       <div className="max-w-7xl mx-auto">
-        <div className="theme-card rounded-3xl p-10 md:p-16">
+        <Reveal className="about-intro max-w-3xl mx-auto text-center">
           <p className="theme-label mb-4">ABOUT US</p>
+          <h2 className="theme-heading mb-5 md:mb-6">About Us</h2>
+          <div className="about-intro-rule mx-auto mb-7 md:mb-8" aria-hidden="true" />
 
-          <h2 className="theme-heading mb-8">About Us</h2>
-
-          <p className="text-lg text-muted leading-relaxed">
-            DECCAN AI labs (DeccanAILabs) is an India-based technology education
-            and training platform. We help students and early-career professionals build practical skills through
-            mentor-led internships, project-based learning, and industry-focused
-            courses in AI, programming, data science, and cyber security.
+          <p className="about-intro-copy">
+            DECCAN AI LABS Private Limited (DeccanAILabs) is a company
+            incorporated in India (CIN: {ORGANIZATION_CIN}). We are a
+            technology education and training platform helping students and
+            early-career professionals build practical skills through mentor-led
+            internships, project-based learning, and industry-focused courses in
+            AI, programming, data science, and cyber security.
           </p>
 
-          <p className="mt-6 text-lg text-muted leading-relaxed">
+          <p className="about-intro-copy mt-5 md:mt-6">
             Founded with the vision of bridging the gap between education and
-            industry, DECCAN AI labs serves as a catalyst for transformation by
+            industry, DECCAN AI LABS serves as a catalyst for transformation by
             empowering learners with the knowledge, skills, and opportunities
-            required to thrive in a rapidly evolving digital world.
+            required to thrive in a rapidly evolving digital world. We are{" "}
+            <span className="about-cert">MSME</span>,{" "}
+            <span className="about-cert">NCS</span>, and{" "}
+            <span className="about-cert">ISO</span> certified.
           </p>
 
-          <p className="mt-6 text-sm text-subtle leading-relaxed border-l-2 border-accent/40 pl-4">
-            DeccanAILabs at deccanailabs.com is an independent education
-            platform. It is not affiliated with any other unrelated companies
-            that may use similar names in the global artificial intelligence
-            industry.
+          <p className="about-intro-note">
+            DECCAN AI LABS Private Limited at deccanailabs.com is an independent
+            education company. It is not affiliated with any other unrelated
+            companies that may use similar names in the global artificial
+            intelligence industry.
           </p>
 
-          <p className="mt-6 text-lg text-fg font-medium leading-relaxed">
+          <p className="about-intro-belief">
             We believe that the future belongs to those who continuously learn,
             innovate, and adapt.
           </p>
-        </div>
-
-        <div className="theme-card rounded-3xl p-8 md:p-12 mt-12">
-          <p className="theme-label mb-4">FAQ</p>
-          <h3 className="text-2xl md:text-3xl font-medium text-fg mb-8">
-            Frequently Asked Questions
-          </h3>
-          <div className="space-y-6 max-w-3xl">
-            {BRAND_FAQ.map(({ question, answer }) => (
-              <div key={question} className="border-b border-border pb-6 last:border-0">
-                <h4 className="text-lg font-medium text-fg mb-2">{question}</h4>
-                <p className="text-muted leading-relaxed">{answer}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        <div className="theme-card rounded-3xl p-8 md:p-12 mt-12">
-          <p className="theme-label mb-4">LEADERSHIP</p>
-          <h3 className="text-2xl md:text-3xl font-medium text-fg mb-10">
-            Meet Our Founder
-          </h3>
-
-          <div className="flex flex-col md:flex-row items-center md:items-start gap-8 md:gap-12">
-            <div className="shrink-0">
-              <img
-                src="/1000354279.jpg"
-                alt="B. Vamsi — CEO & Founder of DECCAN AI labs"
-                className="w-56 h-56 md:w-64 md:h-64 object-cover object-top rounded-2xl border border-border shadow-xl"
-              />
-            </div>
-
-            <div className="text-center md:text-left flex-1">
-              <h4 className="text-2xl font-medium text-fg">B. Vamsi</h4>
-              <p className="text-accent font-bold mt-1">CEO & Founder</p>
-              <p className="text-muted text-sm mt-1">DECCAN AI labs</p>
-              <p className="text-muted leading-relaxed mt-6 max-w-xl">
-                Leading DECCAN AI labs with a vision to bridge education and
-                industry through AI-driven innovation, hands-on internships, and
-                programs that prepare learners for real-world success.
-              </p>
-
-              <Link
-                to="/team"
-                className="theme-btn-primary inline-flex items-center gap-2 mt-8"
-              >
-                <Users size={18} />
-                Meet our Team
-              </Link>
-            </div>
-          </div>
-        </div>
+        </Reveal>
       </div>
     </section>
   );

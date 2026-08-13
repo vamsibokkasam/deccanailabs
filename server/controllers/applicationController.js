@@ -22,12 +22,10 @@ export const createApplication = async (req, res, next) => {
 
   try {
     const { fullName, email, phone, program, message, college, department } = req.body;
-
     let application;
 
     await session.withTransaction(async () => {
       const applicationId = await generateApplicationId(session);
-
       const [created] = await InternshipApplication.create(
         [
           {
@@ -40,6 +38,7 @@ export const createApplication = async (req, res, next) => {
             program: program.trim(),
             message: message?.trim() || "",
             feeAmount: 0,
+            status: "pending",
           },
         ],
         { session }
