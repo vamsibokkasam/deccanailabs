@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import { Mail, MapPin, Phone } from "lucide-react";
+import { BRAND_LEGAL_NAME, ORGANIZATION_CIN } from "../config/branding";
 import { ORGANIZATION_LOCATION } from "../config/site";
 import { BrandText } from "./Logo";
 import { SocialIconRow } from "./SocialLinks";
@@ -28,8 +29,8 @@ const contactDetails = [
   {
     icon: Phone,
     label: "Phone",
-    value: "+91 63032 07231",
-    href: "tel:+916303207231",
+    value: "+91 9845428526",
+    href: "tel:+919845428526",
   },
   {
     icon: MapPin,
@@ -46,14 +47,14 @@ function Footer() {
 
           <div className="sm:col-span-2 lg:col-span-1">
             <Link to="/" className="inline-block">
-              <BrandText className="text-xl" />
+              <BrandText className="text-xl" showLegal={false} />
             </Link>
             <p className="text-accent text-sm font-medium mt-3 tracking-wide">
               Innovate • Learn • Transform
             </p>
             <p className="text-muted text-sm mt-4 leading-relaxed max-w-xs">
               Empowering students through AI innovation, internships, and
-              industry-focused learning experiences.
+              industry-focused learning experiences. MSME · NCS · ISO certified.
             </p>
           </div>
 
@@ -127,14 +128,9 @@ function Footer() {
 
         <div className="mt-12 pt-8 border-t border-border flex flex-col sm:flex-row justify-between items-center gap-4">
           <p className="text-muted/70 text-sm text-center sm:text-left">
-            © {new Date().getFullYear()} DECCAN AI labs. All Rights Reserved.
+            © {new Date().getFullYear()} {BRAND_LEGAL_NAME}. All Rights Reserved.
+            <span className="block sm:inline sm:ml-2">CIN: {ORGANIZATION_CIN}</span>
           </p>
-          <Link
-            to="/admin"
-            className="text-subtle hover:text-muted text-xs transition"
-          >
-            Admin
-          </Link>
         </div>
       </div>
     </footer>

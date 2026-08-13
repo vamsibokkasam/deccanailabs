@@ -3,3 +3,12 @@
 export const SITE_LOGO_PATH = "/BLACK%20LOGO.png";
 export const FAVICON_PATH = SITE_LOGO_PATH;
 export const APPLE_TOUCH_ICON_PATH = SITE_LOGO_PATH;
+
+/** Display brand name — always uppercase LABS */
+export const BRAND_NAME = "DECCAN AI LABS";
+/** Legal suffix shown under the brand name in lockups */
+export const BRAND_LEGAL_SUFFIX = "Private Limited";
+/** Full legal entity name */
+export const BRAND_LEGAL_NAME = `${BRAND_NAME} ${BRAND_LEGAL_SUFFIX}`;
+/** MCA Corporate Identity Number */
+export const ORGANIZATION_CIN = "U85500AP2026PTC127421";

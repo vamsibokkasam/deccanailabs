@@ -1,4 +1,4 @@
-import { SITE_LOGO_PATH } from "./branding.js";
+import { BRAND_LEGAL_NAME, ORGANIZATION_CIN, SITE_LOGO_PATH } from "./branding.js";
 import {
   BRAND_ALTERNATE_NAMES,
   BRAND_FAQ,
@@ -6,10 +6,10 @@ import {
   getSiteUrl,
 } from "./site.js";
 
-export const ORGANIZATION_NAME = "DeccanAILabs";
+export const ORGANIZATION_NAME = BRAND_LEGAL_NAME;
 
 export const ORGANIZATION_EMAIL = "careers@deccanailabs.com";
-export const ORGANIZATION_PHONE = "+91-63032-07231";
+export const ORGANIZATION_PHONE = "+91-98454-28526";
 
 export const ORGANIZATION_SOCIAL_PROFILES = [
   "https://www.instagram.com/deccanailabs/",
@@ -23,7 +23,14 @@ export function buildOrganizationJsonLd(siteUrl = getSiteUrl()) {
     "@context": "https://schema.org",
     "@type": ["Organization", "EducationalOrganization"],
     name: ORGANIZATION_NAME,
+    legalName: BRAND_LEGAL_NAME,
     alternateName: BRAND_ALTERNATE_NAMES,
+    identifier: {
+      "@type": "PropertyValue",
+      name: "CIN",
+      propertyID: "Corporate Identity Number",
+      value: ORGANIZATION_CIN,
+    },
     url: baseUrl,
     logo: `${baseUrl}${SITE_LOGO_PATH}`,
     description: ORGANIZATION_DESCRIPTION,
@@ -45,6 +52,10 @@ export function buildOrganizationJsonLd(siteUrl = getSiteUrl()) {
     ],
     address: {
       "@type": "PostalAddress",
+      streetAddress: "2nd Cross, Nandini Layout",
+      addressLocality: "Bengaluru",
+      addressRegion: "Karnataka",
+      postalCode: "560096",
       addressCountry: "IN",
     },
     contactPoint: [
@@ -75,6 +86,13 @@ export function buildWebSiteJsonLd(siteUrl = getSiteUrl()) {
     publisher: {
       "@type": "EducationalOrganization",
       name: ORGANIZATION_NAME,
+      legalName: BRAND_LEGAL_NAME,
+      identifier: {
+        "@type": "PropertyValue",
+        name: "CIN",
+        propertyID: "Corporate Identity Number",
+        value: ORGANIZATION_CIN,
+      },
       url: baseUrl,
     },
   };

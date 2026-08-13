@@ -24,13 +24,17 @@ function Navbar() {
   const closeMenu = () => setOpen(false);
 
   return (
-    <nav className="sticky top-0 z-50 bg-nav backdrop-blur-lg border-b border-border">
+    <nav className="sticky top-0 z-50 bg-nav border-b border-border">
       <div className="max-w-7xl mx-auto px-6">
 
         <div className="flex justify-between items-center h-20">
 
           <Link to="/" className="inline-flex items-center shrink-0">
-            <BrandLockup logoClassName="h-11 w-auto object-contain" textClassName="text-xl md:text-2xl" />
+            <BrandLockup
+              logoClassName="h-11 w-auto object-contain"
+              textClassName="text-xl md:text-2xl"
+              showLegal={false}
+            />
           </Link>
 
           <div className="hidden md:flex items-center gap-8">
