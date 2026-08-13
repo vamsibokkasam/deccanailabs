@@ -53,6 +53,12 @@ export const createApplication = async (req, res, next) => {
       data: application,
     });
   } catch (error) {
+    if (error.message?.includes("application ID")) {
+      return res.status(400).json({
+        success: false,
+        message: error.message,
+      });
+    }
     next(error);
   } finally {
     await session.endSession();

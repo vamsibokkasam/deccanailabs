@@ -436,6 +436,12 @@ function ApplicationPage() {
                   />
                 </div>
               </FormField>
+
+              {submitError && (
+                <p className="text-red-400 text-sm text-center bg-red-500/10 border border-red-500/20 rounded-xl py-3 px-4">
+                  {submitError}
+                </p>
+              )}
             </div>
 
             {submitError && (
