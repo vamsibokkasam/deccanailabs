@@ -3,6 +3,10 @@ import { ChevronDown } from "lucide-react";
 import { FAQ_CATEGORIES } from "../config/site";
 import Reveal from "./Reveal";
 
+const VISIBLE_FAQ_CATEGORIES = FAQ_CATEGORIES.filter(
+  (item) => item.id !== "courses"
+);
+
 function FaqItem({ question, answer, open, onToggle }) {
   return (
     <div className="faq-item">
@@ -32,12 +36,12 @@ function FaqItem({ question, answer, open, onToggle }) {
 }
 
 function Faq() {
-  const [activeCategory, setActiveCategory] = useState(FAQ_CATEGORIES[0].id);
+  const [activeCategory, setActiveCategory] = useState(VISIBLE_FAQ_CATEGORIES[0].id);
   const [openIndex, setOpenIndex] = useState(0);
 
   const category =
-    FAQ_CATEGORIES.find((item) => item.id === activeCategory) ||
-    FAQ_CATEGORIES[0];
+    VISIBLE_FAQ_CATEGORIES.find((item) => item.id === activeCategory) ||
+    VISIBLE_FAQ_CATEGORIES[0];
 
   useEffect(() => {
     setOpenIndex(0);
@@ -60,7 +64,7 @@ function Faq() {
         </Reveal>
 
         <Reveal className="faq-tabs" delay={60} role="tablist" aria-label="FAQ categories">
-          {FAQ_CATEGORIES.map(({ id, label }) => {
+          {VISIBLE_FAQ_CATEGORIES.map(({ id, label }) => {
             const active = id === activeCategory;
             return (
               <button

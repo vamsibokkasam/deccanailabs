@@ -66,6 +66,11 @@ const internshipApplicationSchema = new mongoose.Schema(
       maxlength: [1000, "Message must not exceed 1000 characters"],
       default: "",
     },
+    source: {
+      type: String,
+      enum: ["internship", "course"],
+      default: "internship",
+    },
     feeAmount: {
       type: Number,
       default: 0,

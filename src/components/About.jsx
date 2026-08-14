@@ -1,4 +1,5 @@
-import { ORGANIZATION_CIN } from "../config/branding";
+import { ORGANIZATION_GSTIN } from "../config/branding";
+import { BRAND_DISAMBIGUATION } from "../config/site";
 import Reveal from "./Reveal";
 
 function About() {
@@ -12,7 +13,7 @@ function About() {
 
           <p className="about-intro-copy">
             DECCAN AI LABS Private Limited (DeccanAILabs) is a company
-            incorporated in India (CIN: {ORGANIZATION_CIN}). We are a
+            incorporated in India (GST No. {ORGANIZATION_GSTIN}). We are a
             technology education and training platform helping students and
             early-career professionals build practical skills through mentor-led
             internships, project-based learning, and industry-focused courses in
@@ -29,12 +30,12 @@ function About() {
             <span className="about-cert">ISO</span> certified.
           </p>
 
-          <p className="about-intro-note">
-            DECCAN AI LABS Private Limited at deccanailabs.com is an independent
-            education company. It is not affiliated with any other unrelated
-            companies that may use similar names in the global artificial
-            intelligence industry.
-          </p>
+          <aside className="about-intro-note">
+            <h3 className="about-intro-note-title">
+              Not affiliated with Deccan AI Experts
+            </h3>
+            <p>{BRAND_DISAMBIGUATION}</p>
+          </aside>
 
           <p className="about-intro-belief">
             We believe that the future belongs to those who continuously learn,

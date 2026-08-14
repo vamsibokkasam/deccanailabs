@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { Mail, MapPin, Phone } from "lucide-react";
-import { BRAND_LEGAL_NAME, ORGANIZATION_CIN } from "../config/branding";
+import { BRAND_LEGAL_NAME, ORGANIZATION_GSTIN } from "../config/branding";
 import { ORGANIZATION_LOCATION } from "../config/site";
 import { BrandText } from "./Logo";
 import { SocialIconRow } from "./SocialLinks";
@@ -129,7 +129,7 @@ function Footer() {
         <div className="mt-12 pt-8 border-t border-border flex flex-col sm:flex-row justify-between items-center gap-4">
           <p className="text-muted/70 text-sm text-center sm:text-left">
             © {new Date().getFullYear()} {BRAND_LEGAL_NAME}. All Rights Reserved.
-            <span className="block sm:inline sm:ml-2">CIN: {ORGANIZATION_CIN}</span>
+            <span className="block sm:inline sm:ml-2">GST No. : {ORGANIZATION_GSTIN}</span>
           </p>
         </div>
       </div>

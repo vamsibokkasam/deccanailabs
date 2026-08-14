@@ -11,7 +11,7 @@ export function BrandLogo({ className = "h-10 w-auto object-contain" }) {
     <img
       src={SITE_LOGO_SRC}
       alt={BRAND_NAME}
-      className={className}
+      className={`${className} mix-blend-lighten`}
       decoding="async"
     />
   );

@@ -929,6 +929,11 @@ function ApplicationsTable({
                     </td>
                     <td className="px-4 py-3 text-fg max-w-[120px]">
                       <span className="line-clamp-2">{app.program}</span>
+                      {app.source === "course" ? (
+                        <span className="mt-1 inline-flex text-[10px] uppercase tracking-wider text-accent">
+                          Course
+                        </span>
+                      ) : null}
                     </td>
                     <td className="px-4 py-3 text-muted max-w-[140px]">
                       <span className="line-clamp-2">
@@ -1074,6 +1079,7 @@ function ApplicationsTable({
                                     completeActionId === app._id ||
                                     app.status === "completed" ||
                                     app.status !== "accepted" ||
+                                    app.source === "course" ||
                                     (Boolean(app.payment?.transactionId) &&
                                       app.payment?.status !== "verified")
                                   }
@@ -1083,12 +1089,14 @@ function ApplicationsTable({
                                       : "bg-surface border-border text-muted hover:bg-card hover:text-fg"
                                   }`}
                                   title={
-                                    app.payment?.transactionId &&
-                                    app.payment?.status !== "verified"
-                                      ? "Verify payment first"
-                                      : app.status !== "accepted" && app.status !== "completed"
-                                        ? "Accept application first"
-                                        : "Issue certificate and mark completed"
+                                    app.source === "course"
+                                      ? "Course registrations do not issue internship certificates"
+                                      : app.payment?.transactionId &&
+                                          app.payment?.status !== "verified"
+                                        ? "Verify payment first"
+                                        : app.status !== "accepted" && app.status !== "completed"
+                                          ? "Accept application first"
+                                          : "Issue certificate and mark completed"
                                   }
                                 >
                                   {completeActionId === app._id ? (

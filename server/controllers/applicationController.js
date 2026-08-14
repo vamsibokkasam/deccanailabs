@@ -77,9 +77,13 @@ export const createApplicationWithPayment = async (req, res, next) => {
       department,
       program,
       transactionId,
-      feeAmount,
       screenshotBase64,
+      source,
     } = req.body;
+
+    const applicationSource = source === "course" ? "course" : "internship";
+    const parsedFee =
+      String(program || "").trim() === "Web Development" ? 499 : 599;
 
     const normalizedTxnId = transactionId.trim();
     const existingPayment = await InternshipApplication.findOne({
@@ -94,8 +98,6 @@ export const createApplicationWithPayment = async (req, res, next) => {
     }
 
     const screenshotData = validatePaymentScreenshot(screenshotBase64);
-    const numericFee = Number(feeAmount);
-    const parsedFee = Number.isFinite(numericFee) ? numericFee : 599;
 
     let application;
 
@@ -112,6 +114,7 @@ export const createApplicationWithPayment = async (req, res, next) => {
             college: college.trim(),
             department: department.trim(),
             program: program.trim(),
+            source: applicationSource,
             feeAmount: parsedFee,
             payment: {
               method: "upi",

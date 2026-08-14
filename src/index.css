@@ -74,8 +74,10 @@ h6 {
 }
 
 /*
- * Hero: one viewport under nav. Equal 50/50 panels.
- * Shared --theme-hero-plate so left + right never look like two boxes.
+ * Hero: one viewport under nav.
+ * Mobile: copy then video stacked; video fills remaining height.
+ * Desktop: 35% copy / 65% video columns.
+ * Shared --theme-hero-plate so copy + video never look like two boxes.
  */
 .hero-bg {
   background: var(--theme-hero-plate);
@@ -96,17 +98,89 @@ h6 {
   position: relative;
   z-index: 2;
   width: 100%;
-  padding: 1.5rem 1.25rem;
+  flex: 0 0 auto;
+  min-height: 0;
+  padding: 0.85rem 1.15rem 0.5rem;
   box-sizing: border-box;
   background: var(--theme-hero-plate);
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  overflow: hidden;
 }
 
 .hero-copy-title {
-  font-size: clamp(1.75rem, 5vw, 2.75rem);
+  font-size: clamp(1.35rem, 5.5vw, 1.85rem);
 }
 
-.hero-copy-body {
-  font-size: 0.95rem;
+.hero-brand {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  width: fit-content;
+  max-width: 100%;
+  margin: 0 0 0.85rem;
+  gap: 0.32rem;
+}
+
+.hero-brand-name {
+  display: flex;
+  align-items: baseline;
+  gap: 0.42em;
+  font-size: clamp(0.98rem, 3.4vw, 1.18rem);
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  line-height: 1;
+  color: var(--theme-fg);
+  text-shadow: 0 0 28px color-mix(in oklab, var(--theme-accent) 28%, transparent);
+}
+
+.hero-brand-ai {
+  background: linear-gradient(
+    120deg,
+    var(--theme-accent) 0%,
+    color-mix(in oklab, var(--theme-accent) 55%, white) 48%,
+    var(--theme-accent-warm) 100%
+  );
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+}
+
+.hero-brand-legal {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  margin: 0;
+  width: 100%;
+}
+
+.hero-brand-legal-text {
+  flex: 0 0 auto;
+  font-size: 0.58rem;
+  font-weight: 500;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--theme-muted);
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.hero-brand-rule {
+  flex: 1 1 0;
+  height: 1px;
+  min-width: 0.75rem;
+  background: color-mix(in oklab, var(--theme-accent) 42%, var(--theme-border));
+}
+
+.hero-copy .hero-copy-body {
+  font-size: 0.82rem;
+  margin-top: 0.55rem;
+}
+
+.hero-copy .hero-copy-actions {
+  margin-top: 0.7rem;
 }
 
 .hero-decco-stage {
@@ -115,6 +189,8 @@ h6 {
   flex: 1 1 0;
   min-height: 0;
   width: 100%;
+  padding: 0 0.4rem 0.6rem;
+  box-sizing: border-box;
   background: var(--theme-hero-plate);
   display: flex;
   align-items: stretch;
@@ -138,20 +214,27 @@ h6 {
 }
 
 .hero-decco-stage .decco-photo-img,
-.hero-decco-stage .decco-photo-video {
+.hero-decco-stage .decco-photo-video,
+.hero-decco-stage .decco-photo-img.decco-photo-video {
   display: block;
   width: 100%;
   height: 100%;
+  min-width: 100%;
+  min-height: 100%;
   object-fit: contain;
   object-position: center center;
   background: var(--theme-hero-plate);
 }
 
+.hero-decco-stage .decco-photo-stage::after {
+  display: none;
+}
+
 @media (min-width: 1024px) {
   .hero-inner {
     display: grid;
-    /* Exact equal widths — minmax(0,…) stops content from widening left */
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    /* 35% left copy / 65% right video */
+    grid-template-columns: minmax(0, 35fr) minmax(0, 65fr);
     grid-template-rows: minmax(0, 1fr);
     height: 100%;
     width: 100%;
@@ -162,6 +245,7 @@ h6 {
     display: flex;
     flex-direction: column;
     justify-content: center;
+    flex: none;
     height: 100%;
     width: 100%;
     min-width: 0;
@@ -176,12 +260,27 @@ h6 {
     font-size: clamp(1.85rem, 3.2vw, 3.25rem);
   }
 
-  .hero-copy-body {
-    font-size: clamp(0.9rem, 1.1vw, 1.05rem);
-    max-width: 32rem;
+  .hero-brand {
+    margin-bottom: 1.15rem;
+    gap: 0.42rem;
   }
 
-  .hero-copy-actions {
+  .hero-brand-name {
+    font-size: clamp(1.12rem, 1.55vw, 1.42rem);
+    letter-spacing: 0.2em;
+  }
+
+  .hero-brand-legal-text {
+    font-size: 0.68rem;
+  }
+
+  .hero-copy .hero-copy-body {
+    font-size: clamp(0.9rem, 1.1vw, 1.05rem);
+    max-width: 32rem;
+    margin-top: 1rem;
+  }
+
+  .hero-copy .hero-copy-actions {
     margin-top: clamp(1rem, 2.5vh, 1.75rem);
   }
 
@@ -191,6 +290,7 @@ h6 {
     width: 100%;
     min-width: 0;
     min-height: 0;
+    padding: 0;
     background: var(--theme-hero-plate);
   }
 
@@ -207,10 +307,9 @@ h6 {
     background: var(--theme-hero-plate);
   }
 
-  /* Full robot + logo visible (no crop) */
   .hero-decco-stage .decco-photo-img,
   .hero-decco-stage .decco-photo-video {
-    object-fit: contain;
+    object-fit: cover;
     object-position: center center;
   }
 }
@@ -1224,6 +1323,587 @@ h6 {
   }
 }
 
+/* ========== Courses ========== */
+
+.course-soon-badge {
+  display: inline-flex;
+  align-items: center;
+  flex-shrink: 0;
+  padding: 0.28rem 0.65rem;
+  border-radius: 999px;
+  border: 1px solid color-mix(in oklab, var(--theme-accent) 40%, var(--theme-border));
+  background: color-mix(in oklab, var(--theme-accent) 12%, transparent);
+  color: var(--theme-accent);
+  font-size: 0.68rem;
+  font-weight: 650;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.courses-board {
+  position: relative;
+  isolation: isolate;
+}
+
+.courses-board--page {
+  padding: 0 1.5rem 5rem;
+}
+
+.courses-board-layout {
+  display: grid;
+  gap: 2.5rem;
+  align-items: start;
+}
+
+.courses-board-intro {
+  max-width: 34rem;
+}
+
+.courses-board-title {
+  text-align: left;
+}
+
+.courses-board-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  border-top: 1px solid var(--theme-border);
+}
+
+.courses-row {
+  display: grid;
+  grid-template-columns: 2.4rem 2.4rem minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 0.85rem 1rem;
+  padding: 1.15rem 0.15rem;
+  border-bottom: 1px solid var(--theme-border);
+  color: inherit;
+  text-decoration: none;
+  transition:
+    background-color 0.2s ease,
+    padding-left 0.2s ease;
+}
+
+.courses-row:hover {
+  background: color-mix(in oklab, var(--theme-accent) 7%, transparent);
+  padding-left: 0.55rem;
+}
+
+.courses-row-index {
+  font-size: 0.78rem;
+  font-weight: 650;
+  letter-spacing: 0.12em;
+  color: var(--theme-accent);
+}
+
+.courses-row-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.4rem;
+  height: 2.4rem;
+  border-radius: 0.7rem;
+  border: 1px solid color-mix(in oklab, var(--theme-accent) 22%, var(--theme-border));
+  background: color-mix(in oklab, var(--theme-card) 80%, transparent);
+}
+
+.courses-row-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 0.28rem;
+  min-width: 0;
+}
+
+.courses-row-title {
+  font-size: 1.05rem;
+  font-weight: 650;
+  color: var(--theme-fg);
+}
+
+.courses-row-summary {
+  font-size: 0.88rem;
+  line-height: 1.5;
+  color: var(--theme-muted);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.courses-row-go {
+  display: inline-flex;
+  color: var(--theme-accent);
+  opacity: 0.55;
+  transition:
+    opacity 0.2s ease,
+    transform 0.2s ease;
+}
+
+.courses-row:hover .courses-row-go {
+  opacity: 1;
+  transform: translate(2px, -2px);
+}
+
+.courses-page-hero {
+  position: relative;
+  isolation: isolate;
+  padding: 3.5rem 0 1.5rem;
+  background: var(--theme-bg);
+  overflow: hidden;
+}
+
+.courses-page-glow {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(
+      ellipse at 8% 0%,
+      color-mix(in oklab, var(--theme-accent) 18%, transparent),
+      transparent 52%
+    );
+}
+
+.courses-page-title {
+  margin: 0;
+  max-width: 18ch;
+  font-size: clamp(2rem, 5vw, 3.4rem);
+  font-weight: 600;
+  letter-spacing: -0.035em;
+  line-height: 1.08;
+}
+
+.courses-page-sub {
+  margin: 1rem 0 0;
+  max-width: 36rem;
+  font-size: 1.02rem;
+  line-height: 1.7;
+}
+
+@media (min-width: 1024px) {
+  .courses-board-layout:not(.courses-board-layout--page) {
+    grid-template-columns: minmax(16rem, 0.42fr) minmax(0, 1fr);
+    gap: 3.5rem;
+    align-items: start;
+  }
+
+  .courses-board-intro {
+    position: sticky;
+    top: 6.5rem;
+  }
+}
+
+@media (max-width: 720px) {
+  .courses-row {
+    grid-template-columns: 2rem minmax(0, 1fr) auto;
+    grid-template-areas:
+      "index copy go"
+      "index copy badge";
+    gap: 0.35rem 0.75rem;
+  }
+
+  .courses-row-index {
+    grid-area: index;
+    align-self: start;
+    margin-top: 0.35rem;
+  }
+
+  .courses-row-icon {
+    display: none;
+  }
+
+  .courses-row-copy {
+    grid-area: copy;
+  }
+
+  .courses-row-go {
+    grid-area: go;
+    justify-self: end;
+  }
+
+  .courses-row .course-soon-badge {
+    grid-area: badge;
+    justify-self: start;
+  }
+
+  .courses-row:hover {
+    padding-left: 0.15rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .courses-row:hover {
+    padding-left: 0.15rem;
+  }
+
+  .courses-row:hover .courses-row-go {
+    transform: none;
+  }
+}
+
+.more-courses-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1.1rem;
+}
+
+.more-course-card {
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+  padding: 1.35rem 1.4rem 1.25rem;
+  border: 1px solid var(--theme-border);
+  border-radius: 1.15rem;
+  background:
+    linear-gradient(
+      180deg,
+      color-mix(in oklab, var(--theme-card) 88%, white 4%) 0%,
+      var(--theme-card) 100%
+    );
+  text-decoration: none;
+  color: inherit;
+  transition:
+    border-color 0.22s ease,
+    box-shadow 0.22s ease,
+    transform 0.22s ease;
+}
+
+.more-course-card:hover {
+  border-color: color-mix(in oklab, var(--theme-accent) 45%, var(--theme-border));
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.28);
+  transform: translateY(-3px);
+}
+
+.more-course-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 0.9rem;
+}
+
+.more-course-index {
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  color: var(--theme-accent);
+}
+
+.more-course-title {
+  margin: 0 0 0.55rem;
+  font-size: 1.12rem;
+  font-weight: 650;
+  letter-spacing: -0.02em;
+  color: var(--theme-fg);
+  line-height: 1.25;
+}
+
+.more-course-copy {
+  margin: 0;
+  flex: 1;
+  font-size: 0.9rem;
+  line-height: 1.6;
+  color: var(--theme-muted);
+}
+
+.more-course-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin-top: 1.05rem;
+  font-size: 0.82rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: var(--theme-accent);
+}
+
+.more-course-card:hover .more-course-link {
+  gap: 0.5rem;
+}
+
+@media (max-width: 1024px) {
+  .more-courses-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 640px) {
+  .more-courses-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .more-course-card:hover {
+    transform: none;
+  }
+}
+
+.course-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.28rem 0.7rem;
+  border-radius: 999px;
+  border: 1px solid var(--theme-border);
+  color: var(--theme-muted);
+  font-size: 0.72rem;
+  letter-spacing: 0.06em;
+}
+
+.course-details-hero {
+  position: relative;
+  isolation: isolate;
+  padding: 3.5rem 0 2.5rem;
+  background: var(--theme-bg);
+  overflow: hidden;
+}
+
+.course-details-glow {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(
+      ellipse at 12% 20%,
+      color-mix(in oklab, var(--theme-accent) 16%, transparent),
+      transparent 55%
+    ),
+    radial-gradient(
+      ellipse at 88% 10%,
+      color-mix(in oklab, var(--theme-accent-warm) 12%, transparent),
+      transparent 50%
+    );
+}
+
+.course-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-bottom: 1.6rem;
+  color: var(--theme-muted);
+  font-size: 0.88rem;
+  transition: color 0.2s ease;
+}
+
+.course-back:hover {
+  color: var(--theme-accent);
+}
+
+.course-details-head {
+  display: flex;
+  align-items: flex-start;
+  gap: 1.15rem;
+  max-width: 46rem;
+}
+
+.course-details-icon {
+  width: 4rem;
+  height: 4rem;
+  margin-top: 0.2rem;
+}
+
+.course-details-title {
+  margin: 0;
+  font-size: clamp(1.85rem, 4vw, 3rem);
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  line-height: 1.12;
+}
+
+.course-details-lead {
+  margin: 0.9rem 0 0;
+  font-size: 1.02rem;
+  line-height: 1.7;
+  max-width: 38rem;
+}
+
+.course-details-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 1.15rem;
+}
+
+.course-details-register {
+  margin-top: 1.35rem;
+}
+
+.course-details-body {
+  padding-top: 0.5rem;
+}
+
+.course-learn-list {
+  display: grid;
+  gap: 0.85rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.course-learn-list li {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  color: var(--theme-muted);
+  line-height: 1.55;
+}
+
+.course-learn-check {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.45rem;
+  height: 1.45rem;
+  flex-shrink: 0;
+  margin-top: 0.05rem;
+  border-radius: 999px;
+  background: color-mix(in oklab, var(--theme-accent) 16%, transparent);
+  color: var(--theme-accent);
+}
+
+.course-dot {
+  width: 0.42rem;
+  height: 0.42rem;
+  flex-shrink: 0;
+  margin-top: 0.55rem;
+  border-radius: 50%;
+  background: var(--theme-accent);
+}
+
+@media (max-width: 640px) {
+  .course-details-head {
+    flex-direction: column;
+  }
+}
+
+.course-register-steps {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  max-width: 46rem;
+  margin: 0 auto;
+  padding: 0;
+  list-style: none;
+}
+
+.course-register-step {
+  display: flex;
+  align-items: flex-start;
+  flex: 1;
+}
+
+.course-register-step:last-child {
+  flex: 0 0 auto;
+}
+
+.course-register-step-line {
+  flex: 1;
+  height: 2px;
+  margin: 1.25rem 0.35rem 0;
+  border-radius: 999px;
+  background: var(--theme-border);
+  transition: background-color 0.3s ease;
+}
+
+.course-register-step-line.is-complete {
+  background: var(--theme-accent);
+}
+
+.course-pay-card {
+  text-align: center;
+  padding: 1.5rem 1.25rem;
+  border-radius: 1.25rem;
+  border: 1px solid color-mix(in oklab, var(--theme-accent) 28%, var(--theme-border));
+  background: color-mix(in oklab, var(--theme-accent) 8%, var(--theme-card));
+}
+
+.course-pay-amount {
+  margin: 0;
+  font-size: clamp(2rem, 4vw, 2.6rem);
+  font-weight: 650;
+  letter-spacing: -0.03em;
+  color: var(--theme-fg);
+}
+
+.course-pay-qr-wrap {
+  display: flex;
+  justify-content: center;
+  margin-top: 1.5rem;
+}
+
+.course-pay-qr {
+  width: min(22rem, 100%);
+  height: auto;
+  max-height: 34rem;
+  object-fit: contain;
+  border-radius: 1.15rem;
+  background: #eef2f6;
+  border: 1px solid var(--theme-border);
+}
+
+.course-pay-qr--empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: min(22rem, 100%);
+  min-height: 16rem;
+  padding: 1.25rem;
+  text-align: center;
+  font-size: 0.85rem;
+  line-height: 1.5;
+  color: var(--theme-subtle);
+  background: var(--theme-surface);
+}
+
+.course-upload {
+  display: block;
+  cursor: pointer;
+  border: 1px dashed var(--theme-border);
+  border-radius: 1rem;
+  overflow: hidden;
+  background: var(--theme-input);
+  transition: border-color 0.2s ease;
+}
+
+.course-upload:hover {
+  border-color: color-mix(in oklab, var(--theme-accent) 45%, var(--theme-border));
+}
+
+.course-upload-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.55rem;
+  min-height: 8.5rem;
+  padding: 1.25rem;
+  color: var(--theme-subtle);
+  font-size: 0.88rem;
+}
+
+.course-upload-preview {
+  display: block;
+  width: 100%;
+  max-height: 16rem;
+  object-fit: contain;
+  background: #0b1220;
+}
+
+@media (max-width: 640px) {
+  .course-register-step span {
+    max-width: 4.6rem;
+  }
+
+  .course-pay-qr,
+  .course-pay-qr--empty {
+    width: min(18rem, 100%);
+    height: auto;
+  }
+}
+
 /* ========== Contact ========== */
 
 .contact-section {
@@ -1382,6 +2062,15 @@ h6 {
   border-radius: 0.9rem;
   border: 1px solid color-mix(in oklab, var(--theme-accent) 22%, transparent);
   background: color-mix(in oklab, var(--theme-accent) 7%, transparent);
+}
+
+.about-intro-note-title {
+  margin: 0 0 0.45rem;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--theme-accent);
 }
 
 .about-intro-belief {
@@ -1962,21 +2651,39 @@ h6 {
   mix-blend-mode: normal;
 }
 
+.decco-photo-video.decco-photo-img {
+  height: 100%;
+}
+
 .decco-photo-video {
-  object-fit: contain;
+  object-fit: cover;
   object-position: center center;
   background: transparent;
+}
+
+.decco-photo-video::cue,
+.decco-photo-video::-webkit-media-text-track-display,
+.decco-photo-video::-webkit-media-text-track-container,
+.decco-photo-video::-webkit-media-text-track-background,
+.decco-photo-video::-webkit-media-text-track-display-backdrop {
+  display: none !important;
+  opacity: 0 !important;
+  visibility: hidden !important;
+  background: transparent !important;
+  color: transparent !important;
 }
 
 /* Hero Decco — overrides (must follow base .decco-* rules) */
 .hero-decco-stage .decco-mascot {
   width: 100%;
+  height: 100%;
   max-width: none;
 }
 
 .hero-decco-stage .decco-photo-img,
 .hero-decco-stage .decco-photo-video {
   object-fit: contain;
+  object-position: center center;
   background: var(--theme-hero-plate);
 }
 
@@ -1998,10 +2705,34 @@ h6 {
   .hero-decco-stage .decco-photo-video {
     width: 100%;
     height: 100%;
-    object-fit: contain;
+    object-fit: cover;
     object-position: center center;
     transform: none;
     background: var(--theme-hero-plate);
+  }
+
+  .hero-decco-stage .decco-photo-stage::after {
+    display: block;
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 2;
+    background:
+      linear-gradient(
+        to right,
+        var(--theme-hero-plate) 0%,
+        transparent 18%,
+        transparent 82%,
+        var(--theme-hero-plate) 100%
+      ),
+      linear-gradient(
+        to bottom,
+        var(--theme-hero-plate) 0%,
+        transparent 16%,
+        transparent 84%,
+        var(--theme-hero-plate) 100%
+      );
   }
 }
 
@@ -2117,11 +2848,11 @@ h6 {
 .decco-assistant-root {
   position: fixed;
   inset: 0;
-  z-index: 80;
+  z-index: 90;
   display: flex;
   align-items: flex-end;
   justify-content: flex-end;
-  padding: 1rem;
+  padding: 1rem 1rem 5.25rem;
   pointer-events: none;
 }
 
@@ -2129,7 +2860,7 @@ h6 {
   position: absolute;
   inset: 0;
   border: 0;
-  background: rgba(2, 6, 23, 0.45);
+  background: transparent;
   cursor: pointer;
   pointer-events: auto;
 }
@@ -2137,14 +2868,21 @@ h6 {
 .decco-assistant-panel {
   position: relative;
   z-index: 1;
-  width: min(100%, 380px);
-  max-height: min(72vh, 560px);
+  width: min(100%, 400px);
+  max-height: min(74vh, 600px);
   display: flex;
   flex-direction: column;
-  border: 1px solid var(--theme-border);
-  border-radius: 1.25rem;
-  background: color-mix(in oklab, var(--theme-surface) 96%, black);
-  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.45);
+  border: 1px solid color-mix(in oklab, var(--theme-accent) 28%, var(--theme-border));
+  border-radius: 1.35rem;
+  background:
+    linear-gradient(
+      180deg,
+      color-mix(in oklab, var(--theme-card) 88%, #0b1220) 0%,
+      color-mix(in oklab, var(--theme-surface) 96%, black) 28%
+    );
+  box-shadow:
+    0 24px 60px rgba(0, 0, 0, 0.5),
+    0 0 0 1px color-mix(in oklab, var(--theme-accent) 12%, transparent);
   overflow: hidden;
   pointer-events: auto;
   animation: decco-panel-in 0.28s ease-out;
@@ -2155,21 +2893,167 @@ h6 {
   align-items: center;
   justify-content: space-between;
   gap: 0.75rem;
-  padding: 0.95rem 1rem;
+  padding: 0.9rem 1rem;
   border-bottom: 1px solid var(--theme-border);
+  background: color-mix(in oklab, var(--theme-accent) 8%, transparent);
+}
+
+.decco-assistant-brand {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  min-width: 0;
+}
+
+.decco-assistant-avatar,
+.decco-bubble-avatar,
+.decco-profile {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.35rem;
+  height: 2.35rem;
+  border-radius: 50%;
+  flex-shrink: 0;
+  background: #1b263b;
+  color: #041018;
+  font-size: 0.92rem;
+  font-weight: 700;
+  overflow: visible;
+}
+
+.decco-profile img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
+  display: block;
+}
+
+.decco-profile--bubble {
+  width: 1.7rem;
+  height: 1.7rem;
+  margin-top: 0.15rem;
+}
+
+.decco-profile--think {
+  width: 3.15rem;
+  height: 3.15rem;
+  margin-top: 0.2rem;
+}
+
+.decco-profile.is-thinking > img {
+  animation: decco-profile-think 1.35s ease-in-out infinite;
+}
+
+.decco-think-anim {
+  position: absolute;
+  top: -0.15rem;
+  right: -0.2rem;
+  width: 1.7rem;
+  height: 1.7rem;
+  pointer-events: none;
+  z-index: 2;
+}
+
+.decco-profile--think .decco-think-anim {
+  top: -0.35rem;
+  right: -0.55rem;
+  width: 2.35rem;
+  height: 2.35rem;
+}
+
+.decco-think-pip {
+  position: absolute;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.28);
+  animation: decco-think-pip 1.1s ease-in-out infinite;
+}
+
+.decco-think-pip--a {
+  width: 0.28rem;
+  height: 0.28rem;
+  left: 0.08rem;
+  bottom: 0.18rem;
+  animation-delay: 0s;
+}
+
+.decco-think-pip--b {
+  width: 0.4rem;
+  height: 0.4rem;
+  left: 0.32rem;
+  bottom: 0.48rem;
+  animation-delay: 0.15s;
+}
+
+.decco-profile--think .decco-think-pip--a {
+  width: 0.34rem;
+  height: 0.34rem;
+}
+
+.decco-profile--think .decco-think-pip--b {
+  width: 0.48rem;
+  height: 0.48rem;
+}
+
+.decco-think-cloud {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 1.15rem;
+  height: 1.15rem;
+  border-radius: 50%;
+  overflow: hidden;
+  background: #1b263b;
+  box-shadow:
+    0 2px 6px rgba(0, 0, 0, 0.35),
+    0 0 0 2px #fff;
+  animation: decco-think-cloud 1.15s ease-in-out infinite;
+}
+
+.decco-profile--think .decco-think-cloud {
+  width: 1.55rem;
+  height: 1.55rem;
+}
+
+.decco-think-cloud img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  animation: decco-think-face 1.15s ease-in-out infinite;
+}
+
+.decco-bubble-avatar {
+  width: 1.7rem;
+  height: 1.7rem;
+  font-size: 0.7rem;
+  margin-top: 0.15rem;
+}
+
+.decco-assistant-online {
+  position: absolute;
+  right: 1px;
+  bottom: 1px;
+  width: 0.55rem;
+  height: 0.55rem;
+  border-radius: 50%;
+  background: #22c55e;
+  border: 2px solid color-mix(in oklab, var(--theme-surface) 90%, black);
 }
 
 .decco-assistant-title {
   margin: 0;
-  font-size: 0.95rem;
-  font-weight: 600;
+  font-size: 0.98rem;
+  font-weight: 650;
   color: var(--theme-fg);
 }
 
 .decco-assistant-sub {
-  margin: 0.15rem 0 0;
-  font-size: 0.7rem;
-  letter-spacing: 0.14em;
+  margin: 0.18rem 0 0;
+  font-size: 0.68rem;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--theme-accent);
 }
@@ -2195,61 +3079,409 @@ h6 {
 .decco-assistant-messages {
   flex: 1;
   overflow-y: auto;
-  padding: 1rem;
+  padding: 1rem 0.9rem;
   display: flex;
   flex-direction: column;
-  gap: 0.65rem;
+  gap: 0.75rem;
+}
+
+.decco-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.45rem;
+  max-width: 100%;
+}
+
+.decco-row.is-fresh {
+  animation: decco-snap-in 0.42s cubic-bezier(0.34, 1.45, 0.64, 1);
+}
+
+.decco-row--user {
+  justify-content: flex-end;
+  transform-origin: right bottom;
+}
+
+.decco-row--decco {
+  transform-origin: left bottom;
 }
 
 .decco-bubble {
   max-width: 88%;
-  padding: 0.7rem 0.85rem;
-  border-radius: 0.9rem;
+  padding: 0.72rem 0.9rem;
+  border-radius: 1rem;
   font-size: 0.9rem;
-  line-height: 1.45;
+  line-height: 1.5;
 }
 
 .decco-bubble--decco {
-  align-self: flex-start;
-  background: color-mix(in oklab, var(--theme-card) 90%, white 6%);
+  border-radius: 0.3rem 1rem 1rem 1rem;
+  background: color-mix(in oklab, var(--theme-card) 82%, white 8%);
   border: 1px solid var(--theme-border);
-  color: var(--theme-muted);
-}
-
-.decco-bubble--user {
-  align-self: flex-end;
-  background: color-mix(in oklab, var(--theme-accent) 28%, transparent);
-  border: 1px solid color-mix(in oklab, var(--theme-accent) 45%, transparent);
   color: var(--theme-fg);
 }
 
-.decco-bubble--thinking {
-  opacity: 0.75;
-  font-style: italic;
+.decco-bubble--user {
+  border-radius: 1rem 0.3rem 1rem 1rem;
+  background: linear-gradient(
+    160deg,
+    color-mix(in oklab, var(--theme-accent) 42%, transparent),
+    color-mix(in oklab, var(--theme-accent-warm) 28%, transparent)
+  );
+  border: 1px solid color-mix(in oklab, var(--theme-accent) 50%, transparent);
+  color: var(--theme-fg);
+}
+
+.decco-bubble--listen {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.8rem;
+  color: var(--theme-muted);
+}
+
+.decco-waves {
+  display: inline-flex;
+  align-items: flex-end;
+  gap: 0.14rem;
+  height: 0.9rem;
+}
+
+.decco-waves i {
+  width: 0.16rem;
+  border-radius: 99px;
+  background: var(--theme-accent);
+  animation: decco-wave 0.9s ease-in-out infinite;
+}
+
+.decco-waves i:nth-child(1) {
+  height: 0.28rem;
+  animation-delay: 0s;
+}
+
+.decco-waves i:nth-child(2) {
+  height: 0.55rem;
+  animation-delay: 0.12s;
+}
+
+.decco-waves i:nth-child(3) {
+  height: 0.82rem;
+  animation-delay: 0.24s;
+}
+
+.decco-waves i:nth-child(4) {
+  height: 0.4rem;
+  animation-delay: 0.36s;
+}
+
+.decco-assistant-avatar.is-listening {
+  box-shadow: 0 0 0 0 color-mix(in oklab, var(--theme-accent) 55%, transparent);
+  animation: decco-listen-pulse 1.6s ease-out infinite;
+}
+
+@keyframes decco-snap-in {
+  0% {
+    opacity: 0;
+    transform: scale(0.42) translateY(12px);
+  }
+  62% {
+    opacity: 1;
+    transform: scale(1.06) translateY(0);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+@keyframes decco-buddy-idle {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-3px);
+  }
+}
+
+@keyframes decco-buddy-hear-face {
+  0%,
+  100% {
+    transform: rotate(-5deg) scale(1);
+  }
+  50% {
+    transform: rotate(6deg) scale(1.04);
+  }
+}
+
+@keyframes decco-wait-bounce {
+  0%,
+  100% {
+    transform: translateY(0) scale(1);
+  }
+  50% {
+    transform: translateY(-5px) scale(1.12);
+  }
+}
+
+@keyframes decco-profile-think {
+  0%,
+  100% {
+    transform: rotate(-6deg) translateY(0);
+  }
+  50% {
+    transform: rotate(7deg) translateY(-3px);
+  }
+}
+
+@keyframes decco-think-pip {
+  0%,
+  100% {
+    transform: translateY(0) scale(0.85);
+    opacity: 0.65;
+  }
+  50% {
+    transform: translateY(-3px) scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes decco-think-cloud {
+  0%,
+  100% {
+    transform: translateY(0) scale(1);
+  }
+  50% {
+    transform: translateY(-4px) scale(1.08);
+  }
+}
+
+@keyframes decco-think-face {
+  0%,
+  100% {
+    transform: rotate(-8deg) scale(1);
+  }
+  50% {
+    transform: rotate(10deg) scale(1.08);
+  }
+}
+
+@keyframes decco-wave {
+  0%,
+  100% {
+    transform: scaleY(0.45);
+    opacity: 0.45;
+  }
+  50% {
+    transform: scaleY(1);
+    opacity: 1;
+  }
+}
+
+@keyframes decco-listen-pulse {
+  0% {
+    box-shadow: 0 0 0 0 color-mix(in oklab, var(--theme-accent) 50%, transparent);
+  }
+  70% {
+    box-shadow: 0 0 0 10px transparent;
+  }
+  100% {
+    box-shadow: 0 0 0 0 transparent;
+  }
+}
+
+.decco-dots {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.28rem;
+  height: 1rem;
+}
+
+.decco-dots i {
+  width: 0.38rem;
+  height: 0.38rem;
+  border-radius: 50%;
+  background: var(--theme-accent);
+  animation: decco-dot 1s ease-in-out infinite;
+}
+
+.decco-dots i:nth-child(2) {
+  animation-delay: 0.15s;
+}
+
+.decco-dots i:nth-child(3) {
+  animation-delay: 0.3s;
+}
+
+@keyframes decco-dot {
+  0%,
+  80%,
+  100% {
+    opacity: 0.35;
+    transform: translateY(0);
+  }
+  40% {
+    opacity: 1;
+    transform: translateY(-3px);
+  }
+}
+
+.decco-suggestions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  padding-top: 0.15rem;
+}
+
+.decco-chip {
+  border: 1px solid color-mix(in oklab, var(--theme-accent) 40%, var(--theme-border));
+  background: color-mix(in oklab, var(--theme-accent) 10%, transparent);
+  color: var(--theme-fg);
+  border-radius: 999px;
+  padding: 0.38rem 0.7rem;
+  font-size: 0.75rem;
+  cursor: pointer;
+  transition:
+    background-color 0.2s ease,
+    border-color 0.2s ease;
+}
+
+.decco-chip:hover {
+  background: color-mix(in oklab, var(--theme-accent) 22%, transparent);
+  border-color: var(--theme-accent);
+}
+
+.decco-composer {
+  border-top: 0;
+  background: transparent;
+  padding: 0.35rem 0.8rem 0.75rem;
+}
+
+.decco-buddy {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  min-height: 0;
+  margin-bottom: 0.3rem;
+}
+
+.decco-buddy-face {
+  position: relative;
+  width: 2.35rem;
+  height: 2.35rem;
+  flex-shrink: 0;
+  overflow: hidden;
+  border-radius: 50%;
+}
+
+.decco-buddy-face > img,
+.decco-buddy-video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center center;
+  border-radius: 50%;
+  display: block;
+  background: transparent;
+  box-shadow: none;
+  pointer-events: none;
+}
+
+.decco-buddy-wait {
+  position: absolute;
+  top: -0.28rem;
+  right: -0.28rem;
+  font-size: 0.78rem;
+  line-height: 1;
+  pointer-events: none;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.35));
+  animation: decco-wait-bounce 1.15s ease-in-out infinite;
+}
+
+.decco-buddy-hear {
+  position: absolute;
+  right: -0.62rem;
+  top: 50%;
+  display: flex;
+  align-items: flex-end;
+  gap: 0.1rem;
+  height: 0.72rem;
+  transform: translateY(-50%);
+  pointer-events: none;
+}
+
+.decco-buddy-hear i {
+  width: 0.12rem;
+  border-radius: 99px;
+  background: var(--theme-accent);
+  animation: decco-wave 0.85s ease-in-out infinite;
+}
+
+.decco-buddy-hear i:nth-child(1) {
+  height: 0.2rem;
+  animation-delay: 0s;
+}
+
+.decco-buddy-hear i:nth-child(2) {
+  height: 0.38rem;
+  animation-delay: 0.12s;
+}
+
+.decco-buddy-hear i:nth-child(3) {
+  height: 0.58rem;
+  animation-delay: 0.24s;
+}
+
+.decco-buddy-hear i:nth-child(4) {
+  height: 0.3rem;
+  animation-delay: 0.36s;
+}
+
+.decco-buddy .decco-think-anim {
+  top: -0.28rem;
+  right: -0.36rem;
+  width: 1.45rem;
+  height: 1.45rem;
+}
+
+.decco-buddy .decco-think-pip--a {
+  width: 0.2rem;
+  height: 0.2rem;
+}
+
+.decco-buddy .decco-think-pip--b {
+  width: 0.28rem;
+  height: 0.28rem;
+}
+
+.decco-buddy .decco-think-cloud {
+  width: 0.95rem;
+  height: 0.95rem;
 }
 
 .decco-assistant-form {
   display: flex;
   align-items: center;
   gap: 0.45rem;
-  padding: 0.75rem;
-  border-top: 1px solid var(--theme-border);
+  padding: 0;
+  border-top: 0;
+  background: transparent;
 }
 
 .decco-assistant-input {
   flex: 1;
   min-width: 0;
   border: 1px solid var(--theme-border);
-  border-radius: 0.75rem;
+  border-radius: 999px;
   background: var(--theme-input);
   color: var(--theme-fg);
-  padding: 0.65rem 0.75rem;
+  padding: 0.68rem 0.9rem;
   font-size: 0.9rem;
   outline: none;
 }
 
 .decco-assistant-input:focus {
   border-color: var(--theme-accent);
+  box-shadow: 0 0 0 3px color-mix(in oklab, var(--theme-accent) 22%, transparent);
 }
 
 .decco-mic,
@@ -2257,9 +3489,9 @@ h6 {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 2.4rem;
-  height: 2.4rem;
-  border-radius: 0.75rem;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 999px;
   border: 1px solid var(--theme-border);
   background: transparent;
   color: var(--theme-muted);
@@ -2267,7 +3499,12 @@ h6 {
   flex-shrink: 0;
 }
 
-.decco-mic.is-on,
+.decco-mic.is-on {
+  color: var(--theme-fg);
+  border-color: var(--theme-accent);
+  background: color-mix(in oklab, var(--theme-accent) 22%, transparent);
+}
+
 .decco-send:hover:not(:disabled),
 .decco-mic:hover:not(:disabled) {
   color: var(--theme-fg);
@@ -2275,8 +3512,14 @@ h6 {
 }
 
 .decco-send {
-  background: color-mix(in oklab, var(--theme-accent) 25%, transparent);
-  color: var(--theme-fg);
+  background: linear-gradient(145deg, var(--theme-accent), var(--theme-accent-warm));
+  border-color: transparent;
+  color: #041018;
+}
+
+.decco-send:hover:not(:disabled) {
+  color: #041018;
+  filter: brightness(1.08);
 }
 
 .decco-mic:disabled,
@@ -2297,14 +3540,25 @@ h6 {
   }
 
   .decco-assistant-root {
-    padding: 1.25rem 1.5rem;
+    padding: 1.25rem 1.5rem 5.5rem;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .decco-hai,
   .decco-assistant-panel,
-  .decco-glint {
+  .decco-glint,
+  .decco-dots i,
+  .decco-row,
+  .decco-profile.is-thinking > img,
+  .decco-buddy-face > img,
+  .decco-buddy-wait,
+  .decco-buddy-hear i,
+  .decco-think-pip,
+  .decco-think-cloud,
+  .decco-think-cloud img,
+  .decco-waves i,
+  .decco-assistant-avatar.is-listening {
     animation: none;
     transition: none;
   }

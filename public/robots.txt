@@ -1,5 +1,6 @@
 User-agent: *
 Allow: /
 Disallow: /admin
+Disallow: /courses
 
 Sitemap: https://deccanailabs.com/sitemap.xml

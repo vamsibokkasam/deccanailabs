@@ -11,5 +11,5 @@ export const DECCO_STATES = Object.freeze({
   GOODBYE: "goodbye",
 });
 
-export const GREETING_TEXT = "Hi! Do you want to talk with me?";
-export const GREETING_CAPTION = "Hi! 👋 Do you want to talk with me?";
+export const GREETING_TEXT = "Hi guys! I'm Decco. From Deccan AI Labs.";
+export const GREETING_CAPTION = "Hi guys! I’m Decco.";

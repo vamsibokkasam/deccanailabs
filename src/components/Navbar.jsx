@@ -37,7 +37,7 @@ function Navbar() {
             />
           </Link>
 
-          <div className="hidden md:flex items-center gap-8">
+          <div className="hidden md:flex items-center gap-6 lg:gap-8">
             {navItems.map(({ to, label, end }) => (
               <NavLink key={to} to={to} end={end} className={navLinkClass}>
                 {label}

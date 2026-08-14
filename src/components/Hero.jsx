@@ -1,17 +1,27 @@
 import { Link } from "react-router-dom";
 import DeccoMascot from "./decco/DeccoMascot";
+import { BRAND_LEGAL_SUFFIX, BRAND_NAME } from "../config/branding.js";
 
 /**
- * Equal 50/50 hero: left copy + right Decco video, one viewport tall.
+ * Mobile: copy then video stacked, video fills remaining height.
+ * Desktop: 35/65 columns. One viewport tall.
  */
 function Hero() {
   return (
     <section className="hero-bg text-fg">
       <div className="hero-inner">
         <div className="hero-copy">
-          <p className="theme-label mb-1 tracking-wider">DECCAN AI LABS</p>
-          <p className="hero-copy-kicker text-muted text-xs uppercase tracking-[0.18em] mb-3">
-            Private Limited
+          <p className="hero-brand" aria-label={`${BRAND_NAME} ${BRAND_LEGAL_SUFFIX}`}>
+            <span className="hero-brand-name">
+              <span>DECCAN</span>
+              <span className="hero-brand-ai">AI</span>
+              <span>LABS</span>
+            </span>
+            <span className="hero-brand-legal">
+              <span className="hero-brand-rule" aria-hidden="true" />
+              <span className="hero-brand-legal-text">{BRAND_LEGAL_SUFFIX}</span>
+              <span className="hero-brand-rule" aria-hidden="true" />
+            </span>
           </p>
 
           <h1 className="hero-copy-title font-medium leading-[1.12] tracking-tight">

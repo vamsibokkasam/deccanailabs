@@ -1,3 +1,5 @@
+import { ORGANIZATION_GSTIN } from "./branding.js";
+
 /** Official production domain — used for canonical URLs, sitemap, and structured data. */
 export const OFFICIAL_SITE_URL = "https://deccanailabs.com";
 
@@ -15,7 +17,20 @@ export const BRAND_ALTERNATE_NAMES = [
 ];
 
 export const ORGANIZATION_DESCRIPTION =
-  "DECCAN AI LABS Private Limited (DeccanAILabs) is an India-based technology education and training company. We offer project-based internships and hands-on courses in AI, machine learning, web development, Python, Java, data science, and cyber security for students and early-career professionals. We are MSME, NCS, and ISO certified.";
+  "DECCAN AI LABS Private Limited (DeccanAILabs) is an India-based technology education and training company (GST No. 37AAMCD9617P1ZQ). We offer project-based internships and hands-on courses in AI, machine learning, web development, Python, Java, data science, and cyber security for students and early-career professionals. We are MSME, NCS, and ISO certified.";
+
+/** CIN year — used in Organization structured data. */
+export const ORGANIZATION_FOUNDING_YEAR = "2026";
+
+/**
+ * Short crawler-facing line so Google can separate this company from
+ * Deccan AI / Deccan AI Experts (the enterprise AI training-data startup).
+ */
+export const BRAND_DISAMBIGUATING_DESCRIPTION =
+  `India-incorporated technology education and internship company at deccanailabs.com (GST No. ${ORGANIZATION_GSTIN}). Not Deccan AI, not Deccan AI Experts, and not affiliated with any enterprise AI training-data company.`;
+
+export const BRAND_DISAMBIGUATION =
+  `DECCAN AI LABS Private Limited (DeccanAILabs) at deccanailabs.com is an independent technology education and internship company in India (GST No. ${ORGANIZATION_GSTIN}). We are not Deccan AI, not Deccan AI Experts, and not affiliated with, funded by, or connected to any enterprise AI, AI training-data, or reinforcement-learning company that uses a similar name.`;
 
 /** Official organization certifications highlighted on the website. */
 export const ORGANIZATION_CERTIFICATIONS = [
@@ -57,12 +72,12 @@ export const FAQ_CATEGORIES = [
       {
         question: "Is DECCAN AI LABS a Private Limited company?",
         answer:
-          "Yes. DECCAN AI LABS Private Limited is a company incorporated in India (CIN: U85500AP2026PTC127421). DeccanAILabs is the brand name of this registered private limited company.",
+          "Yes. DECCAN AI LABS Private Limited is a company incorporated in India (GST No. 37AAMCD9617P1ZQ). DeccanAILabs is the brand name of this registered private limited company.",
       },
       {
-        question: "Is DeccanAILabs the same as Deccan AI?",
+        question: "Is DECCAN AI LABS the same as Deccan AI or Deccan AI Experts?",
         answer:
-          "No. DECCAN AI LABS Private Limited at deccanailabs.com is an independent education and internship company based in India. It is not affiliated with, funded by, or connected to any other unrelated companies that may use similar names in the global artificial intelligence industry.",
+          "No. DECCAN AI LABS Private Limited (DeccanAILabs) at deccanailabs.com is an independent technology education and internship company in India (GST No. 37AAMCD9617P1ZQ). We are not Deccan AI, not Deccan AI Experts, and not affiliated with, funded by, or connected to any enterprise AI training-data or reinforcement-learning company that uses a similar name.",
       },
       {
         question: "Is DeccanAILabs MSME, NCS, and ISO certified?",

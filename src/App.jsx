@@ -1,4 +1,4 @@
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, Navigate } from "react-router-dom";
 
 import MainLayout from "./layouts/MainLayout";
 import ScrollToTop from "./components/ScrollToTop";
@@ -44,6 +44,11 @@ function App() {
         <Route
           path="internships"
           element={<InternshipsPage />}
+        />
+
+        <Route
+          path="courses/*"
+          element={<Navigate to="/" replace />}
         />
 
         <Route

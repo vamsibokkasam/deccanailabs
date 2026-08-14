@@ -2,6 +2,7 @@ import {
   KNOWN_COURSE_TITLES,
   resolveCourseTitle,
 } from "../utils/courseSlug.js";
+import { getCourseBySlug } from "./courses.js";
 import { BRAND_LEGAL_NAME, SITE_LOGO_PATH } from "./branding.js";
 import { ORGANIZATION_DESCRIPTION } from "./site.js";
 
@@ -72,7 +73,7 @@ const ROUTE_SEO = {
   "/about": {
     title: buildPageTitle("About Us"),
     description:
-      "Learn about DECCAN AI LABS Private Limited — an India-incorporated technology education company offering internships, mentor-led training, and practical courses in AI, programming, and data science.",
+      "About DECCAN AI LABS Private Limited (DeccanAILabs) — an India-incorporated education company at deccanailabs.com offering internships and courses in AI, programming, and data science. Not affiliated with Deccan AI Experts.",
     keywords:
       "about DECCAN AI LABS Private Limited, DECCAN AI LABS Pvt Ltd, DeccanAILabs, DECCAN AI LABS India, tech education India, AI internships, independent training company, professional development",
   },
@@ -96,6 +97,13 @@ const ROUTE_SEO = {
       "Browse DECCAN AI LABS internships in web development, Python, Java, AI, data science, and cyber security with real projects, mentors, and certificates.",
     keywords:
       "internships India, online internship, web development internship, Python internship, Java internship, AI internship, internship with certificate",
+  },
+  "/courses": {
+    title: buildPageTitle("Courses"),
+    description:
+      "Explore DECCAN AI LABS courses in web development, Python, Java, AI, data science, and cyber security. Register in four steps: details, payment, verification, and application ID.",
+    keywords:
+      "DECCAN AI LABS courses, technology courses India, Python course, Java course, web development course, AI course, data science course, cyber security course",
   },
   "/contact": {
     title: buildPageTitle("Contact"),
@@ -134,6 +142,20 @@ const ROUTE_SEO = {
 };
 
 export function getSeoForPath(pathname) {
+  const courseRegisterMatch = pathname.match(/^\/courses\/([^/]+)\/register\/?$/);
+  if (courseRegisterMatch) {
+    const course = getCourseBySlug(courseRegisterMatch[1]);
+    const name =
+      course?.title || resolveCourseTitle(courseRegisterMatch[1], KNOWN_COURSE_TITLES);
+    return withDefaults({
+      title: buildPageTitle(`${name} Course Registration`),
+      description:
+        `Register for the ${name} course at DECCAN AI LABS. Complete registration, payment details, and verification to generate your application ID.`,
+      keywords:
+        `${name} course registration, DECCAN AI LABS course enroll, ${name} course apply`,
+    });
+  }
+
   const applicationMatch = pathname.match(/^\/internship\/apply\/(.+)$/);
 
   if (applicationMatch) {
@@ -146,6 +168,21 @@ export function getSeoForPath(pathname) {
       keywords:
         COURSE_KEYWORDS[courseName] ||
         `${courseName} internship, DECCAN AI LABS internship application, online internship apply`,
+    });
+  }
+
+  const courseMatch = pathname.match(/^\/courses\/([^/]+)$/);
+  if (courseMatch) {
+    const course = getCourseBySlug(courseMatch[1]);
+    const name = course?.title || resolveCourseTitle(courseMatch[1], KNOWN_COURSE_TITLES);
+    return withDefaults({
+      title: buildPageTitle(`${name} Course`),
+      description:
+        course?.overview ||
+        `Learn about the ${name} course at DECCAN AI LABS. Mentor-led, project-based training with four-step registration.`,
+      keywords:
+        COURSE_KEYWORDS[name] ||
+        `${name} course, DECCAN AI LABS ${name}, technology course India`,
     });
   }
 

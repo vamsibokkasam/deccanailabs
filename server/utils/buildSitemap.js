@@ -69,6 +69,7 @@ export function buildRobotsTxt() {
   return `User-agent: *
 Allow: /
 Disallow: /admin
+Disallow: /courses
 
 Sitemap: ${siteUrl}/sitemap.xml
 `;
