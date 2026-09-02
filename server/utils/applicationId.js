@@ -1,5 +1,4 @@
-import InternshipApplication from "../models/InternshipApplication.js";
-import SequenceCounter from "../models/SequenceCounter.js";
+import prisma from "../config/prisma.js";
 
 const ID_PREFIX = "DCAL";
 const COUNTER_KEY = "applicationId";
@@ -59,16 +58,16 @@ export function compareApplicationIds(leftId, rightId) {
   return right.sequence - left.sequence;
 }
 
-async function getMaxExistingSequence(session = null) {
-  const query = InternshipApplication.find({
-    applicationId: APPLICATION_ID_PATTERN,
-  })
-    .select("applicationId")
-    .lean();
+function db(client) {
+  return client || prisma;
+}
 
-  if (session) query.session(session);
+async function getMaxExistingSequence(client = null) {
+  const applications = await db(client).internshipApplication.findMany({
+    where: { applicationId: { not: null } },
+    select: { applicationId: true },
+  });
 
-  const applications = await query;
   let maxSequence = 0;
 
   for (const { applicationId } of applications) {
@@ -81,35 +80,33 @@ async function getMaxExistingSequence(session = null) {
   return maxSequence;
 }
 
-async function ensureGlobalCounter(session = null) {
-  const query = SequenceCounter.findOne({ key: COUNTER_KEY });
-  if (session) query.session(session);
+async function ensureGlobalCounter(client = null) {
+  const existing = await db(client).sequenceCounter.findUnique({
+    where: { key: COUNTER_KEY },
+  });
 
-  const existing = await query.lean();
   if (existing) return;
 
-  const maxSequence = await getMaxExistingSequence(session);
+  const maxSequence = await getMaxExistingSequence(client);
 
   try {
-    await SequenceCounter.create([{ key: COUNTER_KEY, value: maxSequence }], { session });
+    await db(client).sequenceCounter.create({
+      data: { key: COUNTER_KEY, value: maxSequence },
+    });
   } catch (error) {
-    if (error.code !== 11000) {
+    if (error.code !== "P2002") {
       throw error;
     }
   }
 }
 
-export async function generateApplicationId(session = null) {
-  await ensureGlobalCounter(session);
+export async function generateApplicationId(client = null) {
+  await ensureGlobalCounter(client);
 
-  const options = { returnDocument: "after", upsert: true };
-  if (session) options.session = session;
-
-  const counter = await SequenceCounter.findOneAndUpdate(
-    { key: COUNTER_KEY },
-    { $inc: { value: 1 } },
-    options
-  );
+  const counter = await db(client).sequenceCounter.update({
+    where: { key: COUNTER_KEY },
+    data: { value: { increment: 1 } },
+  });
 
   if (!counter || counter.value > MAX_SEQUENCE) {
     throw new Error("Application ID limit reached.");

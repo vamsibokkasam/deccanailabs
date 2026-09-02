@@ -1,4 +1,5 @@
 import { setCorsHeaders } from "../config/cors.js";
+import { isPrismaUniqueError, isPrismaUnavailableError } from "../utils/prismaErrors.js";
 
 const errorHandler = (err, req, res, next) => {
   console.error(err);
@@ -11,13 +12,9 @@ const errorHandler = (err, req, res, next) => {
     });
   }
 
-  if (err.name === "ValidationError") {
-    const messages = Object.values(err.errors).map((e) => e.message);
-    return res.status(400).json({ success: false, message: messages.join(", ") });
-  }
-
-  if (err.code === 11000) {
-    const field = Object.keys(err.keyPattern || {})[0];
+  if (isPrismaUniqueError(err)) {
+    const target = err.meta?.target;
+    const field = Array.isArray(target) ? target[0] : target;
     const message =
       field === "certNo"
         ? "A certificate with this certificate number already exists"
@@ -29,7 +26,7 @@ const errorHandler = (err, req, res, next) => {
     });
   }
 
-  if (err.name === "MongoServerError" || err.name === "MongooseError") {
+  if (isPrismaUnavailableError(err) || err.name === "PrismaClientInitializationError") {
     return res.status(503).json({
       success: false,
       message: "Database is temporarily unavailable. Please try again.",

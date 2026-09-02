@@ -20,7 +20,7 @@ A full-stack web application for **DECCAN AI labs** — an AI education and inte
 
 ### Backend API
 - REST API with Express.js
-- MongoDB Atlas cloud database
+- PostgreSQL database (Prisma)
 - Form validation on frontend and backend
 - Protected admin routes
 
@@ -32,7 +32,7 @@ A full-stack web application for **DECCAN AI labs** — an AI education and inte
 |------------|-------------------------------------|
 | Frontend   | React, Vite, Tailwind CSS, React Router |
 | Backend    | Node.js, Express.js                 |
-| Database   | MongoDB Atlas (Mongoose)            |
+| Database   | PostgreSQL (Prisma)                 |
 | Icons      | Lucide React                        |
 
 ---
@@ -49,9 +49,9 @@ deccanailabs/
 │   └── utils/              # Form validation
 ├── server/                 # Express backend
 │   ├── config/             # DB connection & seed data
+│   ├── prisma/             # PostgreSQL schema & migrations
 │   ├── controllers/        # Route handlers
 │   ├── middleware/         # Auth, validation, error handling
-│   ├── models/             # Mongoose schemas
 │   ├── routes/             # API routes
 │   └── server.js           # Entry point
 ├── public/                 # Static assets
@@ -63,7 +63,7 @@ deccanailabs/
 ## Prerequisites
 
 - [Node.js](https://nodejs.org/) (v18 or higher)
-- [MongoDB Atlas](https://www.mongodb.com/cloud/atlas) account (free tier)
+- [PostgreSQL](https://www.postgresql.org/) (local, [Neon](https://neon.tech), [Supabase](https://supabase.com), or [Render](https://render.com))
 - Git (optional, for deployment)
 
 ---
@@ -77,12 +77,9 @@ git clone https://github.com/YOUR_USERNAME/deccanailabs.git
 cd deccanailabs
 ```
 
-### 2. Set up MongoDB Atlas
+### 2. Set up PostgreSQL
 
-1. Create a free cluster at [mongodb.com/cloud/atlas](https://www.mongodb.com/cloud/atlas)
-2. Create a database user (username + password)
-3. Under **Network Access**, allow your IP (or `0.0.0.0/0` for development)
-4. Copy the connection string and replace `<password>` with your encoded password
+Create a database locally or with [Neon](https://neon.tech), [Supabase](https://supabase.com), or [Render PostgreSQL](https://render.com/docs/databases). Copy the connection string.
 
 > If your password contains `@`, encode it as `%40` in the connection string.
 
@@ -103,7 +100,7 @@ Edit `server/.env`:
 
 ```env
 PORT=5000
-MONGODB_URI=mongodb+srv://USER:PASSWORD@cluster0.xxxxx.mongodb.net/deccanailabs?retryWrites=true&w=majority
+DATABASE_URL=postgresql://USER:PASSWORD@HOST:5432/deccanailabs?sslmode=require
 CLIENT_URL=http://localhost:5173
 ADMIN_KEY=your-secret-admin-key
 ```
@@ -114,12 +111,20 @@ Start the backend:
 npm run dev
 ```
 
-You should see:
+Prisma applies the schema on startup. You should see:
 
 ```
-MongoDB Atlas connected
+PostgreSQL connected
 Server running on port 5000
 ```
+
+To import existing MongoDB data after Postgres is up:
+
+```bash
+npm run migrate:mongo
+```
+
+This reads `MONGODB_URI` (keep it only for this one-time import) and writes into `DATABASE_URL`.
 
 ### 4. Frontend setup
 
@@ -160,7 +165,7 @@ Open [http://localhost:5173](http://localhost:5173)
 | Variable      | Description                    | Example                              |
 |---------------|--------------------------------|--------------------------------------|
 | `PORT`        | Server port (local only; **do not set on Render**) | `5000` |
-| `MONGODB_URI` | MongoDB Atlas connection string| `mongodb+srv://...`                  |
+| `DATABASE_URL` | PostgreSQL connection string | `postgresql://...` |
 | `CLIENT_URL`  | Frontend URL(s) for CORS (comma-separated for multiple) | `http://localhost:5173,https://deccanailabs.vercel.app` |
 | `ADMIN_KEY`   | Admin dashboard login key      | `your-secret-admin-key`              |
 
@@ -222,8 +227,9 @@ Open [http://localhost:5173](http://localhost:5173)
 
 | Command         | Description              |
 |-----------------|--------------------------|
-| `npm run dev`   | Start with nodemon       |
-| `npm start`     | Start production server  |
+| `npm run dev`   | Apply migrations and start with nodemon |
+| `npm start`     | Apply migrations and start production server |
+| `npm run migrate:mongo` | One-time import from MongoDB (`MONGODB_URI` + `DATABASE_URL`) |
 
 ---
 
@@ -235,7 +241,7 @@ Open [http://localhost:5173](http://localhost:5173)
 |-----------|-----------------|-------|
 | Frontend  | [Vercel](https://vercel.com) | Free |
 | Backend   | [Render](https://render.com) | Free |
-| Database  | MongoDB Atlas   | Free  |
+| Database  | Neon / Render PostgreSQL | Free / paid |
 
 ### Backend (Render)
 
@@ -252,7 +258,7 @@ Open [http://localhost:5173](http://localhost:5173)
 4. Add environment variables:
 
 ```env
-MONGODB_URI=your_mongodb_atlas_uri
+DATABASE_URL=your_postgresql_connection_string
 CLIENT_URL=https://deccanailabs.vercel.app
 ADMIN_KEY=your-secret-admin-key
 ```

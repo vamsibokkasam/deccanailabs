@@ -3,7 +3,7 @@ import { fileURLToPath } from "url";
 import { createCanvas, loadImage } from "canvas";
 import QRCode from "qrcode";
 import { getSiteUrl } from "../config/site.js";
-import InternshipApplication from "../models/InternshipApplication.js";
+import prisma from "../config/prisma.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -202,14 +202,24 @@ export function buildCertificateVerifyUrl(certNo) {
 
 /** Certificate No on the PNG/PDF — always the linked application ID when available. */
 export async function resolveDisplayCertNo(certificateDoc) {
-  const populatedAppId = certificateDoc.applicationId?.applicationId;
+  const populatedAppId =
+    certificateDoc.application?.applicationId ||
+    certificateDoc.applicationId?.applicationId;
   if (populatedAppId) return populatedAppId;
 
-  const linkedId = certificateDoc.applicationId?._id || certificateDoc.applicationId;
+  const linkedId =
+    certificateDoc.application?.id ||
+    certificateDoc.applicationId?._id ||
+    certificateDoc.applicationId?.id ||
+    (typeof certificateDoc.applicationId === "string"
+      ? certificateDoc.applicationId
+      : null);
+
   if (linkedId) {
-    const application = await InternshipApplication.findById(linkedId)
-      .select("applicationId")
-      .lean();
+    const application = await prisma.internshipApplication.findUnique({
+      where: { id: String(linkedId) },
+      select: { applicationId: true },
+    });
     if (application?.applicationId) return application.applicationId;
   }
 

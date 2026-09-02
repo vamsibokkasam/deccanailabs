@@ -1,4 +1,4 @@
-import Program from "../models/Program.js";
+import prisma from "./prisma.js";
 
 const defaultPrograms = [
   {
@@ -34,10 +34,10 @@ const defaultPrograms = [
 ];
 
 const seedPrograms = async () => {
-  const count = await Program.countDocuments();
+  const count = await prisma.program.count();
 
   if (count === 0) {
-    await Program.insertMany(defaultPrograms);
+    await prisma.program.createMany({ data: defaultPrograms });
     console.log("Default programs seeded");
   }
 };

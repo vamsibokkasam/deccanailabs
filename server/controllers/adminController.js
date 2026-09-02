@@ -1,7 +1,5 @@
 import crypto from "crypto";
-import Contact from "../models/Contact.js";
-import InternshipApplication from "../models/InternshipApplication.js";
-import Program from "../models/Program.js";
+import prisma from "../config/prisma.js";
 
 function timingSafeEqualString(a, b) {
   const left = Buffer.from(String(a ?? ""), "utf8");
@@ -87,22 +85,30 @@ export const verifyAdmin = (req, res) => {
 
 export const getStats = async (req, res, next) => {
   try {
-    const [totalContacts, totalApplications, applicationsPerProgram, statusBreakdown] =
+    const [totalContacts, totalApplications, groupedByProgram, groupedByStatus, totalPrograms] =
       await Promise.all([
-        Contact.countDocuments(),
-        InternshipApplication.countDocuments(),
-        InternshipApplication.aggregate([
-          { $group: { _id: "$program", count: { $sum: 1 } } },
-          { $sort: { count: -1 } },
-          { $project: { _id: 0, program: "$_id", count: 1 } },
-        ]),
-        InternshipApplication.aggregate([
-          { $group: { _id: "$status", count: { $sum: 1 } } },
-          { $project: { _id: 0, status: "$_id", count: 1 } },
-        ]),
+        prisma.contact.count(),
+        prisma.internshipApplication.count(),
+        prisma.internshipApplication.groupBy({
+          by: ["program"],
+          _count: { id: true },
+          orderBy: { _count: { id: "desc" } },
+        }),
+        prisma.internshipApplication.groupBy({
+          by: ["status"],
+          _count: { id: true },
+        }),
+        prisma.program.count({ where: { isActive: true } }),
       ]);
 
-    const totalPrograms = await Program.countDocuments({ isActive: true });
+    const applicationsPerProgram = groupedByProgram.map((row) => ({
+      program: row.program,
+      count: row._count.id,
+    }));
+    const statusBreakdown = groupedByStatus.map((row) => ({
+      status: row.status,
+      count: row._count.id,
+    }));
 
     const statusCounts = {
       pending: 0,

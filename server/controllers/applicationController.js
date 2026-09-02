@@ -1,56 +1,44 @@
-import mongoose from "mongoose";
-import InternshipApplication from "../models/InternshipApplication.js";
-import Certificate from "../models/Certificate.js";
+import prisma from "../config/prisma.js";
 import { compareApplicationIds, generateApplicationId } from "../utils/applicationId.js";
+import { isPrismaUniqueError } from "../utils/prismaErrors.js";
 import { validatePaymentScreenshot } from "../utils/saveScreenshot.js";
+import {
+  serializeApplication,
+  serializeCertificate,
+  stripScreenshotFromApplication,
+} from "../utils/serialize.js";
 import { issueCertificateForApplication } from "../services/certificateIssuance.js";
 import { sendCertificateEmail } from "../services/certificateEmail.js";
 
-const stripScreenshotFromApplication = (application) => {
-  const data = application.toObject ? application.toObject() : { ...application };
-
-  if (data.payment?.screenshotData) {
-    const { screenshotData, ...paymentRest } = data.payment;
-    data.payment = paymentRest;
-  }
-
-  return data;
-};
+const TX_OPTIONS = { maxWait: 10000, timeout: 15000 };
 
 export const createApplication = async (req, res, next) => {
-  const session = await mongoose.startSession();
-
   try {
     const { fullName, email, phone, program, message, college, department } = req.body;
-    let application;
 
-    await session.withTransaction(async () => {
-      const applicationId = await generateApplicationId(session);
-      const [created] = await InternshipApplication.create(
-        [
-          {
-            applicationId,
-            fullName: fullName.trim(),
-            email: email.trim().toLowerCase(),
-            phone: phone.trim().replace(/\s/g, ""),
-            college: college?.trim() || "",
-            department: department?.trim() || "",
-            program: program.trim(),
-            message: message?.trim() || "",
-            feeAmount: 0,
-            status: "pending",
-          },
-        ],
-        { session }
-      );
+    const application = await prisma.$transaction(async (tx) => {
+      const applicationId = await generateApplicationId(tx);
 
-      application = created;
-    });
+      return tx.internshipApplication.create({
+        data: {
+          applicationId,
+          fullName: fullName.trim(),
+          email: email.trim().toLowerCase(),
+          phone: phone.trim().replace(/\s/g, ""),
+          college: college?.trim() || "",
+          department: department?.trim() || "",
+          program: program.trim(),
+          message: message?.trim() || "",
+          feeAmount: 0,
+          status: "pending",
+        },
+      });
+    }, TX_OPTIONS);
 
     res.status(201).json({
       success: true,
       message: "Application submitted successfully",
-      data: application,
+      data: serializeApplication(application),
     });
   } catch (error) {
     if (error.message?.includes("application ID")) {
@@ -60,14 +48,10 @@ export const createApplication = async (req, res, next) => {
       });
     }
     next(error);
-  } finally {
-    await session.endSession();
   }
 };
 
 export const createApplicationWithPayment = async (req, res, next) => {
-  const session = await mongoose.startSession();
-
   try {
     const {
       fullName,
@@ -82,12 +66,12 @@ export const createApplicationWithPayment = async (req, res, next) => {
     } = req.body;
 
     const applicationSource = source === "course" ? "course" : "internship";
-    const parsedFee =
-      String(program || "").trim() === "Web Development" ? 499 : 599;
-
+    const parsedFee = String(program || "").trim() === "Web Development" ? 499 : 599;
     const normalizedTxnId = transactionId.trim();
-    const existingPayment = await InternshipApplication.findOne({
-      "payment.transactionId": normalizedTxnId,
+
+    const existingPayment = await prisma.internshipApplication.findUnique({
+      where: { paymentTransactionId: normalizedTxnId },
+      select: { id: true },
     });
 
     if (existingPayment) {
@@ -99,37 +83,28 @@ export const createApplicationWithPayment = async (req, res, next) => {
 
     const screenshotData = validatePaymentScreenshot(screenshotBase64);
 
-    let application;
+    const application = await prisma.$transaction(async (tx) => {
+      const applicationId = await generateApplicationId(tx);
 
-    await session.withTransaction(async () => {
-      const applicationId = await generateApplicationId(session);
-
-      const [created] = await InternshipApplication.create(
-        [
-          {
-            applicationId,
-            fullName: fullName.trim(),
-            email: email.trim().toLowerCase(),
-            phone: phone.trim().replace(/\s/g, ""),
-            college: college.trim(),
-            department: department.trim(),
-            program: program.trim(),
-            source: applicationSource,
-            feeAmount: parsedFee,
-            payment: {
-              method: "upi",
-              transactionId: normalizedTxnId,
-              screenshotData,
-              status: "pending",
-            },
-            status: "pending",
-          },
-        ],
-        { session }
-      );
-
-      application = created;
-    });
+      return tx.internshipApplication.create({
+        data: {
+          applicationId,
+          fullName: fullName.trim(),
+          email: email.trim().toLowerCase(),
+          phone: phone.trim().replace(/\s/g, ""),
+          college: college.trim(),
+          department: department.trim(),
+          program: program.trim(),
+          source: applicationSource,
+          feeAmount: parsedFee,
+          paymentMethod: "upi",
+          paymentTransactionId: normalizedTxnId,
+          paymentScreenshotData: screenshotData,
+          paymentStatus: "pending",
+          status: "pending",
+        },
+      });
+    }, TX_OPTIONS);
 
     res.status(201).json({
       success: true,
@@ -148,22 +123,34 @@ export const createApplicationWithPayment = async (req, res, next) => {
       });
     }
     next(error);
-  } finally {
-    await session.endSession();
   }
 };
 
 export const getApplications = async (req, res, next) => {
   try {
-    const applications = await InternshipApplication.find()
-      .populate("certificate")
-      .populate("batchId", "name startDate endDate programTitle")
-      .lean();
+    const applications = await prisma.internshipApplication.findMany({
+      include: {
+        certificate: true,
+        batch: {
+          select: {
+            id: true,
+            name: true,
+            startDate: true,
+            endDate: true,
+            programTitle: true,
+          },
+        },
+      },
+    });
+
     applications.sort((left, right) =>
       compareApplicationIds(left.applicationId, right.applicationId)
     );
 
-    res.json({ success: true, data: applications });
+    res.json({
+      success: true,
+      data: applications.map((application) => serializeApplication(application)),
+    });
   } catch (error) {
     next(error);
   }
@@ -196,7 +183,10 @@ export const updateApplicationStatus = async (req, res, next) => {
       });
     }
 
-    const existing = await InternshipApplication.findById(req.params.id);
+    const existing = await prisma.internshipApplication.findUnique({
+      where: { id: req.params.id },
+    });
+
     if (!existing) {
       return res.status(404).json({
         success: false,
@@ -211,11 +201,10 @@ export const updateApplicationStatus = async (req, res, next) => {
       });
     }
 
-    const application = await InternshipApplication.findByIdAndUpdate(
-      req.params.id,
-      { status },
-      { returnDocument: "after", runValidators: true }
-    );
+    const application = await prisma.internshipApplication.update({
+      where: { id: req.params.id },
+      data: { status },
+    });
 
     res.json({
       success: true,
@@ -228,30 +217,24 @@ export const updateApplicationStatus = async (req, res, next) => {
 };
 
 export const completeApplication = async (req, res, next) => {
-  const session = await mongoose.startSession();
-
   try {
-    let application;
-    let certificate;
+    const { application, certificate } = await prisma.$transaction(async (tx) => {
+      const existing = await tx.internshipApplication.findUnique({
+        where: { id: req.params.id },
+        include: { certificate: true },
+      });
 
-    await session.withTransaction(async () => {
-      application = await InternshipApplication.findById(req.params.id).session(session);
-
-      if (!application) {
+      if (!existing) {
         const notFoundError = new Error("Application not found");
         notFoundError.statusCode = 404;
         throw notFoundError;
       }
 
-      if (application.status === "completed" && application.certificate) {
-        certificate = await Certificate.findById(application.certificate).session(session);
-        if (certificate) return;
+      if (existing.status === "completed" && existing.certificate) {
+        return { application: existing, certificate: existing.certificate };
       }
 
-      if (
-        application.payment?.transactionId &&
-        application.payment?.status !== "verified"
-      ) {
+      if (existing.paymentTransactionId && existing.paymentStatus !== "verified") {
         const paymentError = new Error(
           "Payment must be verified before issuing a certificate"
         );
@@ -259,25 +242,19 @@ export const completeApplication = async (req, res, next) => {
         throw paymentError;
       }
 
-      if (!["accepted", "completed"].includes(application.status)) {
-        const statusError = new Error(
-          "Only accepted applications can be marked completed"
-        );
+      if (!["accepted", "completed"].includes(existing.status)) {
+        const statusError = new Error("Only accepted applications can be marked completed");
         statusError.statusCode = 400;
         throw statusError;
       }
 
       const details = {
-        registrationNo: (
-          application.registrationNo ||
-          application.applicationId ||
-          ""
-        ).trim(),
-        department: (application.department || "").trim(),
-        college: (application.college || "").trim(),
-        internshipDomain: (application.program || "").trim(),
-        startDate: application.internshipStartDate,
-        endDate: application.internshipEndDate,
+        registrationNo: (existing.registrationNo || existing.applicationId || "").trim(),
+        department: (existing.department || "").trim(),
+        college: (existing.college || "").trim(),
+        internshipDomain: (existing.program || "").trim(),
+        startDate: existing.internshipStartDate,
+        endDate: existing.internshipEndDate,
       };
 
       const missingDetails = [];
@@ -307,21 +284,27 @@ export const completeApplication = async (req, res, next) => {
         throw datesError;
       }
 
-      certificate = await issueCertificateForApplication(application, details, session);
+      const issued = await issueCertificateForApplication(existing, details, tx);
 
-      application.registrationNo = details.registrationNo;
-      application.department = details.department;
-      application.college = details.college;
-      application.internshipStartDate = details.startDate;
-      application.internshipEndDate = details.endDate;
-      application.status = "completed";
-      application.completedAt = new Date();
-      application.certificate = certificate._id;
-      await application.save({ session });
-    });
+      const updated = await tx.internshipApplication.update({
+        where: { id: existing.id },
+        data: {
+          registrationNo: details.registrationNo,
+          department: details.department,
+          college: details.college,
+          internshipStartDate: details.startDate,
+          internshipEndDate: details.endDate,
+          status: "completed",
+          completedAt: new Date(),
+        },
+        include: { certificate: true },
+      });
+
+      return { application: updated, certificate: issued };
+    }, TX_OPTIONS);
 
     const responseData = stripScreenshotFromApplication(application);
-    responseData.certificate = certificate;
+    responseData.certificate = serializeCertificate(certificate);
 
     let emailSent = false;
     let emailWarning = null;
@@ -329,10 +312,13 @@ export const completeApplication = async (req, res, next) => {
     if (certificate && application?.email && !application.certificateEmailedAt) {
       try {
         await sendCertificateEmail({ application, certificate });
-        application.certificateEmailedAt = new Date();
-        await application.save();
+        const emailedAt = new Date();
+        await prisma.internshipApplication.update({
+          where: { id: application.id },
+          data: { certificateEmailedAt: emailedAt },
+        });
         emailSent = true;
-        responseData.certificateEmailedAt = application.certificateEmailedAt;
+        responseData.certificateEmailedAt = emailedAt;
       } catch (emailError) {
         console.error("Certificate email failed:", emailError.message);
         emailWarning = emailError.message || "Failed to send certificate email";
@@ -358,7 +344,7 @@ export const completeApplication = async (req, res, next) => {
       });
     }
 
-    if (error.code === 11000) {
+    if (isPrismaUniqueError(error)) {
       return res.status(409).json({
         success: false,
         message: "A certificate already exists for this application",
@@ -366,8 +352,6 @@ export const completeApplication = async (req, res, next) => {
     }
 
     next(error);
-  } finally {
-    await session.endSession();
   }
 };
 
@@ -390,7 +374,10 @@ export const updatePaymentStatus = async (req, res, next) => {
       });
     }
 
-    const existing = await InternshipApplication.findById(req.params.id);
+    const existing = await prisma.internshipApplication.findUnique({
+      where: { id: req.params.id },
+    });
+
     if (!existing) {
       return res.status(404).json({
         success: false,
@@ -407,17 +394,14 @@ export const updatePaymentStatus = async (req, res, next) => {
 
     const applicationStatus = paymentStatus === "verified" ? "accepted" : "rejected";
 
-    const application = await InternshipApplication.findByIdAndUpdate(
-      req.params.id,
-      {
-        $set: {
-          "payment.status": paymentStatus,
-          "payment.verifiedAt": new Date(),
-          status: applicationStatus,
-        },
+    const application = await prisma.internshipApplication.update({
+      where: { id: req.params.id },
+      data: {
+        paymentStatus,
+        paymentVerifiedAt: new Date(),
+        status: applicationStatus,
       },
-      { returnDocument: "after", runValidators: false }
-    );
+    });
 
     res.json({
       success: true,
@@ -434,7 +418,10 @@ export const updatePaymentStatus = async (req, res, next) => {
 
 export const deleteApplication = async (req, res, next) => {
   try {
-    const existing = await InternshipApplication.findById(req.params.id);
+    const existing = await prisma.internshipApplication.findUnique({
+      where: { id: req.params.id },
+      include: { certificate: true },
+    });
 
     if (!existing) {
       return res.status(404).json({
@@ -450,7 +437,9 @@ export const deleteApplication = async (req, res, next) => {
       });
     }
 
-    await InternshipApplication.findByIdAndDelete(req.params.id);
+    await prisma.internshipApplication.delete({
+      where: { id: req.params.id },
+    });
 
     res.json({
       success: true,

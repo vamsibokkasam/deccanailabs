@@ -1,15 +1,15 @@
-import Certificate from "../models/Certificate.js";
-
-export async function issueCertificateForApplication(application, details, session) {
-  const existing = await Certificate.findOne({
-    applicationId: application._id,
-  }).session(session);
+export async function issueCertificateForApplication(application, details, tx) {
+  const existing = await tx.certificate.findUnique({
+    where: { applicationId: application.id },
+  });
 
   if (existing) {
     const appId = application.applicationId?.trim();
     if (appId && existing.certNo !== appId) {
-      existing.certNo = appId;
-      await existing.save({ session });
+      return tx.certificate.update({
+        where: { id: existing.id },
+        data: { certNo: appId },
+      });
     }
     return existing;
   }
@@ -23,31 +23,27 @@ export async function issueCertificateForApplication(application, details, sessi
     throw missingIdError;
   }
 
-  const byCertNo = await Certificate.findOne({ certNo }).session(session);
+  const byCertNo = await tx.certificate.findUnique({
+    where: { certNo },
+  });
+
   if (byCertNo) {
-    const conflictError = new Error(
-      `A certificate already exists with ID ${certNo}`
-    );
+    const conflictError = new Error(`A certificate already exists with ID ${certNo}`);
     conflictError.statusCode = 409;
     throw conflictError;
   }
 
-  const [certificate] = await Certificate.create(
-    [
-      {
-        certNo,
-        recipientName: application.fullName,
-        registrationNo: details.registrationNo,
-        department: details.department,
-        college: details.college,
-        internshipDomain: details.internshipDomain,
-        startDate: details.startDate,
-        endDate: details.endDate,
-        applicationId: application._id,
-      },
-    ],
-    { session }
-  );
-
-  return certificate;
+  return tx.certificate.create({
+    data: {
+      certNo,
+      recipientName: application.fullName,
+      registrationNo: details.registrationNo,
+      department: details.department,
+      college: details.college,
+      internshipDomain: details.internshipDomain,
+      startDate: details.startDate,
+      endDate: details.endDate,
+      applicationId: application.id,
+    },
+  });
 }

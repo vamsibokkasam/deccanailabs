@@ -1,7 +1,5 @@
-import mongoose from "mongoose";
-import Batch from "../models/Batch.js";
-import Program from "../models/Program.js";
-import InternshipApplication from "../models/InternshipApplication.js";
+import prisma from "../config/prisma.js";
+import { serializeApplication, serializeBatch } from "../utils/serialize.js";
 
 function exactProgramTitleMatch(title) {
   const escaped = String(title || "").replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
@@ -11,27 +9,34 @@ function exactProgramTitleMatch(title) {
 async function attachStudentCounts(batches) {
   if (!batches.length) return batches;
 
-  const batchIds = batches.map((batch) => batch._id);
-  const counts = await InternshipApplication.aggregate([
-    { $match: { batchId: { $in: batchIds } } },
-    { $group: { _id: "$batchId", count: { $sum: 1 } } },
-  ]);
+  const batchIds = batches.map((batch) => batch.id);
+  const counts = await prisma.internshipApplication.groupBy({
+    by: ["batchId"],
+    where: { batchId: { in: batchIds } },
+    _count: { id: true },
+  });
 
-  const countMap = new Map(counts.map(({ _id, count }) => [String(_id), count]));
+  const countMap = new Map(counts.map((row) => [row.batchId, row._count.id]));
 
-  return batches.map((batch) => ({
-    ...batch,
-    studentCount: countMap.get(String(batch._id)) || 0,
-  }));
+  return batches.map((batch) =>
+    serializeBatch({
+      ...batch,
+      studentCount: countMap.get(batch.id) || 0,
+    })
+  );
 }
 
 async function resolveProgram(programId) {
-  const program = await Program.findById(programId);
+  const program = await prisma.program.findUnique({
+    where: { id: programId },
+  });
+
   if (!program) {
     const error = new Error("Program not found");
     error.statusCode = 404;
     throw error;
   }
+
   return program;
 }
 
@@ -56,15 +61,12 @@ function parseBatchDates(startDate, endDate) {
 
 export const listBatches = async (req, res, next) => {
   try {
-    const filter = {};
-    if (req.query.programId) {
-      filter.programId = req.query.programId;
-    }
+    const batches = await prisma.batch.findMany({
+      where: req.query.programId ? { programId: String(req.query.programId) } : undefined,
+      orderBy: { startDate: "desc" },
+    });
 
-    const batches = await Batch.find(filter).sort({ startDate: -1 }).lean();
-    const data = await attachStudentCounts(batches);
-
-    res.json({ success: true, data });
+    res.json({ success: true, data: await attachStudentCounts(batches) });
   } catch (error) {
     next(error);
   }
@@ -73,22 +75,23 @@ export const listBatches = async (req, res, next) => {
 export const createBatch = async (req, res, next) => {
   try {
     const { programId, name, startDate, endDate } = req.body;
-
     const program = await resolveProgram(programId);
     const { parsedStart, parsedEnd } = parseBatchDates(startDate, endDate);
 
-    const batch = await Batch.create({
-      programId: program._id,
-      programTitle: program.title,
-      name: name.trim(),
-      startDate: parsedStart,
-      endDate: parsedEnd,
+    const batch = await prisma.batch.create({
+      data: {
+        programId: program.id,
+        programTitle: program.title,
+        name: name.trim(),
+        startDate: parsedStart,
+        endDate: parsedEnd,
+      },
     });
 
     res.status(201).json({
       success: true,
       message: "Batch created successfully",
-      data: { ...batch.toObject(), studentCount: 0 },
+      data: serializeBatch({ ...batch, studentCount: 0 }),
     });
   } catch (error) {
     if (error.statusCode) {
@@ -103,7 +106,10 @@ export const createBatch = async (req, res, next) => {
 
 export const updateBatch = async (req, res, next) => {
   try {
-    const batch = await Batch.findById(req.params.id);
+    const batch = await prisma.batch.findUnique({
+      where: { id: req.params.id },
+    });
+
     if (!batch) {
       return res.status(404).json({
         success: false,
@@ -112,25 +118,29 @@ export const updateBatch = async (req, res, next) => {
     }
 
     const { programId, name, startDate, endDate, isActive } = req.body;
+    const data = {};
 
     if (programId && String(programId) !== String(batch.programId)) {
       const program = await resolveProgram(programId);
-      batch.programId = program._id;
-      batch.programTitle = program.title;
+      data.programId = program.id;
+      data.programTitle = program.title;
     }
 
-    if (name !== undefined) batch.name = name.trim();
-    if (isActive !== undefined) batch.isActive = isActive;
+    if (name !== undefined) data.name = name.trim();
+    if (isActive !== undefined) data.isActive = isActive;
 
     const nextStart = startDate !== undefined ? startDate : batch.startDate;
     const nextEnd = endDate !== undefined ? endDate : batch.endDate;
     const { parsedStart, parsedEnd } = parseBatchDates(nextStart, nextEnd);
-    batch.startDate = parsedStart;
-    batch.endDate = parsedEnd;
+    data.startDate = parsedStart;
+    data.endDate = parsedEnd;
 
-    await batch.save();
+    const updated = await prisma.batch.update({
+      where: { id: req.params.id },
+      data,
+    });
 
-    const [withCount] = await attachStudentCounts([batch.toObject()]);
+    const [withCount] = await attachStudentCounts([updated]);
 
     res.json({
       success: true,
@@ -150,32 +160,33 @@ export const updateBatch = async (req, res, next) => {
 
 export const deleteBatch = async (req, res, next) => {
   try {
-    const batch = await Batch.findByIdAndUpdate(
-      req.params.id,
-      { isActive: false },
-      { returnDocument: "after" }
-    );
+    const batch = await prisma.batch.update({
+      where: { id: req.params.id },
+      data: { isActive: false },
+    });
 
-    if (!batch) {
+    res.json({
+      success: true,
+      message: "Batch deactivated successfully",
+      data: serializeBatch(batch),
+    });
+  } catch (error) {
+    if (error.code === "P2025") {
       return res.status(404).json({
         success: false,
         message: "Batch not found",
       });
     }
-
-    res.json({
-      success: true,
-      message: "Batch deactivated successfully",
-      data: batch,
-    });
-  } catch (error) {
     next(error);
   }
 };
 
 export const getUnassignedApplications = async (req, res, next) => {
   try {
-    const batch = await Batch.findById(req.params.id);
+    const batch = await prisma.batch.findUnique({
+      where: { id: req.params.id },
+    });
+
     if (!batch) {
       return res.status(404).json({
         success: false,
@@ -183,27 +194,38 @@ export const getUnassignedApplications = async (req, res, next) => {
       });
     }
 
-    const applications = await InternshipApplication.find({
-      program: exactProgramTitleMatch(batch.programTitle),
-      $or: [{ batchId: null }, { batchId: { $exists: false } }],
-    })
-      .select(
-        "_id applicationId fullName email phone college department program status payment.status createdAt"
-      )
-      .sort({ createdAt: -1 })
-      .lean();
+    const applications = await prisma.internshipApplication.findMany({
+      where: {
+        batchId: null,
+        program: { equals: batch.programTitle, mode: "insensitive" },
+      },
+      select: {
+        id: true,
+        applicationId: true,
+        fullName: true,
+        email: true,
+        phone: true,
+        college: true,
+        department: true,
+        program: true,
+        status: true,
+        paymentStatus: true,
+        createdAt: true,
+      },
+      orderBy: { createdAt: "desc" },
+    });
 
     res.json({
       success: true,
       batch: {
-        _id: batch._id,
+        _id: batch.id,
         name: batch.name,
         programTitle: batch.programTitle,
         startDate: batch.startDate,
         endDate: batch.endDate,
       },
       count: applications.length,
-      data: applications,
+      data: applications.map((application) => serializeApplication(application)),
     });
   } catch (error) {
     next(error);
@@ -211,8 +233,6 @@ export const getUnassignedApplications = async (req, res, next) => {
 };
 
 export const assignApplicationsToBatch = async (req, res, next) => {
-  const session = await mongoose.startSession();
-
   try {
     const { applicationIds } = req.body;
 
@@ -223,10 +243,11 @@ export const assignApplicationsToBatch = async (req, res, next) => {
       });
     }
 
-    let assignedCount = 0;
+    const assignedCount = await prisma.$transaction(async (tx) => {
+      const batch = await tx.batch.findUnique({
+        where: { id: req.params.id },
+      });
 
-    await session.withTransaction(async () => {
-      const batch = await Batch.findById(req.params.id).session(session);
       if (!batch) {
         const notFoundError = new Error("Batch not found");
         notFoundError.statusCode = 404;
@@ -239,25 +260,30 @@ export const assignApplicationsToBatch = async (req, res, next) => {
         throw inactiveError;
       }
 
+      let count = 0;
+      const programMatch = exactProgramTitleMatch(batch.programTitle);
+
       for (const applicationId of applicationIds) {
-        const application = await InternshipApplication.findById(applicationId).session(
-          session
-        );
+        const application = await tx.internshipApplication.findUnique({
+          where: { id: applicationId },
+        });
 
         if (!application) continue;
-
-        if (!exactProgramTitleMatch(batch.programTitle).test(application.program || "")) {
-          continue;
-        }
-
+        if (!programMatch.test(application.program || "")) continue;
         if (application.batchId) continue;
 
-        application.batchId = batch._id;
-        application.internshipStartDate = batch.startDate;
-        application.internshipEndDate = batch.endDate;
-        await application.save({ session });
-        assignedCount += 1;
+        await tx.internshipApplication.update({
+          where: { id: application.id },
+          data: {
+            batchId: batch.id,
+            internshipStartDate: batch.startDate,
+            internshipEndDate: batch.endDate,
+          },
+        });
+        count += 1;
       }
+
+      return count;
     });
 
     res.json({
@@ -276,7 +302,5 @@ export const assignApplicationsToBatch = async (req, res, next) => {
       });
     }
     next(error);
-  } finally {
-    session.endSession();
   }
 };

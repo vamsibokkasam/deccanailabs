@@ -52,7 +52,7 @@ app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
   console.log(`JSON body limit: ${JSON_BODY_LIMIT}`);
   console.log(`CORS allowed origins: ${getAllowedOrigins().join(", ")}`);
-  console.log(`MONGODB_URI set: ${process.env.MONGODB_URI ? "yes" : "NO"}`);
+  console.log(`DATABASE_URL set: ${process.env.DATABASE_URL ? "yes" : "NO"}`);
 });
 
 const initDatabase = async () => {
@@ -62,7 +62,7 @@ const initDatabase = async () => {
       await seedPrograms();
       return;
     } catch (error) {
-      console.error(`MongoDB attempt ${attempt}/5 failed:`, error.message);
+      console.error(`PostgreSQL attempt ${attempt}/5 failed:`, error.message);
       if (attempt < 5) {
         await new Promise((resolve) => setTimeout(resolve, 5000));
       }

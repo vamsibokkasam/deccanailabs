@@ -1,10 +1,17 @@
-import Certificate from "../models/Certificate.js";
-import InternshipApplication from "../models/InternshipApplication.js";
+import prisma from "../config/prisma.js";
 import { generateCertificateNo } from "../utils/certificateNo.js";
+import { isPrismaUniqueError } from "../utils/prismaErrors.js";
+import { serializeCertificate } from "../utils/serialize.js";
 import {
   renderCertificate,
   resolveDisplayCertNo,
 } from "../services/certificateRenderer.js";
+
+const applicationSelect = {
+  id: true,
+  applicationId: true,
+  email: true,
+};
 
 function resolveCertNo(raw) {
   const value = Array.isArray(raw) ? raw.join("/") : String(raw ?? "");
@@ -25,45 +32,44 @@ function pngFilename(certNo) {
   return `${certNo.replace(/\//g, "-")}.png`;
 }
 
-function exactCaseInsensitive(value) {
-  const escaped = value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-  return new RegExp(`^${escaped}$`, "i");
-}
-
 async function syncCertificateCertNo(certificate) {
-  const appId = certificate.applicationId?.applicationId?.trim();
+  const appId = certificate.application?.applicationId?.trim();
   if (appId && certificate.certNo !== appId) {
-    certificate.certNo = appId;
-    await certificate.save();
+    return prisma.certificate.update({
+      where: { id: certificate.id },
+      data: { certNo: appId },
+      include: { application: { select: applicationSelect } },
+    });
   }
+  return certificate;
 }
 
-async function findCertificate(identifier, { lean = false } = {}) {
+async function findCertificate(identifier) {
   const value = String(identifier || "").trim();
   if (!value) return null;
 
-  const exact = exactCaseInsensitive(value);
-  let certificate = await Certificate.findOne({ certNo: exact }).populate(
-    "applicationId",
-    "applicationId email"
-  );
+  let certificate = await prisma.certificate.findFirst({
+    where: { certNo: { equals: value, mode: "insensitive" } },
+    include: { application: { select: applicationSelect } },
+  });
 
   if (!certificate) {
-    const application = await InternshipApplication.findOne({
-      applicationId: exact,
-    }).select("_id");
+    const application = await prisma.internshipApplication.findFirst({
+      where: { applicationId: { equals: value, mode: "insensitive" } },
+      select: { id: true },
+    });
 
     if (application) {
-      certificate = await Certificate.findOne({
-        applicationId: application._id,
-      }).populate("applicationId", "applicationId email");
+      certificate = await prisma.certificate.findUnique({
+        where: { applicationId: application.id },
+        include: { application: { select: applicationSelect } },
+      });
     }
   }
 
   if (!certificate) return null;
 
-  await syncCertificateCertNo(certificate);
-  return lean ? certificate.toObject() : certificate;
+  return syncCertificateCertNo(certificate);
 }
 
 async function sendCertificatePdf(certificate, res, { download = false } = {}) {
@@ -142,9 +148,9 @@ export const createCertificate = async (req, res, next) => {
     let linkedApplicationId = applicationId || undefined;
 
     if (linkedApplicationId) {
-      const InternshipApplication = (await import("../models/InternshipApplication.js"))
-        .default;
-      const application = await InternshipApplication.findById(linkedApplicationId);
+      const application = await prisma.internshipApplication.findUnique({
+        where: { id: linkedApplicationId },
+      });
 
       if (!application) {
         return res.status(404).json({
@@ -167,25 +173,27 @@ export const createCertificate = async (req, res, next) => {
       certNo = await generateCertificateNo();
     }
 
-    const certificate = await Certificate.create({
-      certNo,
-      recipientName: recipientName.trim(),
-      registrationNo: registrationNo?.trim() || "",
-      department: department?.trim() || "",
-      college: college?.trim() || "",
-      internshipDomain: internshipDomain.trim(),
-      startDate: parsedStart,
-      endDate: parsedEnd,
-      applicationId: linkedApplicationId,
+    const certificate = await prisma.certificate.create({
+      data: {
+        certNo,
+        recipientName: recipientName.trim(),
+        registrationNo: registrationNo?.trim() || "",
+        department: department?.trim() || "",
+        college: college?.trim() || "",
+        internshipDomain: internshipDomain.trim(),
+        startDate: parsedStart,
+        endDate: parsedEnd,
+        applicationId: linkedApplicationId,
+      },
     });
 
     res.status(201).json({
       success: true,
       message: "Certificate created successfully",
-      data: certificate,
+      data: serializeCertificate(certificate),
     });
   } catch (error) {
-    if (error.code === 11000) {
+    if (isPrismaUniqueError(error)) {
       return res.status(409).json({
         success: false,
         message: "A certificate with this certificate number already exists",
@@ -291,31 +299,35 @@ export const searchCertificates = async (req, res, next) => {
       });
     }
 
-    const exact = exactCaseInsensitive(query);
-    const applications = await InternshipApplication.find({
-      $or: [{ email: exact }, { applicationId: exact }],
-    })
-      .select("_id applicationId email")
-      .lean();
+    const applications = await prisma.internshipApplication.findMany({
+      where: {
+        OR: [
+          { email: { equals: query, mode: "insensitive" } },
+          { applicationId: { equals: query, mode: "insensitive" } },
+        ],
+      },
+      select: { id: true, applicationId: true, email: true },
+    });
 
-    const applicationIds = applications.map(({ _id }) => _id);
-    const certificates = await Certificate.find({
-      $or: [
-        { certNo: exact },
-        { registrationNo: exact },
-        ...(applicationIds.length ? [{ applicationId: { $in: applicationIds } }] : []),
-      ],
-    })
-      .populate("applicationId", "applicationId email")
-      .sort({ issuedAt: -1 })
-      .limit(10)
-      .lean();
+    const applicationIds = applications.map(({ id }) => id);
+    const certificates = await prisma.certificate.findMany({
+      where: {
+        OR: [
+          { certNo: { equals: query, mode: "insensitive" } },
+          { registrationNo: { equals: query, mode: "insensitive" } },
+          ...(applicationIds.length ? [{ applicationId: { in: applicationIds } }] : []),
+        ],
+      },
+      include: { application: { select: applicationSelect } },
+      orderBy: { issuedAt: "desc" },
+      take: 10,
+    });
 
     const data = certificates.map((certificate) => ({
-      certNo: certificate.applicationId?.applicationId || certificate.certNo,
+      certNo: certificate.application?.applicationId || certificate.certNo,
       recipientName: certificate.recipientName,
-      email: certificate.applicationId?.email || "",
-      internId: certificate.applicationId?.applicationId || "",
+      email: certificate.application?.email || "",
+      internId: certificate.application?.applicationId || "",
       registrationNo: certificate.registrationNo,
       internshipDomain: certificate.internshipDomain,
       department: certificate.department,
@@ -340,7 +352,7 @@ export const searchCertificates = async (req, res, next) => {
 export const verifyCertificate = async (req, res, next) => {
   try {
     const certNo = resolveCertNo(req.params.certNo);
-    const certificate = await findCertificate(certNo, { lean: true });
+    const certificate = await findCertificate(certNo);
 
     if (!certificate) {
       return res.status(404).json({
@@ -349,8 +361,7 @@ export const verifyCertificate = async (req, res, next) => {
       });
     }
 
-    const displayCertNo =
-      certificate.applicationId?.applicationId || certificate.certNo;
+    const displayCertNo = certificate.application?.applicationId || certificate.certNo;
 
     res.json({
       success: true,
@@ -383,13 +394,16 @@ export const revokeCertificate = async (req, res, next) => {
       });
     }
 
-    certificate.status = "revoked";
-    await certificate.save();
+    const revoked = await prisma.certificate.update({
+      where: { id: certificate.id },
+      data: { status: "revoked" },
+      include: { application: { select: applicationSelect } },
+    });
 
     res.json({
       success: true,
       message: "Certificate revoked successfully",
-      data: certificate,
+      data: serializeCertificate(revoked),
     });
   } catch (error) {
     next(error);

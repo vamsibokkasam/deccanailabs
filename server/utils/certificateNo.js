@@ -1,4 +1,4 @@
-import SequenceCounter from "../models/SequenceCounter.js";
+import prisma from "../config/prisma.js";
 
 /**
  * Fallback only for manual certificate creates without an application.
@@ -7,15 +7,14 @@ import SequenceCounter from "../models/SequenceCounter.js";
 const CERT_PREFIX = "DCAL";
 const COUNTER_KEY = "certificateNo";
 
-export async function generateCertificateNo(session = null) {
-  const options = { returnDocument: "after", upsert: true };
-  if (session) options.session = session;
+export async function generateCertificateNo(client = null) {
+  const db = client || prisma;
 
-  const counter = await SequenceCounter.findOneAndUpdate(
-    { key: COUNTER_KEY },
-    { $inc: { value: 1 } },
-    options
-  );
+  const counter = await db.sequenceCounter.upsert({
+    where: { key: COUNTER_KEY },
+    create: { key: COUNTER_KEY, value: 1 },
+    update: { value: { increment: 1 } },
+  });
 
   const sequence = counter?.value ?? 1;
   const now = new Date();

@@ -1,5 +1,5 @@
-import mongoose from "mongoose";
-import Program from "../models/Program.js";
+import { getDbStatus } from "../config/db.js";
+import prisma from "../config/prisma.js";
 import { getSiteUrl, STATIC_SITEMAP_ROUTES } from "../config/sitemapRoutes.js";
 import { courseTitleToSlug } from "./courseSlug.js";
 
@@ -36,7 +36,10 @@ export async function getSitemapUrlEntries() {
     priority,
   }));
 
-  const programs = await Program.find({ isActive: true }).sort({ updatedAt: -1 }).lean();
+  const programs = await prisma.program.findMany({
+    where: { isActive: true },
+    orderBy: { updatedAt: "desc" },
+  });
 
   const programEntries = programs.map((program) => ({
     loc: `${siteUrl}/internship/apply/${courseTitleToSlug(program.title)}`,
@@ -49,7 +52,7 @@ export async function getSitemapUrlEntries() {
 }
 
 export async function buildSitemapXml() {
-  if (mongoose.connection.readyState !== 1) {
+  if (getDbStatus().status !== "connected") {
     throw new Error("Database not connected");
   }
 
