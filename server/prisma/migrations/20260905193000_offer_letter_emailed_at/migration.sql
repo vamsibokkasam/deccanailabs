@@ -1,2 +1,2 @@
 -- AlterTable
-ALTER TABLE "offer_letters" ADD COLUMN "emailedAt" TIMESTAMP(3);
+ALTER TABLE "offer_letters" ADD COLUMN IF NOT EXISTS "emailedAt" TIMESTAMP(3);

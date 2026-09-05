@@ -5,9 +5,9 @@
   "main": "server.js",
   "scripts": {
     "dev": "nodemon server.js",
-    "migrate": "prisma migrate deploy",
+    "migrate": "node scripts/migrate-deploy.mjs",
     "build": "prisma generate",
-    "start": "prisma migrate deploy && node server.js",
+    "start": "node scripts/migrate-deploy.mjs && node server.js",
     "postinstall": "prisma generate",
     "migrate:mongo": "node scripts/migrate-mongo-to-postgres.mjs",
     "test:render": "node scripts/test-render.mjs",

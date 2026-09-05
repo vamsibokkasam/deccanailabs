@@ -1,5 +1,5 @@
 -- CreateTable
-CREATE TABLE "offer_letters" (
+CREATE TABLE IF NOT EXISTS "offer_letters" (
     "id" TEXT NOT NULL,
     "applicationId" TEXT NOT NULL,
     "applicationRef" TEXT NOT NULL,
@@ -14,7 +14,17 @@ CREATE TABLE "offer_letters" (
 );
 
 -- CreateIndex
-CREATE UNIQUE INDEX "offer_letters_applicationId_key" ON "offer_letters"("applicationId");
+CREATE UNIQUE INDEX IF NOT EXISTS "offer_letters_applicationId_key" ON "offer_letters"("applicationId");
 
 -- AddForeignKey
-ALTER TABLE "offer_letters" ADD CONSTRAINT "offer_letters_applicationId_fkey" FOREIGN KEY ("applicationId") REFERENCES "internship_applications"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_constraint WHERE conname = 'offer_letters_applicationId_fkey'
+  ) THEN
+    ALTER TABLE "offer_letters"
+      ADD CONSTRAINT "offer_letters_applicationId_fkey"
+      FOREIGN KEY ("applicationId") REFERENCES "internship_applications"("id")
+      ON DELETE CASCADE ON UPDATE CASCADE;
+  END IF;
+END $$;
