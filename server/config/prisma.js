@@ -3,7 +3,7 @@ import { PrismaClient } from "@prisma/client";
 
 dotenv.config();
 
-const RETRY_CODES = new Set(["P1001", "P1017", "P2024"]);
+const RETRY_CODES = new Set(["P1001", "P1017"]);
 
 function withStableParams(url) {
   if (!url) return url;
@@ -16,7 +16,10 @@ function withStableParams(url) {
     parsed.searchParams.set("connect_timeout", "30");
   }
   if (!parsed.searchParams.has("pool_timeout")) {
-    parsed.searchParams.set("pool_timeout", "30");
+    parsed.searchParams.set("pool_timeout", "15");
+  }
+  if (!parsed.searchParams.has("connection_limit")) {
+    parsed.searchParams.set("connection_limit", "5");
   }
 
   return parsed.toString();

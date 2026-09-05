@@ -10,7 +10,8 @@
     "start": "prisma migrate deploy && node server.js",
     "postinstall": "prisma generate",
     "migrate:mongo": "node scripts/migrate-mongo-to-postgres.mjs",
-    "test:render": "node scripts/test-render.mjs"
+    "test:render": "node scripts/test-render.mjs",
+    "test:offer-letter": "node scripts/test-offer-letter.mjs"
   },
   "keywords": [],
   "author": "",

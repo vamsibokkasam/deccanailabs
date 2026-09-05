@@ -175,6 +175,13 @@ export function completeApplication(id, adminKey) {
   });
 }
 
+export function sendOfferLetterEmail(id, adminKey) {
+  return request(`/applications/${id}/offer-letter/email`, {
+    method: "POST",
+    headers: adminHeaders(adminKey),
+  });
+}
+
 export function updatePaymentStatus(id, paymentStatus, adminKey) {
   return request(`/applications/${id}/payment-status`, {
     method: "PATCH",
@@ -336,6 +343,53 @@ export function openCertificatePdfBlob(blob, { download = false, filename = "cer
 
   setTimeout(() => URL.revokeObjectURL(url), 60_000);
   return url;
+}
+
+export async function fetchOfferLetter(applicationId, adminKey, { regenerate = false } = {}) {
+  const headers = adminKey ? adminHeaders(adminKey) : {};
+  const query = regenerate ? "?regenerate=1" : "";
+  const response = await fetchWithTimeout(
+    `${API_URL}/applications/${applicationId}/offer-letter${query}`,
+    { headers }
+  );
+  const contentType = response.headers.get("content-type") || "";
+
+  if (!response.ok) {
+    if (contentType.includes("application/json")) {
+      const data = await response.json().catch(() => ({}));
+      throw new ApiError(data.message || `Request failed (${response.status})`);
+    }
+    throw new ApiError(`Failed to download offer letter (${response.status})`);
+  }
+
+  const blob = await response.blob();
+  const disposition = response.headers.get("content-disposition") || "";
+  const match = disposition.match(/filename="([^"]+)"/i);
+  return {
+    blob,
+    filename: match?.[1] || "Offer-Letter.pdf",
+  };
+}
+
+export async function fetchSampleOfferLetter(adminKey) {
+  const headers = adminKey ? adminHeaders(adminKey) : {};
+  const response = await fetchWithTimeout(`${API_URL}/applications/offer-letter/sample`, {
+    headers,
+  });
+  const contentType = response.headers.get("content-type") || "";
+
+  if (!response.ok) {
+    if (contentType.includes("application/json")) {
+      const data = await response.json().catch(() => ({}));
+      throw new ApiError(data.message || `Request failed (${response.status})`);
+    }
+    throw new ApiError(`Failed to download sample offer letter (${response.status})`);
+  }
+
+  return {
+    blob: await response.blob(),
+    filename: "Offer-Letter-DCAL-05092026-A001.pdf",
+  };
 }
 
 export { ApiError };

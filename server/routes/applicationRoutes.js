@@ -8,6 +8,7 @@ import {
   updateApplicationStatus,
   updatePaymentStatus,
 } from "../controllers/applicationController.js";
+import { downloadOfferLetter, downloadSampleOfferLetter, emailOfferLetter } from "../controllers/offerLetterController.js";
 import adminAuth from "../middleware/adminAuth.js";
 import { validateBody } from "../middleware/validate.js";
 import {
@@ -24,6 +25,9 @@ router.post(
   createApplicationWithPayment
 );
 router.get("/", adminAuth, getApplications);
+router.get("/offer-letter/sample", adminAuth, downloadSampleOfferLetter);
+router.get("/:id/offer-letter", adminAuth, downloadOfferLetter);
+router.post("/:id/offer-letter/email", adminAuth, emailOfferLetter);
 router.patch("/:id/status", adminAuth, updateApplicationStatus);
 router.patch("/:id/complete", adminAuth, completeApplication);
 router.patch("/:id/payment-status", adminAuth, updatePaymentStatus);

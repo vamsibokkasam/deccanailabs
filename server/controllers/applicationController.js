@@ -9,6 +9,7 @@ import {
 } from "../utils/serialize.js";
 import { issueCertificateForApplication } from "../services/certificateIssuance.js";
 import { sendCertificateEmail } from "../services/certificateEmail.js";
+import { OFFER_LETTER_META_SELECT, queueOfferLetterIssuance } from "../services/offerLetterIssuance.js";
 
 const TX_OPTIONS = { maxWait: 10000, timeout: 15000 };
 
@@ -131,6 +132,7 @@ export const getApplications = async (req, res, next) => {
     const applications = await prisma.internshipApplication.findMany({
       include: {
         certificate: true,
+        offerLetter: { select: OFFER_LETTER_META_SELECT },
         batch: {
           select: {
             id: true,
@@ -185,6 +187,7 @@ export const updateApplicationStatus = async (req, res, next) => {
 
     const existing = await prisma.internshipApplication.findUnique({
       where: { id: req.params.id },
+      include: { batch: true },
     });
 
     if (!existing) {
@@ -204,11 +207,28 @@ export const updateApplicationStatus = async (req, res, next) => {
     const application = await prisma.internshipApplication.update({
       where: { id: req.params.id },
       data: { status },
+      include: {
+        batch: true,
+        certificate: true,
+        offerLetter: { select: OFFER_LETTER_META_SELECT },
+      },
     });
+
+    if (status === "accepted" && !application.offerLetter) {
+      queueOfferLetterIssuance({
+        ...application,
+        batch: existing.batch,
+      });
+    }
 
     res.json({
       success: true,
-      message: "Status updated successfully",
+      message:
+        status === "accepted"
+          ? application.offerLetter
+            ? "Application accepted. Offer letter is ready."
+            : "Application accepted. Offer letter is being generated."
+          : "Status updated successfully",
       data: stripScreenshotFromApplication(application),
     });
   } catch (error) {

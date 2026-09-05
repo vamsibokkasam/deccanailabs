@@ -19,6 +19,7 @@ import {
   Loader2,
   Mail,
   Pencil,
+  FileText,
   Plus,
   Search,
   Trash2,
@@ -38,6 +39,8 @@ import {
   deleteApplication,
   deleteProgram,
   fetchCertificatePdf,
+  fetchOfferLetter,
+  sendOfferLetterEmail,
   getAdminPrograms,
   getAdminStats,
   getApplications,
@@ -496,6 +499,41 @@ function formatDate(date) {
   });
 }
 
+function AdminToast({ toast, onClose }) {
+  if (!toast?.message) return null;
+
+  const success = toast.type === "success";
+
+  return createPortal(
+    <div className="pointer-events-none fixed top-4 right-4 z-[80] flex w-[min(24rem,calc(100vw-2rem))] justify-end">
+      <div
+        role="status"
+        className={`pointer-events-auto flex items-start gap-3 rounded-2xl border px-4 py-3 shadow-xl backdrop-blur-lg ${
+          success
+            ? "border-green-500/30 bg-green-500/15 text-green-300"
+            : "border-red-500/30 bg-red-500/15 text-red-300"
+        }`}
+      >
+        {success ? (
+          <CheckCircle2 size={18} className="mt-0.5 shrink-0" />
+        ) : (
+          <XCircle size={18} className="mt-0.5 shrink-0" />
+        )}
+        <p className="flex-1 text-sm leading-5">{toast.message}</p>
+        <button
+          type="button"
+          onClick={onClose}
+          className="shrink-0 text-current/70 hover:text-current"
+          aria-label="Dismiss"
+        >
+          <X size={16} />
+        </button>
+      </div>
+    </div>,
+    document.body
+  );
+}
+
 function getInitials(name) {
   return name
     .split(/\s+/)
@@ -776,6 +814,146 @@ function CompleteCertificateModal({ application, saving, onClose, onSubmit }) {
   );
 }
 
+function ApplicationStatusRowActions({
+  app,
+  onStatusChange,
+  onRequestComplete,
+  statusActionId,
+  completeActionId,
+}) {
+  const completeDisabled =
+    completeActionId === app._id ||
+    app.status === "completed" ||
+    app.status !== "accepted" ||
+    app.source === "course" ||
+    (Boolean(app.payment?.transactionId) && app.payment?.status !== "verified");
+
+  const completeTitle =
+    app.source === "course"
+      ? "Course registrations do not issue internship certificates"
+      : app.payment?.transactionId && app.payment?.status !== "verified"
+        ? "Verify payment first"
+        : app.status !== "accepted" && app.status !== "completed"
+          ? "Accept application first"
+          : "Issue certificate and mark completed";
+
+  return (
+    <div className="flex flex-wrap items-center gap-1 min-w-[220px]">
+      {editableApplicationStatuses.map((status) => (
+        <button
+          key={status}
+          type="button"
+          onClick={() => onStatusChange(app._id, status)}
+          disabled={
+            app.status === "completed" ||
+            app.status === status ||
+            statusActionId === app._id
+          }
+          className={`px-2 py-1 rounded-lg text-[11px] font-medium border capitalize transition disabled:opacity-40 inline-flex items-center gap-1 whitespace-nowrap ${
+            app.status === status
+              ? statusColors[status]
+              : "bg-surface border-border text-muted hover:bg-card hover:text-fg"
+          }`}
+        >
+          {statusActionId === app._id && app.status !== status ? (
+            <Loader2 size={11} className="animate-spin" />
+          ) : null}
+          {status}
+        </button>
+      ))}
+      <button
+        type="button"
+        onClick={() => onRequestComplete(app)}
+        disabled={completeDisabled}
+        title={completeTitle}
+        className={`px-2 py-1 rounded-lg text-[11px] font-medium border capitalize transition inline-flex items-center gap-1 disabled:opacity-40 whitespace-nowrap ${
+          app.status === "completed"
+            ? statusColors.completed
+            : "bg-surface border-border text-muted hover:bg-card hover:text-fg"
+        }`}
+      >
+        {completeActionId === app._id ? (
+          <Loader2 size={11} className="animate-spin" />
+        ) : (
+          <Award size={11} />
+        )}
+        completed
+      </button>
+    </div>
+  );
+}
+
+function OfferLetterRowActions({
+  app,
+  onDownloadOfferLetter,
+  onSendOfferLetterEmail,
+  offerLetterActionId,
+  offerLetterEmailActionId,
+}) {
+  if (!app.offerLetter) {
+    if (app.status === "accepted" || app.status === "completed") {
+      return (
+        <span className="text-muted text-[11px] inline-flex items-center gap-1 whitespace-nowrap">
+          <Loader2 size={12} className="animate-spin" />
+          Generating…
+        </span>
+      );
+    }
+    return null;
+  }
+
+  const busy =
+    offerLetterActionId === app._id || offerLetterEmailActionId === app._id;
+
+  return (
+    <div className="flex flex-wrap items-center gap-1">
+      <button
+        type="button"
+        onClick={() => onDownloadOfferLetter(app)}
+        disabled={offerLetterActionId === app._id}
+        className="inline-flex items-center gap-1 px-2 py-1 rounded-lg text-[11px] border border-border text-fg hover:border-accent/40 transition disabled:opacity-40 whitespace-nowrap"
+        title="Download offer letter PDF"
+      >
+        {offerLetterActionId === app._id ? (
+          <Loader2 size={12} className="animate-spin" />
+        ) : (
+          <FileText size={12} />
+        )}
+        PDF
+      </button>
+      <button
+        type="button"
+        onClick={() => onSendOfferLetterEmail(app)}
+        disabled={busy || !app.email}
+        title={
+          !app.email
+            ? "Application has no email address"
+            : app.offerLetter.emailedAt
+              ? "Send the offer letter again"
+              : "Email the offer letter PDF"
+        }
+        className="inline-flex items-center gap-1 px-2 py-1 rounded-lg text-[11px] border border-accent/40 text-accent hover:bg-accent/10 transition disabled:opacity-40 whitespace-nowrap"
+      >
+        {offerLetterEmailActionId === app._id ? (
+          <Loader2 size={12} className="animate-spin" />
+        ) : (
+          <Mail size={12} />
+        )}
+        {app.offerLetter.emailedAt ? "Resend" : "Email"}
+      </button>
+      <button
+        type="button"
+        onClick={() => onDownloadOfferLetter(app, { regenerate: true })}
+        disabled={busy}
+        className="inline-flex items-center gap-1 px-2 py-1 rounded-lg text-[11px] border border-border text-muted hover:border-accent/40 hover:text-fg transition disabled:opacity-40 whitespace-nowrap"
+        title="Regenerate offer letter PDF"
+      >
+        Regenerate
+      </button>
+    </div>
+  );
+}
+
 function ApplicationsTable({
   applications,
   onStatusChange,
@@ -784,9 +962,14 @@ function ApplicationsTable({
   onRequestComplete,
   onViewCertificate,
   onDownloadCertificate,
+  onDownloadOfferLetter,
+  onSendOfferLetterEmail,
   paymentActionId,
   completeActionId,
   certificateActionId,
+  offerLetterActionId,
+  offerLetterEmailActionId,
+  statusActionId,
 }) {
   const [expandedId, setExpandedId] = useState(null);
   const [screenshotPreview, setScreenshotPreview] = useState(null);
@@ -839,7 +1022,7 @@ function ApplicationsTable({
     <>
     <div className="theme-card overflow-hidden">
       <div className="overflow-x-auto">
-        <table className="w-full min-w-[1200px] text-sm">
+        <table className="w-full min-w-[1480px] text-sm">
           <thead>
             <tr className="border-b border-border bg-surface/60">
               <th className="w-10 px-3 py-3" aria-label="Expand row" />
@@ -869,6 +1052,9 @@ function ApplicationsTable({
               </th>
               <th className="text-left px-4 py-3 text-subtle text-xs font-medium uppercase tracking-wider">
                 Status
+              </th>
+              <th className="text-left px-4 py-3 text-subtle text-xs font-medium uppercase tracking-wider">
+                Offer letter
               </th>
               <th className="text-left px-4 py-3 text-subtle text-xs font-medium uppercase tracking-wider">
                 Date
@@ -951,7 +1137,22 @@ function ApplicationsTable({
                       )}
                     </td>
                     <td className="px-4 py-3">
-                      <StatusBadge label={app.status} className={statusColors[app.status]} />
+                      <ApplicationStatusRowActions
+                        app={app}
+                        onStatusChange={onStatusChange}
+                        onRequestComplete={onRequestComplete}
+                        statusActionId={statusActionId}
+                        completeActionId={completeActionId}
+                      />
+                    </td>
+                    <td className="px-4 py-3">
+                      <OfferLetterRowActions
+                        app={app}
+                        onDownloadOfferLetter={onDownloadOfferLetter}
+                        onSendOfferLetterEmail={onSendOfferLetterEmail}
+                        offerLetterActionId={offerLetterActionId}
+                        offerLetterEmailActionId={offerLetterEmailActionId}
+                      />
                     </td>
                     <td className="px-4 py-3 text-muted text-xs whitespace-nowrap">
                       {formatDate(app.createdAt)}
@@ -1028,7 +1229,7 @@ function ApplicationsTable({
                   </tr>
                   {isExpanded && (
                     <tr className="border-b border-border bg-surface/20">
-                      <td colSpan={12} className="px-4 py-5">
+                      <td colSpan={13} className="px-4 py-5">
                         <div className="grid lg:grid-cols-[1fr_auto] gap-6">
                           <div className="space-y-5">
                             {app.payment?.transactionId && (
@@ -1053,61 +1254,31 @@ function ApplicationsTable({
                             )}
 
                             <div>
-                              <p className="text-subtle text-xs uppercase tracking-wider mb-2">
-                                Application Status
-                              </p>
-                              <div className="flex flex-wrap gap-2">
-                                {editableApplicationStatuses.map((status) => (
-                                  <button
-                                    key={status}
-                                    type="button"
-                                    onClick={() => onStatusChange(app._id, status)}
-                                    disabled={app.status === "completed"}
-                                    className={`px-3 py-1.5 rounded-lg text-xs font-medium border capitalize transition disabled:opacity-40 ${
-                                      app.status === status
-                                        ? statusColors[status]
-                                        : "bg-surface border-border text-muted hover:bg-card hover:text-fg"
-                                    }`}
-                                  >
-                                    {status}
-                                  </button>
-                                ))}
-                                <button
-                                  type="button"
-                                  onClick={() => onRequestComplete(app)}
-                                  disabled={
-                                    completeActionId === app._id ||
-                                    app.status === "completed" ||
-                                    app.status !== "accepted" ||
-                                    app.source === "course" ||
-                                    (Boolean(app.payment?.transactionId) &&
-                                      app.payment?.status !== "verified")
-                                  }
-                                  className={`px-3 py-1.5 rounded-lg text-xs font-medium border capitalize transition inline-flex items-center gap-1.5 disabled:opacity-40 ${
-                                    app.status === "completed"
-                                      ? statusColors.completed
-                                      : "bg-surface border-border text-muted hover:bg-card hover:text-fg"
-                                  }`}
-                                  title={
-                                    app.source === "course"
-                                      ? "Course registrations do not issue internship certificates"
-                                      : app.payment?.transactionId &&
-                                          app.payment?.status !== "verified"
-                                        ? "Verify payment first"
-                                        : app.status !== "accepted" && app.status !== "completed"
-                                          ? "Accept application first"
-                                          : "Issue certificate and mark completed"
-                                  }
-                                >
-                                  {completeActionId === app._id ? (
+                                <p className="text-subtle text-xs uppercase tracking-wider mb-2">
+                                  Offer letter
+                                </p>
+                                {app.offerLetter ? (
+                                  <>
+                                    <p className="text-accent/90 text-xs">
+                                      Saved when accepted
+                                    </p>
+                                    {app.offerLetter.emailedAt && (
+                                      <p className="text-muted text-xs mt-1">
+                                        Emailed {formatDate(app.offerLetter.emailedAt)}
+                                      </p>
+                                    )}
+                                  </>
+                                ) : app.status === "accepted" || app.status === "completed" ? (
+                                  <p className="text-muted text-xs inline-flex items-center gap-1.5">
                                     <Loader2 size={12} className="animate-spin" />
-                                  ) : (
-                                    <Award size={12} />
-                                  )}
-                                  completed
-                                </button>
+                                    Generating offer letter...
+                                  </p>
+                                ) : (
+                                  <p className="text-muted text-xs">
+                                    Accept this application to generate and save the offer letter.
+                                  </p>
+                                )}
                               </div>
-                            </div>
 
                             {app.status === "completed" && getApplicationCertificate(app)?.certNo && (
                               <div>
@@ -1634,7 +1805,17 @@ function AdminPage() {
   const [paymentActionId, setPaymentActionId] = useState(null);
   const [completeActionId, setCompleteActionId] = useState(null);
   const [certificateActionId, setCertificateActionId] = useState(null);
+  const [offerLetterActionId, setOfferLetterActionId] = useState(null);
+  const [offerLetterEmailActionId, setOfferLetterEmailActionId] = useState(null);
+  const [statusActionId, setStatusActionId] = useState(null);
   const [actionNotice, setActionNotice] = useState({ type: "", message: "" });
+  const [toast, setToast] = useState(null);
+
+  useEffect(() => {
+    if (!toast) return undefined;
+    const timer = window.setTimeout(() => setToast(null), 4500);
+    return () => window.clearTimeout(timer);
+  }, [toast]);
 
   const loadData = async (key) => {
     setLoading(true);
@@ -1722,6 +1903,10 @@ function AdminPage() {
   };
 
   const handleStatusChange = async (id, status) => {
+    if (statusActionId) return;
+    setStatusActionId(id);
+    setError("");
+
     try {
       const result = await updateApplicationStatus(id, status, adminKey);
       setApplications((prev) =>
@@ -1729,8 +1914,20 @@ function AdminPage() {
       );
       const statsRes = await getAdminStats(adminKey);
       setStats(statsRes.data);
+      setStatusActionId(null);
+
+      if (status === "accepted" && !result.data?.offerLetter) {
+        for (let attempt = 0; attempt < 8; attempt += 1) {
+          await new Promise((resolve) => setTimeout(resolve, 500));
+          const list = await getApplications(adminKey);
+          setApplications(list.data);
+          const updated = list.data.find((app) => app._id === id);
+          if (updated?.offerLetter) break;
+        }
+      }
     } catch (err) {
       setError(err.message);
+      setStatusActionId(null);
     }
   };
 
@@ -1800,6 +1997,70 @@ function AdminPage() {
       setError(err.message || "Failed to download certificate PDF");
     } finally {
       setCertificateActionId(null);
+    }
+  };
+
+  const handleDownloadOfferLetter = async (application, { regenerate = false } = {}) => {
+    if (!application?._id) return;
+    setOfferLetterActionId(application._id);
+    setError("");
+
+    try {
+      const { blob, filename } = await fetchOfferLetter(application._id, adminKey, {
+        regenerate,
+      });
+      openCertificatePdfBlob(blob, {
+        download: true,
+        filename,
+      });
+      const issuedAt = new Date().toISOString();
+      setApplications((prev) =>
+        prev.map((app) =>
+          app._id === application._id
+            ? {
+                ...app,
+                offerLetter: {
+                  ...(app.offerLetter || {}),
+                  filename,
+                  issuedAt: app.offerLetter?.issuedAt || issuedAt,
+                  updatedAt: issuedAt,
+                },
+              }
+            : app
+        )
+      );
+    } catch (err) {
+      setError(err.message || "Failed to download offer letter");
+    } finally {
+      setOfferLetterActionId(null);
+    }
+  };
+
+  const handleSendOfferLetterEmail = async (application) => {
+    if (!application?._id) return;
+    setOfferLetterEmailActionId(application._id);
+    setError("");
+    setActionNotice({ type: "", message: "" });
+    setToast(null);
+
+    try {
+      const result = await sendOfferLetterEmail(application._id, adminKey);
+      setApplications((prev) =>
+        prev.map((app) =>
+          app._id === application._id ? { ...app, ...result.data } : app
+        )
+      );
+      setToast({
+        type: "success",
+        message: "Offer letter sent successfully",
+      });
+    } catch (err) {
+      setToast({
+        type: "error",
+        message: err.message || "Failed to send offer letter",
+      });
+    } finally {
+      setOfferLetterEmailActionId(null);
     }
   };
 
@@ -2209,9 +2470,14 @@ function AdminPage() {
               onRequestComplete={handleCompleteApplication}
               onViewCertificate={handleViewCertificate}
               onDownloadCertificate={handleDownloadCertificate}
+              onDownloadOfferLetter={handleDownloadOfferLetter}
+              onSendOfferLetterEmail={handleSendOfferLetterEmail}
               paymentActionId={paymentActionId}
               completeActionId={completeActionId}
               certificateActionId={certificateActionId}
+              offerLetterActionId={offerLetterActionId}
+              offerLetterEmailActionId={offerLetterEmailActionId}
+              statusActionId={statusActionId}
             />
           )}
         </div>
@@ -2473,6 +2739,8 @@ function AdminPage() {
             </div>
         </div>
       )}
+
+      <AdminToast toast={toast} onClose={() => setToast(null)} />
     </>
   );
 }

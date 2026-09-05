@@ -93,6 +93,7 @@ model InternshipApplication {
   createdAt             DateTime           @default(now())
   updatedAt             DateTime           @default(now()) @updatedAt
   certificate           Certificate?
+  offerLetter           OfferLetter?
 
   @@index([batchId])
   @@index([email])
@@ -119,6 +120,23 @@ model Certificate {
   updatedAt         DateTime                @default(now()) @updatedAt
 
   @@map("certificates")
+}
+
+model OfferLetter {
+  id             String                 @id @default(uuid())
+  applicationId  String                 @unique
+  application    InternshipApplication  @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  applicationRef String
+  recipientName  String
+  program        String
+  filename       String
+  storagePath    String?
+  pdfBytes       Bytes?
+  emailedAt      DateTime?
+  createdAt      DateTime               @default(now())
+  updatedAt      DateTime               @default(now()) @updatedAt
+
+  @@map("offer_letters")
 }
 
 model Contact {
