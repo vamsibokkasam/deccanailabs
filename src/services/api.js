@@ -321,6 +321,11 @@ export function getPublicCertificateImageUrl(certNo) {
   return `${API_URL}/certificates/image/${certificatePath(certNo)}`;
 }
 
+/** Public inline PDF URL for embedding the certificate in the verify page. */
+export function getPublicCertificatePdfUrl(certNo) {
+  return `${API_URL}/certificates/pdf/${certificatePath(certNo)}?download=0`;
+}
+
 /** Public PDF download for valid certificates (QR / website). */
 export function downloadPublicCertificatePdf(certNo, { download = true } = {}) {
   const query = download ? "?download=1" : "?download=0";
