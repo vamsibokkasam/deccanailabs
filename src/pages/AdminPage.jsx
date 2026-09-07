@@ -909,7 +909,7 @@ function OfferLetterRowActions({
     <div className="flex flex-wrap items-center gap-1">
       <button
         type="button"
-        onClick={() => onDownloadOfferLetter(app)}
+        onClick={() => onDownloadOfferLetter(app, { regenerate: true })}
         disabled={offerLetterActionId === app._id}
         className="inline-flex items-center gap-1 px-2 py-1 rounded-lg text-[11px] border border-border text-fg hover:border-accent/40 transition disabled:opacity-40 whitespace-nowrap"
         title="Download offer letter PDF"

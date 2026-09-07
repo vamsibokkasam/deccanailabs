@@ -15,8 +15,8 @@ const TEXT = rgb(0.07, 0.07, 0.07);
 const TEXT_BOLD = rgb(0.02, 0.02, 0.02);
 const PAPER = rgb(1, 1, 1);
 
-/** Keep letterhead + signature from the template; replace the body with vector type. */
-const HEADER_END = 0.188;
+/** Keep letterhead + OFFER LETTER title; wipe template REG ID: [] and body. */
+const HEADER_END = 0.218;
 const FOOTER_START = 0.628;
 const MARGIN_X = 0.09;
 
@@ -73,13 +73,23 @@ function searchDirs() {
 
 function resolveTemplatePath() {
   fs.mkdirSync(ASSET_DIR, { recursive: true });
-  const dest = path.join(ASSET_DIR, "OL_Template.jpg");
-  if (fs.existsSync(dest)) return dest;
+  const candidates = [
+    path.join(ASSET_DIR, "cleaned", "OL_Template.jpg"),
+    path.join(ASSET_DIR, "OL_Template.jpg"),
+    path.join(SRC_ASSETS, "OL_Template.jpg"),
+  ];
+  const existing = candidates.find((file) => fs.existsSync(file));
+  if (existing) return existing;
 
+  const dest = path.join(ASSET_DIR, "OL_Template.jpg");
   for (const dir of searchDirs()) {
     const match = fs.readdirSync(dir).find((file) => {
       const lower = file.toLowerCase();
-      return /ol[_\s-]?template/.test(lower) && /\.(jpe?g|png)$/i.test(file);
+      return (
+        /ol[_\s-]?template/.test(lower) &&
+        !lower.includes(".sm.") &&
+        /\.(jpe?g|png)$/i.test(file)
+      );
     });
     if (!match) continue;
     const full = path.join(dir, match);
@@ -238,14 +248,8 @@ const logoPngCache = new Map();
 async function getLetterheadJpeg() {
   if (letterheadJpegCache) return letterheadJpegCache;
 
-  const cleanedDir = path.join(ASSET_DIR, "cleaned");
-  const dest = path.join(cleanedDir, "OL_Template.sm.jpg");
-  if (fs.existsSync(dest)) {
-    letterheadJpegCache = fs.readFileSync(dest);
-    return letterheadJpegCache;
-  }
-
-  const image = await loadImage(resolveTemplatePath());
+  const sourcePath = resolveTemplatePath();
+  const image = await loadImage(sourcePath);
   const scale = Math.min(1, LETTERHEAD_MAX_WIDTH / image.width);
   const width = Math.max(1, Math.round(image.width * scale));
   const height = Math.max(1, Math.round(image.height * scale));
@@ -254,11 +258,7 @@ async function getLetterheadJpeg() {
   ctx.fillStyle = "#ffffff";
   ctx.fillRect(0, 0, width, height);
   ctx.drawImage(image, 0, 0, width, height);
-  const bytes = canvas.toBuffer("image/jpeg", { quality: 0.82 });
-
-  fs.mkdirSync(cleanedDir, { recursive: true });
-  fs.writeFileSync(dest, bytes);
-  letterheadJpegCache = bytes;
+  letterheadJpegCache = canvas.toBuffer("image/jpeg", { quality: 0.82 });
   return letterheadJpegCache;
 }
 
@@ -397,30 +397,6 @@ export async function warmupOfferLetterAssets() {
   }
 }
 
-function drawTitle(page, boldFont, pageWidth, pageHeight) {
-  const title = "OFFER LETTER";
-  const size = 18;
-  const width = boldFont.widthOfTextAtSize(title, size);
-  const x = (pageWidth - width) / 2;
-  const y = pageHeight * (1 - 0.225);
-
-  page.drawText(title, {
-    x,
-    y,
-    size,
-    font: boldFont,
-    color: BRAND_BLUE,
-  });
-  page.drawLine({
-    start: { x, y: y - 3.2 },
-    end: { x: x + width, y: y - 3.2 },
-    thickness: 1.15,
-    color: BRAND_BLUE,
-  });
-
-  return y - 22;
-}
-
 function drawRichLine(page, font, boldFont, line, x, y, size) {
   let cursorX = x;
   for (const part of line) {
@@ -471,7 +447,7 @@ export async function renderOfferLetter(application) {
     color: PAPER,
   });
 
-  let cursorY = drawTitle(page, boldFont, pageWidth, pageHeight);
+  let cursorY = whiteTop - 10;
   const textLeft = pageWidth * MARGIN_X;
   const maxWidth = pageWidth * (1 - MARGIN_X * 2);
   const minY = pageHeight * (1 - FOOTER_START) + 8;

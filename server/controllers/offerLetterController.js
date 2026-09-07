@@ -19,11 +19,6 @@ function asBuffer(bytes) {
   return Buffer.isBuffer(bytes) ? bytes : Buffer.from(bytes);
 }
 
-function wantsRegenerate(req) {
-  const value = String(req.query.regenerate || "").toLowerCase();
-  return value === "1" || value === "true";
-}
-
 export const downloadOfferLetter = async (req, res, next) => {
   try {
     const application = await prisma.internshipApplication.findUnique({
@@ -50,7 +45,6 @@ export const downloadOfferLetter = async (req, res, next) => {
       });
     }
 
-    const regenerate = wantsRegenerate(req);
     const accepted =
       application.status === "accepted" || application.status === "completed";
 
@@ -61,26 +55,8 @@ export const downloadOfferLetter = async (req, res, next) => {
       });
     }
 
-    if (application.offerLetter && !regenerate) {
-      const filePath = resolveStoredPdf(application.offerLetter);
-      if (filePath) {
-        sendOfferPdf(res, {
-          pdfBuffer: fs.readFileSync(filePath),
-          filename: application.offerLetter.filename,
-        });
-        return;
-      }
-      if (application.offerLetter.pdfBytes) {
-        sendOfferPdf(res, {
-          pdfBuffer: asBuffer(application.offerLetter.pdfBytes),
-          filename: application.offerLetter.filename,
-        });
-        return;
-      }
-    }
-
     const saved = await issueOfferLetterForApplication(application, {
-      force: regenerate || Boolean(application.offerLetter),
+      force: true,
     });
     const filePath = resolveStoredPdf({
       ...saved,
@@ -135,7 +111,9 @@ export const emailOfferLetter = async (req, res, next) => {
       });
     }
 
-    let offerLetter = application.offerLetter;
+    let offerLetter = await issueOfferLetterForApplication(application, {
+      force: true,
+    });
     try {
       await dispatchOfferLetterEmail({
         application,
