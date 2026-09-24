@@ -41,7 +41,7 @@ export const NAME_POS = { y: 492, fontSize: 50, color: "#1a3a6b", family: FONT_S
 const COMPLETION_POS = {
   y: 560,
   fontSize: 23,
-  text: "Has successfully completed the internship at DECCAN AI LABS in",
+  text: "Has successfully completed the internship at DECCAN AI LABS PVT.LTD. in",
 };
 
 const DOMAIN_POS = { y: 600, fontSize: 28 };
@@ -59,7 +59,7 @@ const INTERN_PARA = {
 };
 
 const BODY_CLEAR = { x: 110, y: 478, w: 1580, h: 198 };
-const DETAILS_CLEAR = { x: 40, y: 748, w: 720, h: 250 };
+const DETAILS_CLEAR = { x: 40, y: 798, w: 720, h: 250 };
 /**
  * Logo row sits above the gold rule. Do not paint white over the rule —
  * leftover template logos are cleared here, then our logos are drawn in this band.
@@ -70,7 +70,7 @@ const FOOTER_GREEN = rgb(0.18, 0.67, 0.32);
 
 export const DETAIL_BLOCK = {
   labelX: 128,
-  startY: 782,
+  startY: 832,
   lineHeight: 46,
   fontSize: 20,
   color: "#222222",

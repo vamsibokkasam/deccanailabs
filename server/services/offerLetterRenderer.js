@@ -145,7 +145,7 @@ function bodyBlocks(fields) {
       { text: "We are delighted to welcome you to the " },
       { text: `45-Day ${fields.program}`, bold: true },
       { text: " course at " },
-      { text: "DECCAN AI labs Pvt.Ltd.", bold: true },
+      { text: "DECCAN AI LABS PVT.LTD.", bold: true },
     ],
     [
       {
@@ -163,17 +163,17 @@ function bodyBlocks(fields) {
     ],
     [
       {
-        text: "DECCAN AI LABS is MSME, NCS, and ISO certified, and recognised under Startup India. Upon successful completion of the program, you will receive an official internship certificate from DECCAN AI LABS.",
+        text: "DECCAN AI LABS PVT.LTD.\u00A0is MSME, NCS, and ISO certified, and recognised under Startup India. Upon successful completion of the program, you will receive an official internship certificate from DECCAN AI LABS PVT.LTD.",
       },
     ],
     [
       {
-        text: "We are confident that this course will enhance your skills, boost your confidence, and prepare you for future academic and professional opportunities. We look forward to supporting you throughout this exciting learning experience and wish you great success in your journey with DECCAN AI labs Pvt.Ltd.",
+        text: "We are confident that this course will enhance your skills, boost your confidence, and prepare you for future academic and professional opportunities. We look forward to supporting you throughout this exciting learning experience and wish you great success in your journey with DECCAN AI LABS PVT.LTD.",
       },
     ],
     [
       {
-        text: "We welcome you to DECCAN AI labs Pvt.Ltd and wish you a productive, engaging, and successful learning experience.",
+        text: "We welcome you to DECCAN AI LABS PVT.LTD. and wish you a productive, engaging, and successful learning experience.",
       },
     ],
   ];
@@ -186,7 +186,7 @@ function widthOf(font, boldFont, text, size, bold) {
 function wrapRich(font, boldFont, runs, maxWidth, size) {
   const tokens = [];
   for (const run of runs) {
-    const parts = String(run.text ?? "").split(/(\s+)/);
+    const parts = String(run.text ?? "").split(/([ \t]+)/);
     for (const part of parts) {
       if (part) tokens.push({ text: part, bold: Boolean(run.bold) });
     }
@@ -399,17 +399,31 @@ export async function warmupOfferLetterAssets() {
 
 function drawRichLine(page, font, boldFont, line, x, y, size) {
   let cursorX = x;
-  for (const part of line) {
-    const active = part.bold ? boldFont : font;
-    page.drawText(part.text, {
+  let buffer = "";
+  let bufferBold = false;
+
+  const flush = () => {
+    if (!buffer) return;
+    const active = bufferBold ? boldFont : font;
+    page.drawText(buffer, {
       x: cursorX,
       y,
       size,
       font: active,
-      color: part.bold ? TEXT_BOLD : TEXT,
+      color: bufferBold ? TEXT_BOLD : TEXT,
     });
-    cursorX += active.widthOfTextAtSize(part.text, size);
+    cursorX += active.widthOfTextAtSize(buffer, size);
+    buffer = "";
+  };
+
+  for (const part of line) {
+    const bold = Boolean(part.bold);
+    if (buffer && bold !== bufferBold) flush();
+    bufferBold = bold;
+    buffer += part.text;
   }
+
+  flush();
 }
 
 export async function renderOfferLetter(application) {
