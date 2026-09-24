@@ -40,6 +40,7 @@ import {
   deleteProgram,
   fetchCertificatePdf,
   fetchOfferLetter,
+  sendCertificateEmail,
   sendOfferLetterEmail,
   getAdminPrograms,
   getAdminStats,
@@ -535,7 +536,7 @@ function AdminToast({ toast, onClose }) {
 }
 
 function getInitials(name) {
-  return name
+  return String(name || "")
     .split(/\s+/)
     .filter(Boolean)
     .slice(0, 2)
@@ -954,6 +955,63 @@ function OfferLetterRowActions({
   );
 }
 
+function CertificateRowActions({
+  app,
+  onViewCertificate,
+  onDownloadCertificate,
+  onSendCertificateEmail,
+  certificateActionId,
+  certificateEmailActionId,
+}) {
+  const certificate = getApplicationCertificate(app);
+  if (!certificate?.certNo) return null;
+
+  const viewing = certificateActionId === certificate.certNo;
+  const sending = certificateEmailActionId === app._id;
+  const alreadyEmailed = Boolean(app.certificateEmailedAt);
+
+  return (
+    <div className="flex flex-wrap items-center gap-1">
+      <button
+        type="button"
+        onClick={() => onViewCertificate(certificate.certNo)}
+        disabled={viewing}
+        className="inline-flex items-center gap-1 px-2 py-1 rounded-lg text-[11px] border border-border text-fg hover:border-accent/40 transition disabled:opacity-40 whitespace-nowrap"
+        title="View certificate PDF"
+      >
+        {viewing ? <Loader2 size={12} className="animate-spin" /> : <Eye size={12} />}
+        View
+      </button>
+      <button
+        type="button"
+        onClick={() => onDownloadCertificate(certificate.certNo)}
+        disabled={viewing}
+        className="inline-flex items-center gap-1 px-2 py-1 rounded-lg text-[11px] border border-border text-fg hover:border-accent/40 transition disabled:opacity-40 whitespace-nowrap"
+        title="Download certificate PDF"
+      >
+        <Download size={12} />
+        Download
+      </button>
+      <button
+        type="button"
+        onClick={() => onSendCertificateEmail(app)}
+        disabled={sending || !app.email}
+        title={
+          !app.email
+            ? "Application has no email address"
+            : alreadyEmailed
+              ? "Send the certificate again"
+              : "Email the certificate PDF"
+        }
+        className="inline-flex items-center gap-1 px-2 py-1 rounded-lg text-[11px] border border-accent/40 text-accent hover:bg-accent/10 transition disabled:opacity-40 whitespace-nowrap"
+      >
+        {sending ? <Loader2 size={12} className="animate-spin" /> : <Mail size={12} />}
+        {alreadyEmailed ? "Resend" : "Email"}
+      </button>
+    </div>
+  );
+}
+
 function ApplicationsTable({
   applications,
   onStatusChange,
@@ -962,11 +1020,13 @@ function ApplicationsTable({
   onRequestComplete,
   onViewCertificate,
   onDownloadCertificate,
+  onSendCertificateEmail,
   onDownloadOfferLetter,
   onSendOfferLetterEmail,
   paymentActionId,
   completeActionId,
   certificateActionId,
+  certificateEmailActionId,
   offerLetterActionId,
   offerLetterEmailActionId,
   statusActionId,
@@ -1022,7 +1082,7 @@ function ApplicationsTable({
     <>
     <div className="theme-card overflow-hidden">
       <div className="overflow-x-auto">
-        <table className="w-full min-w-[1480px] text-sm">
+        <table className="w-full min-w-[1680px] text-sm">
           <thead>
             <tr className="border-b border-border bg-surface/60">
               <th className="w-10 px-3 py-3" aria-label="Expand row" />
@@ -1055,6 +1115,9 @@ function ApplicationsTable({
               </th>
               <th className="text-left px-4 py-3 text-subtle text-xs font-medium uppercase tracking-wider">
                 Offer letter
+              </th>
+              <th className="text-left px-4 py-3 text-subtle text-xs font-medium uppercase tracking-wider">
+                Certificate
               </th>
               <th className="text-left px-4 py-3 text-subtle text-xs font-medium uppercase tracking-wider">
                 Date
@@ -1154,6 +1217,16 @@ function ApplicationsTable({
                         offerLetterEmailActionId={offerLetterEmailActionId}
                       />
                     </td>
+                    <td className="px-4 py-3">
+                      <CertificateRowActions
+                        app={app}
+                        onViewCertificate={onViewCertificate}
+                        onDownloadCertificate={onDownloadCertificate}
+                        onSendCertificateEmail={onSendCertificateEmail}
+                        certificateActionId={certificateActionId}
+                        certificateEmailActionId={certificateEmailActionId}
+                      />
+                    </td>
                     <td className="px-4 py-3 text-muted text-xs whitespace-nowrap">
                       {formatDate(app.createdAt)}
                     </td>
@@ -1229,9 +1302,44 @@ function ApplicationsTable({
                   </tr>
                   {isExpanded && (
                     <tr className="border-b border-border bg-surface/20">
-                      <td colSpan={13} className="px-4 py-5">
+                      <td colSpan={14} className="px-4 py-5">
                         <div className="grid lg:grid-cols-[1fr_auto] gap-6">
                           <div className="space-y-5">
+                            <div>
+                              <p className="text-subtle text-xs uppercase tracking-wider mb-3">
+                                Student details
+                              </p>
+                              <div className="grid sm:grid-cols-2 gap-x-6 gap-y-2 text-sm">
+                                <p className="text-muted">
+                                  Name: <span className="text-fg">{app.fullName || "—"}</span>
+                                </p>
+                                <p className="text-muted">
+                                  Email: <span className="text-fg">{app.email || "—"}</span>
+                                </p>
+                                <p className="text-muted">
+                                  Phone: <span className="text-fg">{app.phone || "—"}</span>
+                                </p>
+                                <p className="text-muted">
+                                  College: <span className="text-fg">{app.college || "—"}</span>
+                                </p>
+                                <p className="text-muted">
+                                  Department: <span className="text-fg">{app.department || "—"}</span>
+                                </p>
+                                <p className="text-muted">
+                                  Program: <span className="text-fg">{app.program || "—"}</span>
+                                </p>
+                                <p className="text-muted">
+                                  Application ID:{" "}
+                                  <span className="text-accent font-mono">
+                                    {app.applicationId || "Assigned when accepted"}
+                                  </span>
+                                </p>
+                                <p className="text-muted">
+                                  Status: <span className="text-fg capitalize">{app.status || "—"}</span>
+                                </p>
+                              </div>
+                            </div>
+
                             {app.payment?.transactionId && (
                               <div>
                                 <p className="text-subtle text-xs uppercase tracking-wider mb-2">
@@ -1320,7 +1428,27 @@ function ApplicationsTable({
                                     <Download size={12} />
                                     Download PDF
                                   </button>
+                                  <button
+                                    type="button"
+                                    onClick={() => onSendCertificateEmail(app)}
+                                    disabled={
+                                      certificateEmailActionId === app._id || !app.email
+                                    }
+                                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs border border-accent/40 text-accent hover:bg-accent/10 transition disabled:opacity-40"
+                                  >
+                                    {certificateEmailActionId === app._id ? (
+                                      <Loader2 size={12} className="animate-spin" />
+                                    ) : (
+                                      <Mail size={12} />
+                                    )}
+                                    {app.certificateEmailedAt ? "Resend" : "Email"}
+                                  </button>
                                 </div>
+                                {app.certificateEmailedAt && (
+                                  <p className="text-muted text-xs mt-2">
+                                    Emailed {formatDate(app.certificateEmailedAt)}
+                                  </p>
+                                )}
                               </div>
                             )}
 
@@ -1805,6 +1933,7 @@ function AdminPage() {
   const [paymentActionId, setPaymentActionId] = useState(null);
   const [completeActionId, setCompleteActionId] = useState(null);
   const [certificateActionId, setCertificateActionId] = useState(null);
+  const [certificateEmailActionId, setCertificateEmailActionId] = useState(null);
   const [offerLetterActionId, setOfferLetterActionId] = useState(null);
   const [offerLetterEmailActionId, setOfferLetterEmailActionId] = useState(null);
   const [statusActionId, setStatusActionId] = useState(null);
@@ -2000,6 +2129,33 @@ function AdminPage() {
     }
   };
 
+  const handleSendCertificateEmail = async (application) => {
+    if (!application?._id) return;
+    setCertificateEmailActionId(application._id);
+    setError("");
+    setToast(null);
+
+    try {
+      const result = await sendCertificateEmail(application._id, adminKey);
+      setApplications((prev) =>
+        prev.map((app) =>
+          app._id === application._id ? { ...app, ...result.data } : app
+        )
+      );
+      setToast({
+        type: "success",
+        message: "Certificate sent successfully",
+      });
+    } catch (err) {
+      setToast({
+        type: "error",
+        message: err.message || "Failed to send certificate",
+      });
+    } finally {
+      setCertificateEmailActionId(null);
+    }
+  };
+
   const handleDownloadOfferLetter = async (application, { regenerate = false } = {}) => {
     if (!application?._id) return;
     setOfferLetterActionId(application._id);
@@ -2078,6 +2234,7 @@ function AdminPage() {
             ? {
                 ...app,
                 status: updated.status,
+                applicationId: updated.applicationId ?? app.applicationId,
                 payment: {
                   ...app.payment,
                   status: updated.payment?.status ?? paymentStatus,
@@ -2470,11 +2627,13 @@ function AdminPage() {
               onRequestComplete={handleCompleteApplication}
               onViewCertificate={handleViewCertificate}
               onDownloadCertificate={handleDownloadCertificate}
+              onSendCertificateEmail={handleSendCertificateEmail}
               onDownloadOfferLetter={handleDownloadOfferLetter}
               onSendOfferLetterEmail={handleSendOfferLetterEmail}
               paymentActionId={paymentActionId}
               completeActionId={completeActionId}
               certificateActionId={certificateActionId}
+              certificateEmailActionId={certificateEmailActionId}
               offerLetterActionId={offerLetterActionId}
               offerLetterEmailActionId={offerLetterEmailActionId}
               statusActionId={statusActionId}

@@ -182,6 +182,13 @@ export function sendOfferLetterEmail(id, adminKey) {
   });
 }
 
+export function sendCertificateEmail(id, adminKey) {
+  return request(`/applications/${id}/certificate/email`, {
+    method: "POST",
+    headers: adminHeaders(adminKey),
+  });
+}
+
 export function updatePaymentStatus(id, paymentStatus, adminKey) {
   return request(`/applications/${id}/payment-status`, {
     method: "PATCH",

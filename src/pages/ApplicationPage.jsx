@@ -15,7 +15,7 @@ import {
   User,
 } from "lucide-react";
 import FormField from "../components/FormField";
-import { submitApplication } from "../services/api";
+import { getPrograms, submitApplication } from "../services/api";
 import { inputClass } from "../utils/themeClasses";
 import {
   sanitizeNameInput,
@@ -200,7 +200,8 @@ function ApplicationPage() {
   const [submitStatus, setSubmitStatus] = useState(SUBMIT_STATUS.UPLOADING);
   const [submitError, setSubmitError] = useState("");
   const [fieldErrors, setFieldErrors] = useState({});
-  const [submittedApplicationId, setSubmittedApplicationId] = useState("");
+  const [programs, setPrograms] = useState([]);
+  const [programsLoaded, setProgramsLoaded] = useState(false);
   const [formData, setFormData] = useState({
     fullName: "",
     email: "",
@@ -209,14 +210,49 @@ function ApplicationPage() {
     department: "",
   });
 
-  const resolvedCourseTitle = resolveCourseTitle(courseName, [
+  useEffect(() => {
+    getPrograms()
+      .then((result) => {
+        setPrograms(Array.isArray(result.data) ? result.data : []);
+      })
+      .catch(() => {
+        setPrograms([]);
+      })
+      .finally(() => {
+        setProgramsLoaded(true);
+      });
+  }, []);
+
+  const slug = courseTitleToSlug(decodeURIComponent(courseName || ""));
+  const matchedProgram = programs.find(
+    (program) => courseTitleToSlug(program.title) === slug
+  );
+  const knownTitle = resolveCourseTitle(courseName, [
+    ...programs.map((program) => program.title),
     ...Object.keys(courseDetails),
     ...KNOWN_COURSE_TITLES,
   ]);
-  const canonicalSlug = courseTitleToSlug(resolvedCourseTitle);
+  const knownCourse = courseDetails[knownTitle];
+  const programTitle = matchedProgram?.title || knownTitle;
+  const canonicalSlug = courseTitleToSlug(programTitle);
 
-  const selectedCourse =
-    courseDetails[resolvedCourseTitle] || courseDetails["Python Development"];
+  const selectedCourse = matchedProgram
+    ? {
+        title: /internship/i.test(matchedProgram.title)
+          ? matchedProgram.title
+          : `${matchedProgram.title} Internship`,
+        description: matchedProgram.description,
+        duration: matchedProgram.duration || knownCourse?.duration || "45 Days",
+        programTitle: matchedProgram.title,
+      }
+    : knownCourse
+      ? {
+          title: knownCourse.title,
+          description: knownCourse.description,
+          duration: knownCourse.duration,
+          programTitle: knownTitle,
+        }
+      : null;
 
   useEffect(() => {
     if (courseName && canonicalSlug && courseName !== canonicalSlug) {
@@ -263,20 +299,15 @@ function ApplicationPage() {
     }, 8000);
 
     try {
-      const result = await submitApplication({
+      await submitApplication({
         fullName: formData.fullName,
         email: formData.email,
         phone: formData.phone,
         college: formData.college,
         department: formData.department,
-        program: resolvedCourseTitle,
+        program: selectedCourse?.programTitle || programTitle,
       });
 
-      if (!result?.data?.applicationId) {
-        throw new Error("Application submitted but no ID was returned. Please contact support.");
-      }
-
-      setSubmittedApplicationId(result.data.applicationId);
       setStep(2);
     } catch (error) {
       setSubmitError(error.message || "Failed to submit application");
@@ -300,14 +331,40 @@ function ApplicationPage() {
         <div className="text-center mb-8">
           <p className="theme-label mb-3">Apply Now</p>
           <h1 className="theme-heading">Internship Application</h1>
-          {step > 0 && step < 2 && (
+          {step > 0 && step < 2 && selectedCourse && (
             <p className="text-muted mt-3">{selectedCourse.title}</p>
           )}
         </div>
 
         {step > 0 && step < 2 && <StepIndicator step={step} />}
 
-        {step === 0 && (
+        {step === 0 && !selectedCourse && !programsLoaded && (
+          <div className="theme-card rounded-3xl p-12 text-center">
+            <Loader2 className="text-accent mx-auto mb-6 animate-spin" size={56} />
+            <p className="text-muted">Loading program details...</p>
+          </div>
+        )}
+
+        {step === 0 && programsLoaded && !selectedCourse && (
+          <div className="theme-card rounded-3xl p-8 md:p-12 text-center">
+            <h2 className="text-2xl md:text-3xl font-medium text-fg mb-3">
+              Program not found
+            </h2>
+            <p className="text-muted mb-8">
+              This internship is no longer available. Choose another program to apply.
+            </p>
+            <button
+              type="button"
+              onClick={() => navigate("/internships")}
+              className="theme-btn-primary inline-flex items-center gap-2 px-8 py-3"
+            >
+              <ArrowLeft size={18} />
+              Back to internships
+            </button>
+          </div>
+        )}
+
+        {step === 0 && selectedCourse && (
           <div className="theme-card rounded-3xl p-8 md:p-12 text-center relative overflow-hidden">
             <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-accent via-accent-warm to-accent" />
 
@@ -444,12 +501,6 @@ function ApplicationPage() {
               )}
             </div>
 
-            {submitError && (
-              <p className="text-red-400 text-sm text-center bg-red-500/10 border border-red-500/20 rounded-xl py-3 px-4 max-w-lg mx-auto mt-6">
-                {submitError}
-              </p>
-            )}
-
             <ActionButtons
               onBack={() => {
                 setFieldErrors({});
@@ -487,8 +538,9 @@ function ApplicationPage() {
             </h2>
 
             <p className="text-muted max-w-lg mx-auto mb-8 leading-relaxed">
-              Thank you for applying for the {selectedCourse.title}. Your details
-              have been submitted successfully.
+              Thank you for applying for the {selectedCourse?.title || programTitle}. Your details
+              have been submitted successfully. Your application ID will be
+              assigned after the application is accepted.
             </p>
 
             <div className="bg-surface border border-border rounded-2xl p-6 max-w-md mx-auto mb-6 text-left">
@@ -500,18 +552,12 @@ function ApplicationPage() {
               <SummaryRow label="Department" value={formData.department} />
             </div>
 
-            <div className="border border-accent/30 bg-accent/5 rounded-2xl p-6 max-w-md mx-auto mb-6">
-              <p className="text-subtle text-sm mb-2">Application ID</p>
-              <p className="text-2xl md:text-3xl font-semibold text-accent tracking-wide">
-                {submittedApplicationId}
-              </p>
-            </div>
-
             <div className="bg-surface border border-border rounded-2xl p-6 max-w-md mx-auto mb-8 text-left">
               <h3 className="font-medium text-fg mb-4">What Happens Next?</h3>
               <ul className="space-y-3">
                 {[
                   "Application review by our team",
+                  "Application ID assigned when you are accepted",
                   "Internship enrollment confirmation",
                   "Course access details shared via email",
                   "Internship starts as per schedule",

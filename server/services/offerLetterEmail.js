@@ -71,8 +71,7 @@ function buildOfferLetterEmailHtml({
           <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width:620px;background:#ffffff;border-radius:16px;overflow:hidden;border:1px solid #e5e7eb;">
             <tr>
               <td style="padding:28px 32px;background:linear-gradient(135deg,#0f172a,#1e3a8a);color:#ffffff;">
-                <p style="margin:0 0 4px;font-size:13px;letter-spacing:0.08em;text-transform:uppercase;opacity:0.85;">DECCAN AI LABS</p>
-                <p style="margin:0 0 10px;font-size:11px;letter-spacing:0.14em;text-transform:uppercase;opacity:0.7;">Private Limited</p>
+                <p style="margin:0 0 10px;font-size:13px;letter-spacing:0.08em;text-transform:uppercase;opacity:0.85;">DECCAN AI LABS PVT.LTD.</p>
                 <h1 style="margin:0;font-size:24px;line-height:1.4;font-weight:600;">Internship Offer Letter</h1>
               </td>
             </tr>
@@ -80,7 +79,7 @@ function buildOfferLetterEmailHtml({
               <td style="padding:32px;">
                 <p style="margin:0 0 16px;font-size:16px;line-height:1.6;">Dear ${escapeHtml(recipientName)},</p>
                 <p style="margin:0 0 16px;font-size:15px;line-height:1.7;">
-                  We are pleased to welcome you to <strong>DECCAN AI LABS</strong>.
+                  We are pleased to welcome you to <strong>DECCAN AI LABS PVT.LTD.</strong>
                   Your official internship offer letter is attached to this email as a PDF.
                 </p>
                 <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="margin:24px 0;background:#f8fafc;border:1px solid #e5e7eb;border-radius:12px;">
@@ -96,11 +95,11 @@ function buildOfferLetterEmailHtml({
                 </table>
                 <p style="margin:0 0 16px;font-size:15px;line-height:1.7;">
                   Please review the attached offer letter carefully. We look forward to your participation
-                  and a productive learning experience with DECCAN AI LABS.
+                  and a productive learning experience with DECCAN AI LABS PVT.LTD.
                 </p>
                 <p style="margin:24px 0 0;font-size:14px;line-height:1.7;">
                   Best regards,<br />
-                  <strong>DECCAN AI LABS Team</strong><br />
+                  <strong>DECCAN AI LABS PVT.LTD. Team</strong><br />
                   <a href="mailto:careers@deccanailabs.com" style="color:#2563eb;">careers@deccanailabs.com</a>
                 </p>
               </td>
@@ -174,7 +173,7 @@ export async function sendOfferLetterEmail({ application, offerLetter }) {
   const payload = {
     from,
     to: application.email.trim(),
-    subject: `Your DECCAN AI LABS Internship Offer Letter – ${application.program || "Internship"}`,
+    subject: `Your DECCAN AI LABS PVT.LTD. Internship Offer Letter – ${application.program || "Internship"}`,
     html,
     attachments: [
       {

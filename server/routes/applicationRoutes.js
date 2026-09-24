@@ -1,6 +1,7 @@
 import express from "express";
 import {
   completeApplication,
+  emailCertificate,
   createApplication,
   createApplicationWithPayment,
   deleteApplication,
@@ -28,6 +29,7 @@ router.get("/", adminAuth, getApplications);
 router.get("/offer-letter/sample", adminAuth, downloadSampleOfferLetter);
 router.get("/:id/offer-letter", adminAuth, downloadOfferLetter);
 router.post("/:id/offer-letter/email", adminAuth, emailOfferLetter);
+router.post("/:id/certificate/email", adminAuth, emailCertificate);
 router.patch("/:id/status", adminAuth, updateApplicationStatus);
 router.patch("/:id/complete", adminAuth, completeApplication);
 router.patch("/:id/payment-status", adminAuth, updatePaymentStatus);
