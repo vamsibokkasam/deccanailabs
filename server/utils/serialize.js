@@ -117,6 +117,15 @@ export function serializeApplication(row, { includeScreenshot = true } = {}) {
     completedAt: row.completedAt,
     certificateEmailedAt: row.certificateEmailedAt,
     certificate,
+    offerLetter: row.offerLetter
+      ? {
+          _id: row.offerLetter.id,
+          filename: row.offerLetter.filename,
+          issuedAt: row.offerLetter.createdAt,
+          updatedAt: row.offerLetter.updatedAt,
+          emailedAt: row.offerLetter.emailedAt || null,
+        }
+      : null,
     createdAt: row.createdAt,
     updatedAt: row.updatedAt,
   };

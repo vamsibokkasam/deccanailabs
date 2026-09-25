@@ -12,6 +12,7 @@ import {
 import {
   downloadPublicCertificatePdf,
   getPublicCertificateImageUrl,
+  getPublicCertificatePdfUrl,
   openCertificatePdfBlob,
   searchCertificates,
 } from "../services/api";
@@ -263,11 +264,18 @@ function CertificateResult({
 
       {expanded && certificate.valid && (
         <div className="border-t border-border bg-white p-2 md:p-4">
-          <img
-            src={getPublicCertificateImageUrl(certificate.certNo)}
-            alt={`Certificate ${certificate.certNo}`}
-            className="block w-full h-auto object-contain"
-          />
+          <object
+            data={getPublicCertificatePdfUrl(certificate.certNo)}
+            type="application/pdf"
+            className="block w-full aspect-[1.414] min-h-[280px] bg-white"
+            aria-label={`Certificate ${certificate.certNo}`}
+          >
+            <img
+              src={getPublicCertificateImageUrl(certificate.certNo)}
+              alt={`Certificate ${certificate.certNo}`}
+              className="block w-full h-auto object-contain"
+            />
+          </object>
         </div>
       )}
     </article>

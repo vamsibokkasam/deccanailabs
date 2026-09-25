@@ -4,6 +4,7 @@ import { fileURLToPath } from "url";
 import dotenv from "dotenv";
 import connectDB, { getDbStatus } from "./config/db.js";
 import seedPrograms from "./config/seedPrograms.js";
+import { warmupOfferLetterAssets } from "./services/offerLetterRenderer.js";
 import contactRoutes from "./routes/contactRoutes.js";
 import applicationRoutes from "./routes/applicationRoutes.js";
 import programRoutes from "./routes/programRoutes.js";
@@ -60,6 +61,7 @@ const initDatabase = async () => {
     try {
       await connectDB();
       await seedPrograms();
+      await warmupOfferLetterAssets();
       return;
     } catch (error) {
       console.error(`PostgreSQL attempt ${attempt}/5 failed:`, error.message);

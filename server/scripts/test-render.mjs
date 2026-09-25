@@ -2,7 +2,7 @@ import fs from "fs/promises";
 import path from "path";
 import { fileURLToPath } from "url";
 import dotenv from "dotenv";
-import { renderCertificate, TEMPLATE_PATH } from "../services/certificateRenderer.js";
+import { renderCertificate, PDF_TEMPLATE_PATH } from "../services/certificateRenderer.js";
 
 dotenv.config();
 
@@ -25,29 +25,23 @@ async function main() {
   process.env.SITE_URL = process.env.SITE_URL || "https://deccanailabs.com";
 
   try {
-    await fs.access(TEMPLATE_PATH);
+    await fs.access(PDF_TEMPLATE_PATH);
   } catch {
-    console.error(`
-Certificate template missing at:
-  ${TEMPLATE_PATH}
-
-Export your BLANK Canva design (logo, border, seal, signature — NO student
-name, cert number, dates, or detail-block text) and save it there.
-
-Do NOT copy src/assets/template.png or scanned.png — those are filled samples
-and will cause double/overlapping text when the renderer draws on top.
-`);
+    console.error(`Certificate template missing at:\n  ${PDF_TEMPLATE_PATH}\n`);
     process.exit(1);
   }
 
   await fs.mkdir(outputDir, { recursive: true });
 
-  const { pngBuffer } = await renderCertificate(sampleCertificate);
+  const { pngBuffer, pdfBuffer } = await renderCertificate(sampleCertificate);
   const safeName = sampleCertificate.certNo.replace(/\//g, "-");
   const pngPath = path.join(outputDir, `${safeName}.png`);
+  const pdfPath = path.join(outputDir, `${safeName}.pdf`);
 
   await fs.writeFile(pngPath, pngBuffer);
+  await fs.writeFile(pdfPath, pdfBuffer);
   console.log(`Saved preview PNG: ${pngPath}`);
+  console.log(`Saved preview PDF: ${pdfPath}`);
   console.log(
     `QR should open: ${(process.env.SITE_URL || "https://deccanailabs.com").replace(/\/$/, "")}/verify/${sampleCertificate.certNo}`
   );

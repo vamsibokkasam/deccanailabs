@@ -5,12 +5,13 @@
   "main": "server.js",
   "scripts": {
     "dev": "nodemon server.js",
-    "migrate": "prisma migrate deploy",
+    "migrate": "node scripts/migrate-deploy.mjs",
     "build": "prisma generate",
-    "start": "prisma migrate deploy && node server.js",
+    "start": "node scripts/migrate-deploy.mjs && node server.js",
     "postinstall": "prisma generate",
     "migrate:mongo": "node scripts/migrate-mongo-to-postgres.mjs",
-    "test:render": "node scripts/test-render.mjs"
+    "test:render": "node scripts/test-render.mjs",
+    "test:offer-letter": "node scripts/test-offer-letter.mjs"
   },
   "keywords": [],
   "author": "",
@@ -24,6 +25,7 @@
     "express": "^5.2.1",
     "mongodb": "^6.20.0",
     "pdf-lib": "^1.17.1",
+    "pdfjs-dist": "^4.10.38",
     "prisma": "^6.16.2",
     "qrcode": "^1.5.4",
     "resend": "^6.17.2"

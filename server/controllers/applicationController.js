@@ -1,5 +1,5 @@
 import prisma from "../config/prisma.js";
-import { compareApplicationIds, generateApplicationId } from "../utils/applicationId.js";
+import { generateApplicationId } from "../utils/applicationId.js";
 import { isPrismaUniqueError } from "../utils/prismaErrors.js";
 import { validatePaymentScreenshot } from "../utils/saveScreenshot.js";
 import {
@@ -9,6 +9,7 @@ import {
 } from "../utils/serialize.js";
 import { issueCertificateForApplication } from "../services/certificateIssuance.js";
 import { sendCertificateEmail } from "../services/certificateEmail.js";
+import { OFFER_LETTER_META_SELECT, queueOfferLetterIssuance } from "../services/offerLetterIssuance.js";
 
 const TX_OPTIONS = { maxWait: 10000, timeout: 15000 };
 
@@ -16,24 +17,19 @@ export const createApplication = async (req, res, next) => {
   try {
     const { fullName, email, phone, program, message, college, department } = req.body;
 
-    const application = await prisma.$transaction(async (tx) => {
-      const applicationId = await generateApplicationId(tx);
-
-      return tx.internshipApplication.create({
-        data: {
-          applicationId,
-          fullName: fullName.trim(),
-          email: email.trim().toLowerCase(),
-          phone: phone.trim().replace(/\s/g, ""),
-          college: college?.trim() || "",
-          department: department?.trim() || "",
-          program: program.trim(),
-          message: message?.trim() || "",
-          feeAmount: 0,
-          status: "pending",
-        },
-      });
-    }, TX_OPTIONS);
+    const application = await prisma.internshipApplication.create({
+      data: {
+        fullName: fullName.trim(),
+        email: email.trim().toLowerCase(),
+        phone: phone.trim().replace(/\s/g, ""),
+        college: college?.trim() || "",
+        department: department?.trim() || "",
+        program: program.trim(),
+        message: message?.trim() || "",
+        feeAmount: 0,
+        status: "pending",
+      },
+    });
 
     res.status(201).json({
       success: true,
@@ -131,6 +127,7 @@ export const getApplications = async (req, res, next) => {
     const applications = await prisma.internshipApplication.findMany({
       include: {
         certificate: true,
+        offerLetter: { select: OFFER_LETTER_META_SELECT },
         batch: {
           select: {
             id: true,
@@ -143,8 +140,8 @@ export const getApplications = async (req, res, next) => {
       },
     });
 
-    applications.sort((left, right) =>
-      compareApplicationIds(left.applicationId, right.applicationId)
+    applications.sort(
+      (left, right) => new Date(right.createdAt) - new Date(left.createdAt)
     );
 
     res.json({
@@ -185,6 +182,7 @@ export const updateApplicationStatus = async (req, res, next) => {
 
     const existing = await prisma.internshipApplication.findUnique({
       where: { id: req.params.id },
+      include: { batch: true },
     });
 
     if (!existing) {
@@ -201,14 +199,39 @@ export const updateApplicationStatus = async (req, res, next) => {
       });
     }
 
-    const application = await prisma.internshipApplication.update({
-      where: { id: req.params.id },
-      data: { status },
-    });
+    const application = await prisma.$transaction(async (tx) => {
+      const data = { status };
+
+      if (status === "accepted" && !existing.applicationId) {
+        data.applicationId = await generateApplicationId(tx);
+      }
+
+      return tx.internshipApplication.update({
+        where: { id: req.params.id },
+        data,
+        include: {
+          batch: true,
+          certificate: true,
+          offerLetter: { select: OFFER_LETTER_META_SELECT },
+        },
+      });
+    }, TX_OPTIONS);
+
+    if (status === "accepted" && !application.offerLetter) {
+      queueOfferLetterIssuance({
+        ...application,
+        batch: existing.batch,
+      });
+    }
 
     res.json({
       success: true,
-      message: "Status updated successfully",
+      message:
+        status === "accepted"
+          ? application.offerLetter
+            ? "Application accepted. Offer letter is ready."
+            : "Application accepted. Offer letter is being generated."
+          : "Status updated successfully",
       data: stripScreenshotFromApplication(application),
     });
   } catch (error) {
@@ -355,6 +378,71 @@ export const completeApplication = async (req, res, next) => {
   }
 };
 
+export const emailCertificate = async (req, res, next) => {
+  try {
+    const application = await prisma.internshipApplication.findUnique({
+      where: { id: req.params.id },
+      include: { certificate: true, batch: true },
+    });
+
+    if (!application) {
+      return res.status(404).json({
+        success: false,
+        message: "Application not found",
+      });
+    }
+
+    if (!application.certificate) {
+      return res.status(400).json({
+        success: false,
+        message: "Certificate is issued when the application is completed",
+      });
+    }
+
+    if (application.certificate.status === "revoked") {
+      return res.status(400).json({
+        success: false,
+        message: "This certificate has been revoked",
+      });
+    }
+
+    if (!application.email?.trim()) {
+      return res.status(400).json({
+        success: false,
+        message: "Application has no email address",
+      });
+    }
+
+    await sendCertificateEmail({
+      application,
+      certificate: application.certificate,
+    });
+
+    const emailedAt = new Date();
+    await prisma.internshipApplication.update({
+      where: { id: application.id },
+      data: { certificateEmailedAt: emailedAt },
+    });
+
+    res.json({
+      success: true,
+      message: `Certificate emailed to ${application.email}`,
+      data: stripScreenshotFromApplication({
+        ...application,
+        certificateEmailedAt: emailedAt,
+      }),
+    });
+  } catch (error) {
+    if (error.statusCode) {
+      return res.status(error.statusCode).json({
+        success: false,
+        message: error.message,
+      });
+    }
+    next(error);
+  }
+};
+
 export const updatePaymentStatus = async (req, res, next) => {
   try {
     const { paymentStatus } = req.body || {};
@@ -394,14 +482,22 @@ export const updatePaymentStatus = async (req, res, next) => {
 
     const applicationStatus = paymentStatus === "verified" ? "accepted" : "rejected";
 
-    const application = await prisma.internshipApplication.update({
-      where: { id: req.params.id },
-      data: {
+    const application = await prisma.$transaction(async (tx) => {
+      const data = {
         paymentStatus,
         paymentVerifiedAt: new Date(),
         status: applicationStatus,
-      },
-    });
+      };
+
+      if (applicationStatus === "accepted" && !existing.applicationId) {
+        data.applicationId = await generateApplicationId(tx);
+      }
+
+      return tx.internshipApplication.update({
+        where: { id: req.params.id },
+        data,
+      });
+    }, TX_OPTIONS);
 
     res.json({
       success: true,
