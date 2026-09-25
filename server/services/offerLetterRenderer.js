@@ -162,8 +162,22 @@ function bodyBlocks(fields) {
       },
     ],
     [
+      { text: "DECCAN AI LABS PVT.LTD. is" },
+      { text: " " },
+      { text: "AICTE", bold: true },
+      { text: ", " },
+      { text: "MCA", bold: true },
+      { text: ", " },
+      { text: "MSME", bold: true },
+      { text: ", " },
+      { text: "NCS", bold: true },
+      { text: ", and " },
+      { text: "ISO", bold: true },
+      { text: " certified, and recognised under" },
+      { text: " " },
+      { text: "Startup India", bold: true },
       {
-        text: "DECCAN AI LABS PVT.LTD.\u00A0is MSME, NCS, and ISO certified, and recognised under Startup India. Upon successful completion of the program, you will receive an official internship certificate from DECCAN AI LABS PVT.LTD.",
+        text: ". Upon successful completion of the program, you will receive an official internship certificate from DECCAN AI LABS PVT.LTD.",
       },
     ],
     [
@@ -179,8 +193,18 @@ function bodyBlocks(fields) {
   ];
 }
 
+function measureText(font, text, size) {
+  if (!text) return 0;
+  const leading = text.match(/^\s*/)?.[0].length ?? 0;
+  const trailing = text.match(/\s*$/)?.[0].length ?? 0;
+  const core = text.trim();
+  const spaceWidth = font.widthOfTextAtSize(" ", size);
+  const coreWidth = core ? font.widthOfTextAtSize(core, size) : 0;
+  return spaceWidth * leading + coreWidth + spaceWidth * trailing;
+}
+
 function widthOf(font, boldFont, text, size, bold) {
-  return (bold ? boldFont : font).widthOfTextAtSize(text, size);
+  return measureText(bold ? boldFont : font, text, size);
 }
 
 function wrapRich(font, boldFont, runs, maxWidth, size) {
@@ -402,6 +426,8 @@ function drawRichLine(page, font, boldFont, line, x, y, size) {
   let buffer = "";
   let bufferBold = false;
 
+  const spaceWidth = Math.max(font.widthOfTextAtSize(" ", size), size * 0.28);
+
   const flush = () => {
     if (!buffer) return;
     const active = bufferBold ? boldFont : font;
@@ -412,11 +438,17 @@ function drawRichLine(page, font, boldFont, line, x, y, size) {
       font: active,
       color: bufferBold ? TEXT_BOLD : TEXT,
     });
-    cursorX += active.widthOfTextAtSize(buffer, size);
+    cursorX += measureText(active, buffer, size);
     buffer = "";
   };
 
   for (const part of line) {
+    if (/^\s+$/.test(part.text)) {
+      flush();
+      cursorX += spaceWidth * part.text.length;
+      continue;
+    }
+
     const bold = Boolean(part.bold);
     if (buffer && bold !== bufferBold) flush();
     bufferBold = bold;
