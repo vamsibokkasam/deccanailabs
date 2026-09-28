@@ -4,6 +4,7 @@ import {
   downloadCertificateImage,
   downloadCertificatePdf,
   renderCertificatePdf,
+  listEmailedCertificatesByBatch,
   revokeCertificate,
   searchCertificates,
   verifyCertificate,
@@ -14,6 +15,7 @@ const router = express.Router();
 
 // Cert numbers include slashes (DAIL/CERT/2026/001) — put them in a trailing wildcard
 router.get("/search", searchCertificates);
+router.get("/issued", adminAuth, listEmailedCertificatesByBatch);
 router.get("/verify/*certNo", verifyCertificate);
 router.get("/image/*certNo", downloadCertificateImage);
 router.get("/pdf/*certNo", downloadCertificatePdf);

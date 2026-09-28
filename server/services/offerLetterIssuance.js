@@ -75,16 +75,24 @@ export async function issueOfferLetterForApplication(
   application,
   { force = false } = {}
 ) {
+  const latest = application?.id
+    ? await prisma.internshipApplication.findUnique({
+        where: { id: application.id },
+        include: { batch: true },
+      })
+    : null;
+  const source = latest || application;
+
   if (!force) {
     const existing = await prisma.offerLetter.findUnique({
-      where: { applicationId: application.id },
+      where: { applicationId: source.id },
       select: { ...OFFER_LETTER_META_SELECT, applicationId: true },
     });
     if (existing && resolveStoredPdf(existing)) return existing;
   }
 
-  const rendered = await renderOfferLetter(application);
-  return saveOfferLetter(application, rendered);
+  const rendered = await renderOfferLetter(source);
+  return saveOfferLetter(source, rendered);
 }
 
 export function queueOfferLetterIssuance(application) {
@@ -94,7 +102,7 @@ export function queueOfferLetterIssuance(application) {
   inflight.add(id);
   setImmediate(async () => {
     try {
-      await issueOfferLetterForApplication(application);
+      await issueOfferLetterForApplication({ id }, { force: true });
     } catch (error) {
       console.error("Offer letter save failed:", error.message || error);
     } finally {

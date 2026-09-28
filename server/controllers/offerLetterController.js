@@ -87,6 +87,76 @@ export const downloadSampleOfferLetter = async (req, res, next) => {
   }
 };
 
+export const listEmailedOfferLettersByBatch = async (req, res, next) => {
+  try {
+    const applications = await prisma.internshipApplication.findMany({
+      where: {
+        offerLetter: { emailedAt: { not: null } },
+      },
+      include: {
+        batch: {
+          select: {
+            id: true,
+            name: true,
+            programTitle: true,
+            startDate: true,
+            endDate: true,
+          },
+        },
+        offerLetter: {
+          select: {
+            id: true,
+            filename: true,
+            emailedAt: true,
+            createdAt: true,
+          },
+        },
+      },
+      orderBy: { updatedAt: "desc" },
+    });
+
+    const groups = new Map();
+
+    for (const application of applications) {
+      const programName = application.program?.trim() || "No program";
+      const key = programName.toLowerCase();
+      if (!groups.has(key)) {
+        groups.set(key, {
+          _id: key,
+          name: programName,
+          offerLetters: [],
+        });
+      }
+
+      groups.get(key).offerLetters.push({
+        _id: application.offerLetter.id,
+        applicationId: application.id,
+        applicationRef: application.applicationId || "",
+        recipientName: application.fullName,
+        email: application.email,
+        college: application.college,
+        department: application.department,
+        program: programName,
+        batchName: application.batch?.name || "",
+        filename: application.offerLetter.filename,
+        emailedAt: application.offerLetter.emailedAt,
+      });
+    }
+
+    const data = [...groups.values()].sort((left, right) =>
+      left.name.localeCompare(right.name)
+    );
+
+    res.json({
+      success: true,
+      count: applications.length,
+      data,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 export const emailOfferLetter = async (req, res, next) => {
   try {
     const application = await prisma.internshipApplication.findUnique({
