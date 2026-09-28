@@ -131,8 +131,7 @@ function letterFields(application) {
   const program = String(application.program || "Internship").trim();
   return {
     name: application.fullName || "-",
-    applicationId:
-      application.applicationId || application.registrationNo || "-",
+    applicationId: application.applicationId || "-",
     program,
   };
 }

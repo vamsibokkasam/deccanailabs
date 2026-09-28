@@ -175,6 +175,12 @@ export function completeApplication(id, adminKey) {
   });
 }
 
+export function getIssuedOfferLetters(adminKey) {
+  return request("/applications/offer-letters/issued", {
+    headers: adminHeaders(adminKey),
+  });
+}
+
 export function sendOfferLetterEmail(id, adminKey) {
   return request(`/applications/${id}/offer-letter/email`, {
     method: "POST",
@@ -285,6 +291,12 @@ export function assignApplicationsToBatch(batchId, applicationIds, adminKey) {
 
 export function verifyCertificate(certNo) {
   return request(`/certificates/verify/${certificatePath(certNo)}`);
+}
+
+export function getIssuedCertificates(adminKey) {
+  return request("/certificates/issued", {
+    headers: adminHeaders(adminKey),
+  });
 }
 
 export function searchCertificates(query) {

@@ -288,6 +288,84 @@ export const downloadCertificatePdf = async (req, res, next) => {
   }
 };
 
+export const listEmailedCertificatesByBatch = async (req, res, next) => {
+  try {
+    const certificates = await prisma.certificate.findMany({
+      where: {
+        status: "valid",
+        application: { certificateEmailedAt: { not: null } },
+      },
+      include: {
+        application: {
+          select: {
+            id: true,
+            applicationId: true,
+            fullName: true,
+            email: true,
+            college: true,
+            department: true,
+            certificateEmailedAt: true,
+            batch: {
+              select: {
+                id: true,
+                name: true,
+                programTitle: true,
+                startDate: true,
+                endDate: true,
+              },
+            },
+          },
+        },
+      },
+      orderBy: { issuedAt: "desc" },
+    });
+
+    const groups = new Map();
+
+    for (const certificate of certificates) {
+      const batch = certificate.application?.batch;
+      const key = batch?.id || "unassigned";
+      if (!groups.has(key)) {
+        groups.set(key, {
+          _id: key,
+          name: batch?.name || "No batch",
+          programTitle: batch?.programTitle || certificate.internshipDomain || "",
+          startDate: batch?.startDate || null,
+          endDate: batch?.endDate || null,
+          certificates: [],
+        });
+      }
+
+      groups.get(key).certificates.push({
+        _id: certificate.id,
+        certNo: certificate.application?.applicationId || certificate.certNo,
+        recipientName: certificate.recipientName,
+        email: certificate.application?.email || "",
+        applicationRef: certificate.application?.applicationId || "",
+        college: certificate.college,
+        department: certificate.department,
+        internshipDomain: certificate.internshipDomain,
+        issuedAt: certificate.issuedAt,
+        emailedAt: certificate.application?.certificateEmailedAt || null,
+      });
+    }
+
+    const data = [...groups.values()].sort((left, right) => {
+      if (left._id === "unassigned") return 1;
+      if (right._id === "unassigned") return -1;
+      return new Date(right.startDate || 0) - new Date(left.startDate || 0);
+    });
+
+    res.json({
+      success: true,
+      count: certificates.length,
+      data,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 export const searchCertificates = async (req, res, next) => {
   try {
     const query = String(req.query.q || "").trim();

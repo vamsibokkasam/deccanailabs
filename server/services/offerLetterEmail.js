@@ -157,8 +157,7 @@ export async function sendOfferLetterEmail({ application, offerLetter }) {
   const startDate =
     application.internshipStartDate || application.batch?.startDate;
   const endDate = application.internshipEndDate || application.batch?.endDate;
-  const applicationId =
-    application.applicationId || letter.applicationRef || application.id;
+  const applicationId = application.applicationId || "";
 
   const html = buildOfferLetterEmailHtml({
     recipientName: application.fullName,

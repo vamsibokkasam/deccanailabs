@@ -33,6 +33,18 @@ function certificateFilename(certNo) {
   return `${String(certNo || "certificate").replace(/\//g, "-")}.pdf`;
 }
 
+function stripEnvQuotes(value) {
+  return String(value || "")
+    .trim()
+    .replace(/^['"]|['"]$/g, "");
+}
+
+function mailError(message, statusCode) {
+  const error = new Error(message);
+  error.statusCode = statusCode;
+  return error;
+}
+
 function buildCertificateEmailHtml({
   recipientName,
   program,
@@ -105,15 +117,15 @@ function buildCertificateEmailHtml({
 export async function sendCertificateEmail({ application, certificate }) {
   const client = getResendClient();
   if (!client) {
-    throw new Error("RESEND_API_KEY is not configured");
+    throw mailError("RESEND_API_KEY is not configured", 503);
   }
 
   if (!application?.email?.trim()) {
-    throw new Error("Application has no recipient email");
+    throw mailError("Application has no recipient email", 400);
   }
 
-  const from = process.env.MAIL_FROM?.trim() || "onboarding@resend.dev";
-  const replyTo = process.env.MAIL_REPLY_TO?.trim() || undefined;
+  const from = stripEnvQuotes(process.env.MAIL_FROM) || "onboarding@resend.dev";
+  const replyTo = stripEnvQuotes(process.env.MAIL_REPLY_TO) || undefined;
   const displayCertNo = await resolveDisplayCertNo(certificate);
   const verifyUrl = buildCertificateVerifyUrl(displayCertNo);
   const { pdfBuffer } = await renderCertificate(certificate);
@@ -129,10 +141,9 @@ export async function sendCertificateEmail({ application, certificate }) {
     verifyUrl,
   });
 
-  const { data, error } = await client.emails.send({
+  const payload = {
     from,
     to: application.email.trim(),
-    replyTo,
     subject: `Your DECCAN AI LABS PVT.LTD. Internship Certificate – ${application.program || certificate.internshipDomain}`,
     html,
     attachments: [
@@ -141,10 +152,13 @@ export async function sendCertificateEmail({ application, certificate }) {
         content: pdfBuffer.toString("base64"),
       },
     ],
-  });
+  };
+  if (replyTo) payload.replyTo = replyTo;
+
+  const { data, error } = await client.emails.send(payload);
 
   if (error) {
-    throw new Error(error.message || "Failed to send certificate email");
+    throw mailError(error.message || "Failed to send certificate email", 400);
   }
 
   return data;

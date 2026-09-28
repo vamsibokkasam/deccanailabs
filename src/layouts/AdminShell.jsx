@@ -1,9 +1,11 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import {
+  Award,
   BookOpen,
   ExternalLink,
   LayoutDashboard,
+  FileText,
   Layers,
   LogOut,
   Mail,
@@ -24,6 +26,8 @@ const navItems = [
   { id: "applications", label: "Applications", icon: UserCheck, countKey: "applications" },
   { id: "contacts", label: "Contacts", icon: Mail, countKey: "contacts" },
   { id: "batches", label: "Batches", icon: Layers },
+  { id: "certificates", label: "Certificates", icon: Award, countKey: "certificates" },
+  { id: "offerLetters", label: "Offer Letters", icon: FileText },
   { id: "programs", label: "Programs", icon: BookOpen, countKey: "programs" },
 ];
 
@@ -32,6 +36,8 @@ const pageTitles = {
   applications: "Internship Applications",
   contacts: "Contact Messages",
   batches: "Batch Management",
+  certificates: "Certificates",
+  offerLetters: "Offer Letters",
   programs: "Program Management",
 };
 

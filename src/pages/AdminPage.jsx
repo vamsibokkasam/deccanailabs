@@ -30,6 +30,8 @@ import {
 } from "lucide-react";
 import FormField from "../components/FormField";
 import BatchesSection from "../components/admin/BatchesSection";
+import CertificatesSection from "../components/admin/CertificatesSection";
+import OfferLettersSection from "../components/admin/OfferLettersSection";
 import AdminLogin from "../components/admin/AdminLogin";
 import AdminShell from "../layouts/AdminShell";
 import { inputClass } from "../utils/themeClasses";
@@ -1939,6 +1941,7 @@ function AdminPage() {
   const [statusActionId, setStatusActionId] = useState(null);
   const [actionNotice, setActionNotice] = useState({ type: "", message: "" });
   const [toast, setToast] = useState(null);
+  const [dataVersion, setDataVersion] = useState(0);
 
   useEffect(() => {
     if (!toast) return undefined;
@@ -2655,6 +2658,14 @@ function AdminPage() {
       );
     }
 
+    if (activeTab === "certificates") {
+      return <CertificatesSection adminKey={adminKey} reloadKey={dataVersion} />;
+    }
+
+    if (activeTab === "offerLetters") {
+      return <OfferLettersSection adminKey={adminKey} reloadKey={dataVersion} />;
+    }
+
     if (activeTab === "programs") {
       return (
       <div className="space-y-8">
@@ -2797,7 +2808,10 @@ function AdminPage() {
         activeTab={activeTab}
         onTabChange={setActiveTab}
         onLogout={handleLogout}
-        onRefresh={() => loadData(adminKey)}
+        onRefresh={() => {
+          loadData(adminKey);
+          setDataVersion((version) => version + 1);
+        }}
         loading={loading}
         counts={{
           applications: applications.length,
