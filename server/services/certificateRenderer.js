@@ -74,6 +74,7 @@ export const DETAIL_BLOCK = {
   lineHeight: 46,
   fontSize: 20,
   color: "#222222",
+  valueRight: 980,
 };
 
 const DETAIL_LABELS = [
@@ -238,6 +239,26 @@ export async function resolveDisplayCertNo(certificateDoc) {
   return certificateDoc.certNo;
 }
 
+function wrapDetailValue(widthOf, text, size, maxWidth) {
+  const value = String(text || "—").replace(/\s+/g, " ").trim() || "—";
+  const words = value.split(" ");
+  const lines = [];
+  let current = "";
+
+  for (const word of words) {
+    const next = current ? `${current} ${word}` : word;
+    if (!current || widthOf(next, size) <= maxWidth) {
+      current = next;
+    } else {
+      lines.push(current);
+      current = word;
+    }
+  }
+
+  if (current) lines.push(current);
+  return lines.length ? lines : ["—"];
+}
+
 function detailValues(fields) {
   return [
     fields.registrationNo,
@@ -313,10 +334,18 @@ function drawDetailsOnPdf(page, fonts, fields) {
     size,
     sx
   );
+  const maxWidth = DETAIL_BLOCK.valueRight * sx - columns.valueX;
+  let canvasY = DETAIL_BLOCK.startY;
 
   DETAIL_LABELS.forEach((label, index) => {
-    const canvasY = DETAIL_BLOCK.startY + index * DETAIL_BLOCK.lineHeight;
     const y = pdfY(height, canvasY, DETAIL_BLOCK.fontSize);
+    const lines = wrapDetailValue(
+      (value, textSize) => font.widthOfTextAtSize(value, textSize),
+      values[index],
+      size,
+      maxWidth
+    );
+
     page.drawText(label, {
       x: columns.labelX,
       y,
@@ -331,13 +360,17 @@ function drawDetailsOnPdf(page, fonts, fields) {
       font: bold,
       color: LABEL_TEXT,
     });
-    page.drawText(String(values[index] || "—"), {
-      x: columns.valueX,
-      y,
-      size,
-      font,
-      color: BODY_TEXT,
+    lines.forEach((line, lineIndex) => {
+      page.drawText(line, {
+        x: columns.valueX,
+        y: pdfY(height, canvasY + lineIndex * 26, DETAIL_BLOCK.fontSize),
+        size,
+        font,
+        color: BODY_TEXT,
+      });
     });
+
+    canvasY += DETAIL_BLOCK.lineHeight + (lines.length - 1) * 26;
   });
 }
 
@@ -454,9 +487,18 @@ function drawDetailsOnCanvas(ctx, fields) {
   const values = detailValues(fields);
   setFont(ctx, FONT_SANS, DETAIL_BLOCK.fontSize, "bold");
   const columns = detailColumns((text) => ctx.measureText(text).width, DETAIL_BLOCK.fontSize, 1);
+  const maxWidth = DETAIL_BLOCK.valueRight - columns.valueX;
+  let y = DETAIL_BLOCK.startY;
 
   DETAIL_LABELS.forEach((label, index) => {
-    const y = DETAIL_BLOCK.startY + index * DETAIL_BLOCK.lineHeight;
+    setFont(ctx, FONT_SANS, DETAIL_BLOCK.fontSize);
+    const lines = wrapDetailValue(
+      (value) => ctx.measureText(value).width,
+      values[index],
+      DETAIL_BLOCK.fontSize,
+      maxWidth
+    );
+
     setFont(ctx, FONT_SANS, DETAIL_BLOCK.fontSize, "bold");
     ctx.fillStyle = "#141414";
     ctx.textAlign = "left";
@@ -465,7 +507,11 @@ function drawDetailsOnCanvas(ctx, fields) {
     ctx.fillText(":", columns.colonX, y);
     setFont(ctx, FONT_SANS, DETAIL_BLOCK.fontSize);
     ctx.fillStyle = DETAIL_BLOCK.color;
-    ctx.fillText(String(values[index] || "—"), columns.valueX, y);
+    lines.forEach((line, lineIndex) => {
+      ctx.fillText(line, columns.valueX, y + lineIndex * 26);
+    });
+
+    y += DETAIL_BLOCK.lineHeight + (lines.length - 1) * 26;
   });
 }
 
@@ -575,11 +621,24 @@ async function renderCertificatePngFallback(fields) {
 }
 
 export async function renderCertificate(certificateDoc) {
+  const application = certificateDoc.application;
+  const college = application?.college?.trim() || certificateDoc.college || "";
+  const department = application?.department?.trim() || certificateDoc.department || "";
+
+  if (
+    certificateDoc.id &&
+    (college !== (certificateDoc.college || "") ||
+      department !== (certificateDoc.department || ""))
+  ) {
+    await prisma.certificate.update({
+      where: { id: certificateDoc.id },
+      data: { college, department },
+    });
+  }
+
   const {
     recipientName,
     registrationNo = "",
-    department = "",
-    college = "",
     internshipDomain,
     startDate,
     endDate,

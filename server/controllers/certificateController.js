@@ -11,6 +11,9 @@ const applicationSelect = {
   id: true,
   applicationId: true,
   email: true,
+  fullName: true,
+  college: true,
+  department: true,
 };
 
 function resolveCertNo(raw) {
