@@ -126,16 +126,22 @@ export async function sendCertificateEmail({ application, certificate }) {
 
   const from = stripEnvQuotes(process.env.MAIL_FROM) || "onboarding@resend.dev";
   const replyTo = stripEnvQuotes(process.env.MAIL_REPLY_TO) || undefined;
-  const displayCertNo = await resolveDisplayCertNo(certificate);
+  const certificateForSend = {
+    ...certificate,
+    application,
+  };
+  const displayCertNo = await resolveDisplayCertNo(certificateForSend);
   const verifyUrl = buildCertificateVerifyUrl(displayCertNo);
-  const { pdfBuffer } = await renderCertificate(certificate);
+  const { pdfBuffer } = await renderCertificate(certificateForSend);
+  const college = application.college?.trim() || certificate.college || "—";
+  const department = application.department?.trim() || certificate.department || "—";
 
   const html = buildCertificateEmailHtml({
     recipientName: application.fullName,
     program: application.program || certificate.internshipDomain,
     certNo: displayCertNo,
-    college: certificate.college || application.college || "—",
-    department: certificate.department || application.department || "—",
+    college,
+    department,
     startDate: certificate.startDate,
     endDate: certificate.endDate,
     verifyUrl,

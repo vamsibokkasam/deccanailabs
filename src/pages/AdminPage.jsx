@@ -892,9 +892,10 @@ function OfferLetterRowActions({
   onSendOfferLetterEmail,
   offerLetterActionId,
   offerLetterEmailActionId,
+  statusActionId,
 }) {
   if (!app.offerLetter) {
-    if (app.status === "accepted" || app.status === "completed") {
+    if (statusActionId === app._id && (app.status === "accepted" || app.status === "completed")) {
       return (
         <span className="text-muted text-[11px] inline-flex items-center gap-1 whitespace-nowrap">
           <Loader2 size={12} className="animate-spin" />
@@ -902,7 +903,7 @@ function OfferLetterRowActions({
         </span>
       );
     }
-    return null;
+    if (app.status !== "accepted" && app.status !== "completed") return null;
   }
 
   const busy =
@@ -931,7 +932,7 @@ function OfferLetterRowActions({
         title={
           !app.email
             ? "Application has no email address"
-            : app.offerLetter.emailedAt
+            : app.offerLetter?.emailedAt
               ? "Send the offer letter again"
               : "Email the offer letter PDF"
         }
@@ -942,8 +943,9 @@ function OfferLetterRowActions({
         ) : (
           <Mail size={12} />
         )}
-        {app.offerLetter.emailedAt ? "Resend" : "Email"}
+        {app.offerLetter?.emailedAt ? "Resend" : "Email"}
       </button>
+      {app.offerLetter ? (
       <button
         type="button"
         onClick={() => onDownloadOfferLetter(app, { regenerate: true })}
@@ -953,6 +955,7 @@ function OfferLetterRowActions({
       >
         Regenerate
       </button>
+      ) : null}
     </div>
   );
 }
@@ -1217,6 +1220,7 @@ function ApplicationsTable({
                         onSendOfferLetterEmail={onSendOfferLetterEmail}
                         offerLetterActionId={offerLetterActionId}
                         offerLetterEmailActionId={offerLetterEmailActionId}
+                        statusActionId={statusActionId}
                       />
                     </td>
                     <td className="px-4 py-3">
@@ -1379,9 +1383,8 @@ function ApplicationsTable({
                                     )}
                                   </>
                                 ) : app.status === "accepted" || app.status === "completed" ? (
-                                  <p className="text-muted text-xs inline-flex items-center gap-1.5">
-                                    <Loader2 size={12} className="animate-spin" />
-                                    Generating offer letter...
+                                  <p className="text-muted text-xs">
+                                    Use PDF or Email to create this offer letter.
                                   </p>
                                 ) : (
                                   <p className="text-muted text-xs">

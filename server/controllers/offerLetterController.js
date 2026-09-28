@@ -174,7 +174,10 @@ export const emailOfferLetter = async (req, res, next) => {
       });
     }
 
-    if (!application.offerLetter) {
+    const accepted =
+      application.status === "accepted" || application.status === "completed";
+
+    if (!application.offerLetter && !accepted) {
       return res.status(400).json({
         success: false,
         message: "Offer letter is created when the application is accepted",
