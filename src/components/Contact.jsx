@@ -120,7 +120,7 @@ function Contact() {
 
         <Reveal className="grid md:grid-cols-2 gap-6 md:gap-8 items-stretch">
           <aside
-            className="home-reveal-item contact-panel theme-card relative overflow-hidden p-7 md:p-8 flex flex-col"
+            className="home-reveal-item contact-panel studio-contact-side"
             style={{ "--i": 0 }}
           >
             <div className="contact-panel-glow" aria-hidden="true" />
@@ -146,7 +146,7 @@ function Contact() {
                       {href ? (
                         <a
                           href={href}
-                          className="text-muted hover:text-accent transition-colors break-words"
+                          className="text-muted hover:text-fg transition-colors break-words"
                         >
                           {value}
                         </a>
@@ -168,7 +168,7 @@ function Contact() {
           <form
             onSubmit={handleSubmit}
             noValidate
-            className="home-reveal-item contact-panel theme-card relative overflow-hidden p-7 md:p-8 space-y-4"
+            className="home-reveal-item contact-panel studio-contact-form space-y-4"
             style={{ "--i": 1 }}
           >
             <div className="contact-panel-glow contact-panel-glow--form" aria-hidden="true" />

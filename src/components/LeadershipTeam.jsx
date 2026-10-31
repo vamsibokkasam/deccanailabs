@@ -89,7 +89,7 @@ function LeadershipTeam() {
       <div className="relative max-w-7xl mx-auto">
         <Link
           to="/about"
-          className="inline-flex items-center gap-2 text-muted hover:text-accent transition-colors mb-10 text-sm font-medium"
+          className="inline-flex items-center gap-2 text-muted hover:text-fg transition-colors mb-10 text-sm font-medium"
         >
           <ArrowLeft size={16} />
           Back to About

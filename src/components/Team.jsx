@@ -3,9 +3,9 @@ import { TEAM_MEMBERS } from "./LeadershipTeam";
 
 function Team() {
   return (
-    <section className="about-team theme-section">
+    <section className="about-team theme-section" data-cine>
       <div className="max-w-7xl mx-auto">
-        <Reveal className="text-center mb-12 md:mb-14">
+        <Reveal className="text-center mb-12 md:mb-14" data-cine-head>
           <p className="theme-label mb-4">OUR TEAM</p>
           <h2 className="theme-heading">Meet Our Team</h2>
           <div className="about-team-rule mx-auto mt-6" aria-hidden="true" />

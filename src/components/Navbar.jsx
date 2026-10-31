@@ -13,8 +13,8 @@ const navItems = [
 
 function navLinkClass({ isActive }) {
   return [
-    "transition",
-    isActive ? "text-accent font-medium" : "text-muted hover:text-accent",
+    "site-nav-link",
+    isActive ? "is-active" : "",
   ].join(" ");
 }
 
@@ -24,16 +24,15 @@ function Navbar() {
   const closeMenu = () => setOpen(false);
 
   return (
-    <nav className="sticky top-0 z-50 bg-nav border-b border-border">
+    <nav className="site-nav sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-6">
 
         <div className="flex justify-between items-center h-20">
 
           <Link to="/" className="inline-flex items-center shrink-0">
             <BrandLockup
-              logoClassName="h-11 w-auto object-contain"
+              logoClassName="h-11 md:h-14 w-auto object-contain"
               textClassName="text-xl md:text-2xl"
-              showLegal={false}
             />
           </Link>
 

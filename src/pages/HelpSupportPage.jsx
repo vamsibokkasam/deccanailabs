@@ -5,7 +5,7 @@ function HelpSupportPage() {
   return (
     <LegalPageLayout label="SUPPORT" title="Help & Support">
       <p>
-        At DECCAN AI LABS, we are committed to providing timely assistance and
+        At DECCAN AI LABS Private Limited, we are committed to providing timely assistance and
         support to our students, interns, applicants, and website visitors.
       </p>
 
@@ -27,7 +27,7 @@ function HelpSupportPage() {
           <p className="font-medium text-fg">DECCAN AI LABS Support Team</p>
           <p>
             <span className="text-fg">Phone: </span>
-            <a href="tel:+919845428526" className="hover:text-accent transition">
+            <a href="tel:+919845428526" className="hover:text-fg transition">
               +91 9845428526
             </a>
           </p>
@@ -35,7 +35,7 @@ function HelpSupportPage() {
             <span className="text-fg">Email: </span>
             <a
               href="mailto:careers@deccanailabs.com"
-              className="hover:text-accent transition"
+              className="hover:text-fg transition"
             >
               careers@deccanailabs.com
             </a>
@@ -46,7 +46,7 @@ function HelpSupportPage() {
               href="https://deccanailabs.com"
               target="_blank"
               rel="noopener noreferrer"
-              className="hover:text-accent transition"
+              className="hover:text-fg transition"
             >
               https://deccanailabs.com
             </a>

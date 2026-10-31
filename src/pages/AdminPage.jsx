@@ -34,6 +34,7 @@ import CertificatesSection from "../components/admin/CertificatesSection";
 import OfferLettersSection from "../components/admin/OfferLettersSection";
 import AdminLogin from "../components/admin/AdminLogin";
 import AdminShell from "../layouts/AdminShell";
+import { courseCover } from "../utils/courseCover";
 import { inputClass } from "../utils/themeClasses";
 import {
   completeApplication,
@@ -2679,6 +2680,11 @@ function AdminPage() {
           </div>
 
               <form onSubmit={handleProgramSubmit} noValidate className="grid md:grid-cols-2 gap-4">
+                {programForm.title.trim() && !editingProgram && (
+                  <div className="program-card-cover md:col-span-2 max-w-sm">
+                    <img src={courseCover(programForm.title)} alt="" />
+                  </div>
+                )}
                 <FormField error={fieldErrors.title}>
                   <input
                     type="text"
@@ -2753,7 +2759,12 @@ function AdminPage() {
                     }`}
                   >
                     <div className="flex flex-wrap justify-between items-start gap-4">
-                      <div className="flex-1">
+                      <img
+                        src={courseCover(program.title)}
+                        alt=""
+                        className="h-16 w-28 shrink-0 rounded-lg object-cover"
+                      />
+                      <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-3 mb-2">
                           <h3 className="text-lg font-medium text-fg">{program.title}</h3>
                           {!program.isActive && (
@@ -2852,6 +2863,12 @@ function AdminPage() {
               </button>
 
               <h3 className="text-2xl font-medium text-fg mb-6">Edit Program</h3>
+
+              {programForm.title.trim() && (
+                <div className="program-card-cover mb-5">
+                  <img src={courseCover(programForm.title)} alt="" />
+                </div>
+              )}
 
               <form onSubmit={handleProgramSubmit} noValidate className="space-y-4">
                 <FormField error={fieldErrors.title}>

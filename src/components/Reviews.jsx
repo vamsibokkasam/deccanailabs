@@ -72,22 +72,10 @@ function StarRating({ rating }) {
 
 function ReviewCard({ review }) {
   return (
-    <article className="review-card group theme-card relative shrink-0 w-[300px] sm:w-[340px] md:w-[380px] overflow-hidden p-6 md:p-7 flex flex-col">
-      <div className="review-card-glow" aria-hidden="true" />
-
-      <div className="relative flex items-start justify-between gap-3">
-        <StarRating rating={review.rating} />
-        <Quote
-          size={22}
-          strokeWidth={1.5}
-          className="text-accent/35 group-hover:text-accent/70 transition-colors duration-300 shrink-0"
-          aria-hidden="true"
-        />
-      </div>
-
-      <p className="relative mt-5 text-muted leading-relaxed flex-1 text-[0.95rem] md:text-base">
-        &ldquo;{review.text}&rdquo;
-      </p>
+    <article className="studio-quote review-card">
+      <Quote size={28} strokeWidth={1.25} aria-hidden="true" />
+      <p>&ldquo;{review.text}&rdquo;</p>
+      <StarRating rating={review.rating} />
 
       <div className="relative mt-6 pt-5 border-t border-border flex items-center gap-3">
         <div className="review-avatar" aria-hidden="true">
@@ -106,9 +94,9 @@ function Reviews() {
   const marqueeReviews = [...reviews, ...reviews];
 
   return (
-    <section className="reviews-section theme-section overflow-hidden">
+    <section className="reviews-section theme-section overflow-hidden" data-cine>
       <div className="max-w-7xl mx-auto">
-        <Reveal className="text-center mb-12 md:mb-14">
+        <Reveal className="text-center mb-12 md:mb-14" data-cine-head>
           <p className="theme-label mb-4">STUDENT REVIEWS</p>
           <h2 className="theme-heading">What Our Interns Say</h2>
           <p className="mt-5 text-muted text-base md:text-lg max-w-2xl mx-auto leading-relaxed">

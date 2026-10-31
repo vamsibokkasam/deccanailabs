@@ -1,4 +1,5 @@
 import { ORGANIZATION_GSTIN } from "./branding.js";
+import startupIndiaMark from "../assets/STARTUP_INDIA.jpeg";
 
 /** Official production domain — used for canonical URLs, sitemap, and structured data. */
 export const OFFICIAL_SITE_URL = "https://deccanailabs.com";
@@ -17,7 +18,7 @@ export const BRAND_ALTERNATE_NAMES = [
 ];
 
 export const ORGANIZATION_DESCRIPTION =
-  "DECCAN AI LABS Private Limited (DeccanAILabs) is an India-based technology education and training company (GST No. 37AAMCD9617P1ZQ). We offer project-based internships and hands-on courses in AI, machine learning, web development, Python, Java, data science, and cyber security for students and early-career professionals. We are MSME, NCS, and ISO certified.";
+  "DECCAN AI LABS Private Limited (DeccanAILabs) is an India-based technology education and training company (GST No. 37AAMCD9617P1ZQ). We offer project-based internships and hands-on courses in AI, machine learning, web development, Python, Java, data science, and cyber security for students and early-career professionals. We are MSME, NCS, ISO, StartupIndia, and AICTE certified.";
 
 /** CIN year — used in Organization structured data. */
 export const ORGANIZATION_FOUNDING_YEAR = "2026";
@@ -55,6 +56,13 @@ export const ORGANIZATION_CERTIFICATIONS = [
     description:
       "Committed to quality standards through ISO certification.",
   },
+  {
+    code: "StartupIndia",
+    title: "StartupIndia",
+    image: startupIndiaMark,
+    description:
+      "Recognised by DPIIT under the Startup India initiative.",
+  },
 ];
 
 /** FAQ categories used by the FAQ section (Tap Academy–style tabs). */
@@ -80,9 +88,9 @@ export const FAQ_CATEGORIES = [
           "No. DECCAN AI LABS Private Limited (DeccanAILabs) at deccanailabs.com is an independent technology education and internship company in India (GST No. 37AAMCD9617P1ZQ). We are not Deccan AI, not Deccan AI Experts, and not affiliated with, funded by, or connected to any enterprise AI training-data or reinforcement-learning company that uses a similar name.",
       },
       {
-        question: "Is DeccanAILabs MSME, NCS, and ISO certified?",
+        question: "Is DeccanAILabs MSME, NCS, ISO, StartupIndia, and AICTE certified?",
         answer:
-          "Yes. DECCAN AI LABS Private Limited is MSME, NCS, and ISO certified, reflecting our commitment to quality, compliance, and trusted learning experiences for students and professionals.",
+          "Yes. DECCAN AI LABS Private Limited is MSME, NCS, ISO, StartupIndia, and AICTE certified, reflecting our commitment to quality, compliance, and trusted learning experiences for students and professionals.",
       },
       {
         question: "Do I need prior coding experience to join?",

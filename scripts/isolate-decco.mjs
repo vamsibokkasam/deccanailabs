@@ -1,62 +1,56 @@
-/**
- * Offline helper: create public/assets/decco-isolated.png from DECCO.jpeg
- * without overwriting the original.
- *
- * Usage: node scripts/isolate-decco.mjs
- * Requires: npm i -D sharp   (or run browser runtime isolation instead)
- */
-import { mkdir, copyFile, access } from "node:fs/promises";
-import { constants } from "node:fs";
+import sharp from "sharp";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
-const src = path.join(root, "public", "DECCO.jpeg");
-const outDir = path.join(root, "public", "assets");
-const outPng = path.join(outDir, "decco-isolated.png");
-const outOriginal = path.join(outDir, "decco-original.jpeg");
+const input = path.join(root, "public", "DECCO.jpeg");
+const output = path.join(root, "public", "decco.png");
 
-async function main() {
-  let sharp;
-  try {
-    sharp = (await import("sharp")).default;
-  } catch {
-    console.error(
-      "sharp is not installed. Runtime canvas isolation is used in the app.\n" +
-        "Optional: npm i -D sharp && node scripts/isolate-decco.mjs"
-    );
-    process.exit(1);
-  }
+const { data, info } = await sharp(input).ensureAlpha().raw().toBuffer({ resolveWithObject: true });
+const { width, height, channels } = info;
+const seen = new Uint8Array(width * height);
+const stack = [];
 
-  await mkdir(outDir, { recursive: true });
-  try {
-    await access(outOriginal, constants.F_OK);
-  } catch {
-    await copyFile(src, outOriginal);
-  }
-
-  const { data, info } = await sharp(src)
-    .ensureAlpha()
-    .raw()
-    .toBuffer({ resolveWithObject: true });
-
-  const { width, height, channels } = info;
-  for (let i = 0; i < data.length; i += channels) {
-    const r = data[i];
-    const g = data[i + 1];
-    const b = data[i + 2];
-    const lum = 0.299 * r + 0.587 * g + 0.114 * b;
-    const chroma = Math.max(r, g, b) - Math.min(r, g, b);
-    const isAccent = b > 70 && b > r + 18 && b >= g;
-    if (!isAccent && lum < 52 && chroma < 38) data[i + 3] = 0;
-    else if (!isAccent && lum < 68 && chroma < 28) {
-      data[i + 3] = Math.min(data[i + 3], Math.round(((lum - 52) / 16) * 255));
-    }
-  }
-
-  await sharp(data, { raw: { width, height, channels } }).png().toFile(outPng);
-  console.log("Wrote", outPng, `(${width}x${height})`);
-  console.log("Original preserved at", src);
+function isBackground(offset) {
+  const r = data[offset];
+  const g = data[offset + 1];
+  const b = data[offset + 2];
+  const lum = 0.299 * r + 0.587 * g + 0.114 * b;
+  const chroma = Math.max(r, g, b) - Math.min(r, g, b);
+  const accent = b > 90 && b > r + 30 && b + 8 >= g;
+  return !accent && lum < 96 && chroma < 58 && b + 12 >= r && b + 8 >= g;
 }
 
-main();
+function push(x, y) {
+  if (x < 0 || y < 0 || x >= width || y >= height) return;
+  const pixel = y * width + x;
+  if (seen[pixel]) return;
+  const offset = pixel * channels;
+  if (!isBackground(offset)) return;
+  seen[pixel] = 1;
+  stack.push(pixel);
+}
+
+for (let x = 0; x < width; x += 1) {
+  push(x, 0);
+  push(x, height - 1);
+}
+for (let y = 0; y < height; y += 1) {
+  push(0, y);
+  push(width - 1, y);
+}
+
+while (stack.length) {
+  const pixel = stack.pop();
+  const x = pixel % width;
+  const y = (pixel - x) / width;
+  data[pixel * channels + 3] = 0;
+  push(x + 1, y);
+  push(x - 1, y);
+  push(x, y + 1);
+  push(x, y - 1);
+}
+
+await sharp(data, { raw: { width, height, channels } }).png().toFile(output);
+const transparent = data.reduce((count, _value, index) => count + (index % 4 === 3 && data[index] === 0 ? 1 : 0), 0);
+console.log(`wrote ${output} ${width}x${height} transparent=${transparent}`);

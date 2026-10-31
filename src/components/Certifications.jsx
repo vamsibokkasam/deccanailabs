@@ -17,9 +17,10 @@ function Certifications() {
           <p className="mt-6 text-muted text-base md:text-lg max-w-2xl mx-auto leading-relaxed">
             DECCAN AI LABS is proudly{" "}
             <span className="text-accent font-semibold">MSME</span>,{" "}
-            <span className="text-accent font-semibold">NCS</span>, and{" "}
-            <span className="text-accent font-semibold">ISO</span> certified —
-            reinforcing our commitment to quality education and trusted training.
+            <span className="text-accent font-semibold">NCS</span>,{" "}
+            <span className="text-accent font-semibold">ISO</span>,{" "}
+            <span className="text-accent font-semibold">StartupIndia</span>, and{" "}
+            <span className="text-accent font-semibold">AICTE</span> certified.
           </p>
         </Reveal>
 

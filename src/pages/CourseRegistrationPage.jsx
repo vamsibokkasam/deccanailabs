@@ -498,7 +498,7 @@ function CourseRegistrationPage() {
                   <button
                     type="button"
                     onClick={copyUpiId}
-                    className="p-2 rounded-lg border border-border text-muted hover:text-accent hover:border-accent/30 transition"
+                    className="p-2 rounded-lg border border-border text-muted hover:text-fg hover:border-border transition"
                     title="Copy UPI ID"
                   >
                     {copied ? <Check size={16} className="text-accent" /> : <Copy size={16} />}

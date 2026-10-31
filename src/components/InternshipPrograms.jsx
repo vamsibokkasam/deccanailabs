@@ -1,9 +1,10 @@
 import { useEffect, useState } from "react";
-import { ArrowRight, X } from "lucide-react";
+import { Clock, GraduationCap, X } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { getPrograms, submitApplication } from "../services/api";
 import { validateRegistrationForm } from "../utils/validation";
 import { inputClass } from "../utils/themeClasses";
+import { courseCover } from "../utils/courseCover";
 import { courseTitleToSlug } from "../utils/courseSlug";
 import FormField from "./FormField";
 import ProgramIcon from "./ProgramIcon";
@@ -41,6 +42,10 @@ const fallbackPrograms = [
       "Learn security fundamentals, practical threat awareness, and defensive techniques through structured modules.",
   },
 ];
+
+function programDuration(program) {
+  return program.duration?.trim() || "45 Days";
+}
 
 function InternshipPrograms() {
   const navigate = useNavigate();
@@ -119,9 +124,9 @@ function InternshipPrograms() {
   };
 
   return (
-    <section className="internship-section theme-section">
+    <section className="internship-section theme-section" data-cine>
       <div className="max-w-7xl mx-auto">
-        <Reveal className="text-center mb-14 md:mb-16">
+        <Reveal className="text-center mb-14 md:mb-16" data-cine-head>
           <p className="theme-label mb-4">INTERNSHIP PROGRAMS</p>
           <h2 className="theme-heading">Gain Real-World Experience</h2>
           <p className="mt-5 text-muted text-base md:text-lg max-w-2xl mx-auto leading-relaxed">
@@ -130,48 +135,41 @@ function InternshipPrograms() {
           </p>
         </Reveal>
 
-        <Reveal className="grid md:grid-cols-2 lg:grid-cols-3 gap-5 md:gap-7">
+        <ul className="program-grid">
           {programs.map((program, index) => (
-            <article
+            <li
               key={program._id || program.title || index}
-              className="home-reveal-item internship-card group theme-card theme-card-hover relative overflow-hidden p-7 md:p-8 flex flex-col"
-              style={{ "--i": index }}
+              className="program-card internship-card"
             >
-              <div className="internship-card-glow" aria-hidden="true" />
-
-              <div className="relative flex flex-col flex-1">
-                <div className="internship-icon mb-5">
-                  <ProgramIcon title={program.title} className="w-8 h-8" />
-                </div>
-
-                <h3 className="card-heading-hover text-xl md:text-2xl font-semibold text-fg mb-3 transition-colors duration-300">
-                  {program.title}
-                </h3>
-
-                <p className="text-muted leading-relaxed flex-1 mb-7">
-                  {program.description}
-                </p>
-
-                <button
-                  type="button"
-                  onClick={() =>
-                    navigate(
-                      `/internship/apply/${courseTitleToSlug(program.title)}`,
-                    )
-                  }
-                  className="theme-btn-primary inline-flex items-center justify-center gap-2 px-5 py-3 w-full sm:w-auto self-start"
-                >
-                  Apply Now
-                  <ArrowRight
-                    size={16}
-                    className="transition-transform duration-300 group-hover:translate-x-0.5"
-                    aria-hidden="true"
-                  />
-                </button>
+              <div className="program-card-cover">
+                <img src={courseCover(program.title)} alt="" />
               </div>
-            </article>
+              <p className="program-card-kicker">Internship</p>
+              <h3>{program.title}</h3>
+              <p className="program-card-meta">
+                <span>
+                  <Clock size={14} aria-hidden="true" />
+                  {programDuration(program)}
+                </span>
+                <span>
+                  <GraduationCap size={14} aria-hidden="true" />
+                  Mentor-led
+                </span>
+              </p>
+              <button
+                type="button"
+                className="program-card-apply"
+                onClick={() =>
+                  navigate(
+                    `/internship/apply/${courseTitleToSlug(program.title)}`,
+                  )
+                }
+              >
+                Apply
+              </button>
+            </li>
           ))}
-        </Reveal>
+        </ul>
       </div>
 
       {selectedProgram && (

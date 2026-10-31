@@ -11,7 +11,7 @@ const features = [
   {
     title: "Certified Excellence",
     description:
-      "We are MSME, NCS, and ISO certified — committed to quality standards and trusted learning experiences.",
+      "We are MSME, NCS, ISO, StartupIndia, and AICTE certified — committed to quality standards and trusted learning experiences.",
     Icon: Award,
   },
   {
@@ -37,15 +37,14 @@ const features = [
     description:
       "Develop technical and professional competencies that prepare you for future career opportunities.",
     Icon: Compass,
-    wide: true,
   },
 ];
 
 function WhyChooseUs() {
   return (
-    <section className="why-section theme-section">
+    <section className="why-section theme-section" data-cine>
       <div className="max-w-7xl mx-auto">
-        <Reveal className="text-center mb-14 md:mb-16">
+        <Reveal className="text-center mb-14 md:mb-16" data-cine-head>
           <p className="theme-label mb-4">WHY CHOOSE US</p>
           <h2 className="theme-heading">Why Choose DECCAN AI LABS?</h2>
           <p className="mt-5 text-muted text-base md:text-lg max-w-2xl mx-auto leading-relaxed">
@@ -54,32 +53,18 @@ function WhyChooseUs() {
           </p>
         </Reveal>
 
-        <Reveal className="why-grid grid md:grid-cols-2 gap-5 md:gap-7">
-          {features.map(({ title, description, Icon, wide }, index) => (
-            <article
-              key={title}
-              className={`home-reveal-item why-card group theme-card theme-card-hover relative overflow-hidden p-7 md:p-8 ${
-                wide ? "md:col-span-2" : ""
-              }`}
-              style={{ "--i": index }}
-            >
-              <div className="why-card-glow" aria-hidden="true" />
-
-              <div className="relative flex items-start gap-4 md:gap-5">
-                <div className="why-icon shrink-0">
-                  <Icon size={22} strokeWidth={1.75} aria-hidden="true" />
-                </div>
-
-                <div className="min-w-0 flex-1">
-                  <h3 className="card-heading-hover text-xl md:text-2xl font-semibold text-fg mb-3 transition-colors duration-300">
-                    {title}
-                  </h3>
-                  <p className="text-muted leading-relaxed">{description}</p>
-                </div>
-              </div>
-            </article>
+        <ul className="why-proof">
+          {features.map(({ title, description, Icon }, index) => (
+            <li key={title} className="why-proof-item why-card">
+              <span className="why-index">{String(index + 1).padStart(2, "0")}</span>
+              <span className="why-icon">
+                <Icon size={18} strokeWidth={1.75} aria-hidden="true" />
+              </span>
+              <h3>{title}</h3>
+              <p>{description}</p>
+            </li>
           ))}
-        </Reveal>
+        </ul>
       </div>
     </section>
   );

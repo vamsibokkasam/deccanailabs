@@ -1,8 +1,10 @@
 @import "tailwindcss";
 
 @theme {
-  --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
+  --font-sans: "Figtree", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
     "Segoe UI", Roboto, sans-serif;
+  --font-display: "Montserrat", "Figtree", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
 
   --color-bg: var(--theme-bg);
   --color-surface: var(--theme-surface);
@@ -19,39 +21,60 @@
 }
 
 :root {
-  --theme-bg: #1b263b;
-  --theme-surface: #1b263b;
-  --theme-card: #212e44;
-  --theme-input: rgba(255, 255, 255, 0.05);
-  --theme-fg: #ffffff;
-  --theme-muted: #cbd5e1;
-  --theme-subtle: #94a3b8;
-  --theme-accent: #06b6d4;
-  --theme-accent-hover: #22d3ee;
-  --theme-accent-warm: #3b82f6;
-  --theme-border: rgba(255, 255, 255, 0.2);
-  --theme-nav: #1b263b;
-  --theme-overlay: rgba(0, 0, 0, 0.7);
-  /* Hero video plate — fixed (no runtime sampling = no blink) */
-  --theme-hero-plate: #1b263b;
-  --theme-hero-from: #1b263b;
-  --theme-hero-via: #1b263b;
-  --theme-hero-to: #1b263b;
-  --theme-decco-glow: #1b263b;
-  --theme-decco-mist: #1b263b;
+  /* Page colors — edit these to retheme the site */
+  --theme-bg: #010f34;
+  --theme-surface: #00081f;
+  --theme-card: #071a4f;
+  --theme-input: rgba(7, 26, 79, 0.72);
+  --theme-fg: #f3f6ff;
+  --theme-muted: #9fb2e0;
+  --theme-subtle: #9fb2e0;
+  --theme-accent: #3fd0ff;
+  --theme-accent-hover: #7adfff;
+  --theme-accent-soft: #5b95ff;
+  --theme-accent-warm: #2563ff;
+  --theme-border: #1b3a8c;
+  --theme-nav: #00081f;
+  --theme-overlay: rgba(0, 8, 31, 0.78);
+  --theme-hero-plate: #010f34;
+  --theme-hero-from: #010f34;
+  --theme-hero-via: #010f34;
+  --theme-hero-to: #010f34;
+  --theme-decco-glow: rgba(63, 208, 255, 0.5);
+  --theme-decco-mist: rgba(37, 99, 255, 0.32);
+
+  /* Type scale */
+  --type-hero: clamp(2.35rem, 1.2rem + 4vw, 4.35rem);
+  --type-h2: clamp(1.8rem, 1rem + 2.2vw, 2.9rem);
+  --type-card-title: 1.28rem;
+  --type-cert-title: 1.2rem;
+  --type-hero-intro: 1.12rem;
+  --type-section-intro: 1.05rem;
+  --type-body: 1rem;
+  --type-card-body: 0.95rem;
+  --type-button: 0.95rem;
+  --type-label: 0.72rem;
 }
 
 html {
   scroll-behavior: smooth;
+  max-width: 100%;
+  overflow-x: clip;
 }
 
 body {
+  max-width: 100%;
+  overflow-x: clip;
   font-family: var(--font-sans);
   font-size: 16px;
   line-height: 1.5;
   font-weight: 400;
   letter-spacing: -0.01em;
   background-color: var(--theme-bg);
+  background-image:
+    radial-gradient(ellipse 58% 42% at 92% 0%, rgba(63, 208, 255, 0.16), transparent 62%),
+    radial-gradient(ellipse 48% 40% at 0% 100%, rgba(37, 99, 255, 0.22), transparent 64%);
+  background-attachment: fixed;
   color: var(--theme-fg);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -63,24 +86,59 @@ h3,
 h4,
 h5,
 h6 {
-  font-weight: 500;
-  letter-spacing: -0.02em;
+  font-family: var(--font-display);
+  font-weight: 700;
+  letter-spacing: -0.03em;
   color: var(--theme-fg);
+}
+
+h1 {
+  font-weight: 800;
+}
+
+.brand-name {
+  display: inline-grid;
+  justify-items: stretch;
+}
+
+.brand-legal {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  column-gap: 0.55em;
+  width: 0;
+  min-width: 100%;
+  margin-top: 0.34em;
+}
+
+.brand-legal-line {
+  height: 1px;
+  background: var(--theme-accent-soft);
+}
+
+.brand-legal-text {
+  font-size: 0.42em;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--theme-muted);
+  white-space: nowrap;
+  line-height: 1;
 }
 
 /* Beats the global h3 color so card titles can change on hover */
 .group:hover h3.card-heading-hover {
-  color: #60a5fa;
+  color: var(--theme-fg);
 }
 
 /*
  * Hero: one viewport under nav.
  * Mobile: copy then video stacked; video fills remaining height.
- * Desktop: 35% copy / 65% video columns.
+ * Desktop: copy and Decco split the viewport.
  * Shared --theme-hero-plate so copy + video never look like two boxes.
  */
 .hero-bg {
-  background: var(--theme-hero-plate);
+  background: transparent;
   height: calc(100dvh - 5rem);
   max-height: calc(100dvh - 5rem);
   overflow: hidden;
@@ -91,7 +149,7 @@ h6 {
   flex-direction: column;
   width: 100%;
   height: 100%;
-  background: var(--theme-hero-plate);
+  background: transparent;
 }
 
 .hero-copy {
@@ -102,7 +160,7 @@ h6 {
   min-height: 0;
   padding: 0.85rem 1.15rem 0.5rem;
   box-sizing: border-box;
-  background: var(--theme-hero-plate);
+  background: transparent;
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
@@ -183,6 +241,26 @@ h6 {
   margin-top: 0.7rem;
 }
 
+.hero-story-steps {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin: 0.75rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.hero-story-steps li {
+  margin: 0;
+  padding: 0.28rem 0.65rem;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--theme-fg);
+  font-size: 0.72rem;
+  line-height: 1.3;
+}
+
 .hero-decco-stage {
   position: relative;
   z-index: 1;
@@ -191,7 +269,7 @@ h6 {
   width: 100%;
   padding: 0 0.4rem 0.6rem;
   box-sizing: border-box;
-  background: var(--theme-hero-plate);
+  background: transparent;
   display: flex;
   align-items: stretch;
   justify-content: stretch;
@@ -203,27 +281,31 @@ h6 {
   width: 100%;
   height: 100%;
   max-width: none;
-  background: var(--theme-hero-plate);
+  background: transparent;
 }
 
 .hero-decco-stage .decco-photo,
 .hero-decco-stage .decco-photo-stage {
   width: 100%;
   height: 100%;
-  background: var(--theme-hero-plate);
+  background: transparent;
 }
 
 .hero-decco-stage .decco-photo-img,
 .hero-decco-stage .decco-photo-video,
 .hero-decco-stage .decco-photo-img.decco-photo-video {
   display: block;
+  position: relative;
+  z-index: 2;
   width: 100%;
   height: 100%;
   min-width: 100%;
   min-height: 100%;
   object-fit: contain;
   object-position: center center;
-  background: var(--theme-hero-plate);
+  background: transparent;
+  -webkit-mask-image: radial-gradient(ellipse 72% 66% at 50% 46%, #000 54%, transparent 80%);
+  mask-image: radial-gradient(ellipse 72% 66% at 50% 46%, #000 54%, transparent 80%);
 }
 
 .hero-decco-stage .decco-photo-stage::after {
@@ -233,8 +315,8 @@ h6 {
 @media (min-width: 1024px) {
   .hero-inner {
     display: grid;
-    /* 35% left copy / 65% right video */
-    grid-template-columns: minmax(0, 35fr) minmax(0, 65fr);
+    /* Copy and Decco share the viewport */
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
     grid-template-rows: minmax(0, 1fr);
     height: 100%;
     width: 100%;
@@ -253,7 +335,7 @@ h6 {
     max-width: none;
     padding: clamp(1.25rem, 3vh, 2.5rem) clamp(1.25rem, 3vw, 2.75rem);
     overflow: hidden;
-    background: var(--theme-hero-plate);
+    background: transparent;
   }
 
   .hero-copy-title {
@@ -291,7 +373,7 @@ h6 {
     min-width: 0;
     min-height: 0;
     padding: 0;
-    background: var(--theme-hero-plate);
+    background: transparent;
   }
 
   .hero-decco-stage .decco-mascot,
@@ -304,12 +386,12 @@ h6 {
     max-width: none;
     max-height: none;
     min-height: 0;
-    background: var(--theme-hero-plate);
+    background: transparent;
   }
 
   .hero-decco-stage .decco-photo-img,
   .hero-decco-stage .decco-photo-video {
-    object-fit: cover;
+    object-fit: contain;
     object-position: center center;
   }
 }
@@ -320,23 +402,54 @@ h6 {
 
 @layer components {
   .theme-section {
-    @apply py-20 px-6 bg-bg;
+    @apply py-20 px-6;
+    background: transparent;
   }
 
   .theme-card {
-    @apply bg-card border border-border rounded-2xl shadow-xl;
+    background: var(--theme-card);
+    border: 1px solid var(--theme-border);
+    border-radius: 20px;
+    box-shadow: 0 18px 50px rgba(0, 8, 31, 0.35);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
   }
 
   .theme-card-hover {
-    @apply transition-[border-color,box-shadow,background-color] duration-300 hover:shadow-2xl hover:border-accent hover:bg-[#243447];
+    transition:
+      border-color 0.25s ease,
+      box-shadow 0.25s ease,
+      background-color 0.25s ease,
+      transform 0.25s ease;
+  }
+
+  .theme-card-hover:hover {
+    border-color: color-mix(in oklab, var(--theme-accent) 65%, transparent);
+    background: rgba(255, 255, 255, 0.07);
+    box-shadow:
+      0 18px 44px rgba(0, 0, 0, 0.35),
+      0 0 0 1px color-mix(in oklab, var(--theme-accent) 18%, transparent);
   }
 
   .theme-label {
-    @apply text-accent font-semibold uppercase tracking-wider text-sm;
+    font-family: var(--font-mono);
+    font-size: var(--type-label);
+    font-weight: 600;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--theme-accent-soft);
   }
 
   .theme-heading {
-    @apply text-4xl md:text-5xl font-medium bg-gradient-to-r from-accent to-accent-warm bg-clip-text text-transparent tracking-tight;
+    font-family: var(--font-display);
+    font-size: var(--type-h2);
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    color: var(--theme-fg);
+  }
+
+  .theme-heading + p {
+    font-size: var(--type-section-intro);
   }
 
   .theme-accent-text {
@@ -344,11 +457,36 @@ h6 {
   }
 
   .theme-btn-primary {
-    @apply bg-accent hover:bg-accent-hover transition text-white px-6 py-3 rounded-xl font-medium;
+    @apply px-6 py-3 rounded-xl font-semibold;
+    color: var(--theme-fg);
+    font-size: var(--type-button);
+    background-image: linear-gradient(120deg, var(--theme-accent-warm) 0%, var(--theme-accent) 100%);
+    box-shadow: 0 8px 28px rgba(63, 208, 255, 0.28);
+    transition:
+      transform 0.2s ease,
+      box-shadow 0.2s ease,
+      filter 0.2s ease;
+  }
+
+  .theme-btn-primary:hover {
+    filter: brightness(1.08);
+    box-shadow: 0 12px 32px rgba(59, 130, 246, 0.4);
+    transform: translateY(-1px);
   }
 
   .theme-btn-outline {
-    @apply border border-border hover:border-accent transition px-6 py-3 rounded-xl text-fg;
+    @apply px-6 py-3 rounded-xl text-fg font-medium;
+    font-size: var(--type-button);
+    border: 1px solid var(--theme-border);
+    background: transparent;
+    transition:
+      border-color 0.2s ease,
+      background-color 0.2s ease;
+  }
+
+  .theme-btn-outline:hover {
+    border-color: color-mix(in oklab, var(--theme-accent) 70%, transparent);
+    background: rgba(255, 255, 255, 0.04);
   }
 
   .reviews-track {
@@ -390,6 +528,11 @@ h6 {
 
     .reviews-marquee {
       animation: none;
+    }
+
+    .theme-btn-primary:hover,
+    .theme-card-hover:hover {
+      transform: none;
     }
 
     .reviews-track article {
@@ -463,7 +606,7 @@ h6 {
   box-shadow:
     0 18px 40px rgba(0, 0, 0, 0.28),
     0 0 0 1px color-mix(in oklab, var(--theme-accent) 18%, transparent);
-  background: #243447;
+  background: rgba(255, 255, 255, 0.07);
 }
 
 .review-card-glow {
@@ -550,11 +693,10 @@ h6 {
 
 .cert-recognition-grid {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 2rem 1.75rem;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 2rem 1.25rem;
   align-items: start;
   justify-items: center;
-  max-width: 54rem;
   margin-inline: auto;
 }
 
@@ -631,7 +773,7 @@ h6 {
 
 .cert-recognition-label {
   margin-top: 1.1rem;
-  font-size: 1.05rem;
+  font-size: var(--type-cert-title);
   font-weight: 700;
   letter-spacing: 0.06em;
   color: var(--theme-fg);
@@ -639,7 +781,7 @@ h6 {
 }
 
 .group:hover .cert-recognition-label {
-  color: var(--theme-accent);
+  color: var(--theme-fg);
 }
 
 .cert-recognition-desc {
@@ -1163,6 +1305,84 @@ h6 {
   }
 }
 
+/* Home cinematic motion owns these entrances. Keep the CSS reveals for other pages. */
+.cine-home .home-reveal,
+.cine-home .home-reveal .home-reveal-item,
+.cine-home .strategy-section-head,
+.cine-home .strategy-focus-card,
+.cine-home .strategy-framework-step {
+  opacity: 1;
+  transform: none;
+  animation: none !important;
+  transition: none;
+}
+
+.site-nav {
+  background: color-mix(in srgb, var(--theme-nav) 92%, transparent);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  border-bottom: 1px solid var(--theme-border);
+}
+
+.trust-strip {
+  padding: 1.35rem 0 0.35rem;
+}
+
+.trust-strip-legal {
+  margin: 0 0 0.85rem;
+  text-align: center;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--theme-subtle);
+}
+
+.trust-strip-list {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.75rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.trust-chip {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  min-height: 3.25rem;
+  padding: 0.55rem 1rem 0.55rem 0.7rem;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.04);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+
+.trust-chip-code {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 3.1rem;
+  height: 2rem;
+  padding: 0 0.55rem;
+  border-radius: 999px;
+  background-image: linear-gradient(120deg, #22d3ee 0%, #3b82f6 100%);
+  color: #041018;
+  font-family: var(--font-display);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+}
+
+.trust-chip-title {
+  color: var(--theme-fg);
+  font-size: 0.88rem;
+  font-weight: 500;
+}
+
 /* ========== Why choose us ========== */
 
 .why-section {
@@ -1173,19 +1393,13 @@ h6 {
 .why-section::before {
   content: "";
   position: absolute;
-  inset: 10% 12% auto;
-  height: 48%;
-  background:
-    radial-gradient(
-      ellipse at 25% 35%,
-      color-mix(in oklab, var(--theme-accent) 14%, transparent),
-      transparent 65%
-    ),
-    radial-gradient(
-      ellipse at 80% 55%,
-      color-mix(in oklab, var(--theme-accent-warm) 10%, transparent),
-      transparent 70%
-    );
+  inset: 18% 10% auto;
+  height: 42%;
+  background: radial-gradient(
+    ellipse at 50% 40%,
+    color-mix(in oklab, var(--theme-accent) 12%, transparent),
+    transparent 68%
+  );
   pointer-events: none;
   z-index: -1;
 }
@@ -1689,7 +1903,7 @@ h6 {
 }
 
 .course-back:hover {
-  color: var(--theme-accent);
+  color: var(--theme-fg);
 }
 
 .course-details-head {
@@ -1889,7 +2103,7 @@ h6 {
   width: 100%;
   max-height: 16rem;
   object-fit: contain;
-  background: #0b1220;
+  background: var(--theme-bg);
 }
 
 @media (max-width: 640px) {
@@ -1944,7 +2158,7 @@ h6 {
   box-shadow:
     0 18px 40px rgba(0, 0, 0, 0.24),
     0 0 0 1px color-mix(in oklab, var(--theme-accent) 12%, transparent);
-  background: #243447;
+  background: rgba(255, 255, 255, 0.07);
 }
 
 .contact-panel-glow {
@@ -2229,7 +2443,7 @@ h6 {
 }
 
 .group:hover .about-team-name {
-  color: color-mix(in oklab, var(--theme-accent) 55%, white 45%);
+  color: var(--theme-fg);
 }
 
 .about-team-role {
@@ -2370,7 +2584,7 @@ h6 {
 }
 
 .faq-trigger:hover .faq-question {
-  color: var(--theme-accent);
+  color: var(--theme-fg);
 }
 
 .faq-chevron {
@@ -2624,6 +2838,106 @@ h6 {
   border-radius: 1.5rem;
 }
 
+.decco-perspective {
+  perspective: 1200px;
+  width: 100%;
+  height: 100%;
+}
+
+.decco-tilt {
+  width: 100%;
+  height: 100%;
+  transform: rotateX(0deg) rotateY(0deg);
+  transform-style: preserve-3d;
+  transition: transform 0.45s ease-out;
+  will-change: transform;
+}
+
+.decco-mascot.is-tilting .decco-tilt {
+  transition: transform 0.12s linear;
+}
+
+.decco-float {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  animation: decco-float 5.5s ease-in-out infinite;
+}
+
+.decco-mascot.is-tilting .decco-float,
+.decco-mascot.is-reduced .decco-float {
+  animation: none;
+}
+
+.decco-eye-glow {
+  position: absolute;
+  z-index: 3;
+  left: 50%;
+  top: 16%;
+  width: 36%;
+  height: 18%;
+  transform: translateX(-50%);
+  background: radial-gradient(
+    ellipse at center,
+    color-mix(in oklab, var(--theme-accent) 70%, transparent),
+    transparent 72%
+  );
+  filter: blur(14px);
+  mix-blend-mode: screen;
+  pointer-events: none;
+  animation: decco-eye-pulse 2.8s ease-in-out infinite;
+}
+
+.decco-reflection {
+  position: absolute;
+  z-index: 1;
+  left: 16%;
+  width: 68%;
+  bottom: 1%;
+  height: 24%;
+  object-fit: cover;
+  object-position: center 82%;
+  transform: scaleY(-1);
+  opacity: 0.32;
+  pointer-events: none;
+  filter: blur(1px);
+  -webkit-mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.7), transparent 78%);
+  mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.7), transparent 78%);
+}
+
+@keyframes decco-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+@keyframes decco-eye-pulse {
+  0%,
+  100% {
+    opacity: 0.35;
+  }
+
+  50% {
+    opacity: 0.8;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .decco-float,
+  .decco-eye-glow {
+    animation: none;
+  }
+
+  .decco-eye-glow {
+    opacity: 0.4;
+  }
+}
+
 .decco-robot-stage,
 .decco-photo {
   display: block;
@@ -2674,6 +2988,24 @@ h6 {
 }
 
 /* Hero Decco — overrides (must follow base .decco-* rules) */
+.hero-decco-stage {
+  position: relative;
+}
+
+.hero-decco-stage::before {
+  content: "";
+  position: absolute;
+  width: 58%;
+  height: 52%;
+  left: 50%;
+  top: 42%;
+  transform: translate(-50%, -50%);
+  background: radial-gradient(circle, rgba(62, 203, 255, 0.22), transparent 68%);
+  filter: blur(10px);
+  pointer-events: none;
+  z-index: 0;
+}
+
 .hero-decco-stage .decco-mascot {
   width: 100%;
   height: 100%;
@@ -2684,7 +3016,11 @@ h6 {
 .hero-decco-stage .decco-photo-video {
   object-fit: contain;
   object-position: center center;
-  background: var(--theme-hero-plate);
+  background: transparent;
+}
+
+.hero-decco-stage .decco-photo-stage::after {
+  display: none;
 }
 
 @media (min-width: 1024px) {
@@ -2698,41 +3034,16 @@ h6 {
   .hero-decco-stage .decco-photo-stage {
     width: 100%;
     height: 100%;
-    background: var(--theme-hero-plate);
+    background: transparent;
   }
 
   .hero-decco-stage .decco-photo-img,
   .hero-decco-stage .decco-photo-video {
     width: 100%;
     height: 100%;
-    object-fit: cover;
+    object-fit: contain;
     object-position: center center;
-    transform: none;
-    background: var(--theme-hero-plate);
-  }
-
-  .hero-decco-stage .decco-photo-stage::after {
-    display: block;
-    content: "";
-    position: absolute;
-    inset: 0;
-    pointer-events: none;
-    z-index: 2;
-    background:
-      linear-gradient(
-        to right,
-        var(--theme-hero-plate) 0%,
-        transparent 18%,
-        transparent 82%,
-        var(--theme-hero-plate) 100%
-      ),
-      linear-gradient(
-        to bottom,
-        var(--theme-hero-plate) 0%,
-        transparent 16%,
-        transparent 84%,
-        var(--theme-hero-plate) 100%
-      );
+    background: transparent;
   }
 }
 
@@ -2765,7 +3076,7 @@ h6 {
   position: absolute;
   translate: -50% -50%;
   border-radius: 999px;
-  background: #1b263b;
+  background: var(--theme-bg);
   pointer-events: none;
   z-index: 3;
 }
@@ -2877,7 +3188,7 @@ h6 {
   background:
     linear-gradient(
       180deg,
-      color-mix(in oklab, var(--theme-card) 88%, #0b1220) 0%,
+      color-mix(in oklab, var(--theme-card) 88%, var(--theme-bg)) 0%,
       color-mix(in oklab, var(--theme-surface) 96%, black) 28%
     );
   box-shadow:
@@ -2916,7 +3227,7 @@ h6 {
   height: 2.35rem;
   border-radius: 50%;
   flex-shrink: 0;
-  background: #1b263b;
+  background: var(--theme-bg);
   color: #041018;
   font-size: 0.92rem;
   font-weight: 700;
@@ -3006,7 +3317,7 @@ h6 {
   height: 1.15rem;
   border-radius: 50%;
   overflow: hidden;
-  background: #1b263b;
+  background: var(--theme-bg);
   box-shadow:
     0 2px 6px rgba(0, 0, 0, 0.35),
     0 0 0 2px #fff;
@@ -3682,5 +3993,690 @@ h6 {
 
   .wa-float-btn:hover {
     transform: none;
+  }
+}
+
+/* Decco hero scene: still image, tilted stage, internship story cards */
+.decco-scene {
+  position: relative;
+}
+
+.decco-scene-tilt,
+.decco-scene-cards {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+.decco-scene-cards {
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  pointer-events: none;
+}
+
+.decco-speech-slot {
+  position: absolute;
+  z-index: 6;
+  top: 2%;
+  left: 50%;
+  width: min(17rem, 86%);
+  transform: translateX(-50%);
+  pointer-events: none;
+}
+
+.decco-speech {
+  margin: 0;
+  padding: 0.65rem 0.8rem;
+  border-radius: 16px 16px 16px 6px;
+  background: rgba(8, 16, 28, 0.78);
+  border: 1px solid rgba(34, 211, 238, 0.4);
+  color: #f8fafc;
+  font-size: 0.82rem;
+  line-height: 1.35;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.35);
+}
+
+.decco-story-card {
+  position: absolute;
+  width: min(11.4rem, 44%);
+  padding: 0.65rem 0.75rem;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.28);
+}
+
+.decco-story-card.is-active {
+  border-color: rgba(34, 211, 238, 0.75);
+  box-shadow:
+    0 0 24px rgba(34, 211, 238, 0.18),
+    0 16px 40px rgba(0, 0, 0, 0.32);
+}
+
+.decco-story-kicker {
+  margin: 0 0 0.2rem;
+  font-size: 0.62rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #22d3ee;
+}
+
+.decco-story-title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 0.92rem;
+  font-weight: 600;
+  color: #f8fafc;
+}
+
+.decco-story-detail {
+  margin: 0.25rem 0 0;
+  font-size: 0.72rem;
+  line-height: 1.35;
+  color: #94a3b8;
+}
+
+.decco-story-card--intern { top: 8%; left: 2%; }
+.decco-story-card--build { top: 36%; right: 3%; }
+.decco-story-card--ship { top: 64%; left: 2%; }
+
+.decco-terminal {
+  margin: 0.45rem 0 0;
+  padding: 0.35rem 0.45rem;
+  border-radius: 8px;
+  background: rgba(0, 0, 0, 0.45);
+  color: #a5f3fc;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.62rem;
+  line-height: 1.35;
+  white-space: pre-wrap;
+}
+
+.decco-scene-robot {
+  position: absolute;
+  z-index: 2;
+  left: 16%;
+  right: 16%;
+  top: 14%;
+  bottom: 2%;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.decco-scene-photo {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  object-position: center bottom;
+  user-select: none;
+  filter: drop-shadow(0 22px 36px rgba(0, 0, 0, 0.45));
+  -webkit-mask-image: radial-gradient(ellipse 92% 88% at 50% 52%, #000 70%, transparent 100%);
+  mask-image: radial-gradient(ellipse 92% 88% at 50% 52%, #000 70%, transparent 100%);
+  animation: decco-pop 0.55s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.decco-scene-hint {
+  position: absolute;
+  z-index: 6;
+  right: 4%;
+  bottom: 3%;
+  margin: 0;
+  font-size: 0.68rem;
+  letter-spacing: 0.03em;
+  color: #94a3b8;
+  pointer-events: none;
+}
+
+@keyframes decco-pop {
+  0% { transform: scale(0.96) rotate(-2deg); }
+  55% { transform: scale(1.03) rotate(1.5deg); }
+  100% { transform: scale(1) rotate(0deg); }
+}
+
+@media (max-width: 1023px) {
+  .decco-scene-cards {
+    inset: auto 0.25rem 1.4rem;
+    display: flex;
+    gap: 0.35rem;
+    height: auto;
+  }
+
+  .decco-story-card,
+  .decco-story-card--intern,
+  .decco-story-card--build,
+  .decco-story-card--ship {
+    position: relative;
+    top: auto;
+    right: auto;
+    bottom: auto;
+    left: auto;
+    flex: 1 1 0;
+    width: auto;
+    min-width: 0;
+    padding: 0.45rem 0.5rem;
+  }
+
+  .decco-story-detail,
+  .decco-terminal {
+    display: none;
+  }
+
+  .decco-story-title {
+    font-size: 0.75rem;
+  }
+
+  .decco-scene-robot {
+    left: 10%;
+    right: 10%;
+    top: 18%;
+    bottom: 28%;
+  }
+
+  .decco-scene-hint {
+    left: 0.4rem;
+    right: auto;
+    bottom: 0.15rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .hero-story-steps {
+    margin-top: 1rem;
+  }
+
+  .hero-story-steps li {
+    font-size: 0.78rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .decco-scene-photo {
+    animation: none;
+  }
+}
+
+/* Scroll hero — pinned story. Colors and type come from :root. */
+.scroll-hero.is-pinned {
+  position: relative;
+  height: 300vh;
+}
+
+.scroll-hero.is-stacked {
+  position: relative;
+  height: auto;
+}
+
+.scroll-hero-sticky {
+  position: sticky;
+  top: 5rem;
+  height: calc(100svh - 5rem);
+  overflow: hidden;
+  background: var(--theme-bg);
+}
+
+.scroll-hero.is-stacked .scroll-hero-sticky {
+  position: relative;
+  top: auto;
+  height: auto;
+  min-height: calc(100svh - 5rem);
+  overflow-x: clip;
+  overflow-y: visible;
+}
+
+.scroll-hero-bg {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.scroll-hero-gridlines,
+.scroll-hero-spotlight {
+  position: absolute;
+  inset: -8%;
+}
+
+.scroll-hero-gridlines {
+  background-image:
+    linear-gradient(rgba(63, 208, 255, 0.09) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(63, 208, 255, 0.09) 1px, transparent 1px);
+  background-size: 52px 52px;
+  mask-image: radial-gradient(ellipse at 68% 48%, #000 12%, transparent 72%);
+}
+
+.scroll-hero-spotlight {
+  background:
+    radial-gradient(ellipse at 72% 46%, rgba(63, 208, 255, 0.22), transparent 42%),
+    radial-gradient(ellipse at 30% 80%, rgba(37, 99, 255, 0.2), transparent 46%);
+}
+
+.scroll-hero-layout {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
+  height: 100%;
+  align-items: center;
+}
+
+.scroll-hero-copy {
+  padding: clamp(1.25rem, 3vh, 2.4rem) clamp(1.25rem, 3vw, 3rem);
+  max-width: 40rem;
+}
+
+.scroll-hero-title {
+  margin: 0;
+  font-size: var(--type-hero);
+  font-weight: 800;
+  line-height: 1.05;
+  letter-spacing: -0.04em;
+}
+
+.scroll-hero-accent {
+  display: block;
+  background: linear-gradient(120deg, var(--theme-accent-soft), var(--theme-accent) 55%, var(--theme-accent-warm));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.scroll-hero-intro {
+  margin: 0.9rem 0 0;
+  max-width: 36rem;
+  font-size: var(--type-hero-intro);
+  line-height: 1.55;
+  color: var(--theme-muted);
+}
+
+.scroll-hero-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  margin: 1rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.scroll-hero-pills li {
+  margin: 0;
+  padding: 0.32rem 0.7rem;
+  border-radius: 999px;
+  border: 1px solid var(--theme-border);
+  background: color-mix(in srgb, var(--theme-card) 80%, transparent);
+  color: var(--theme-fg);
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.scroll-hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-top: 1.15rem;
+}
+
+.scroll-hero-actions.is-ship .theme-btn-primary {
+  box-shadow: 0 0 28px rgba(63, 208, 255, 0.55), 0 10px 30px rgba(37, 99, 255, 0.35);
+}
+
+.scroll-hero-stage {
+  position: relative;
+  height: 100%;
+  min-height: 28rem;
+  perspective: 1000px;
+}
+
+.scroll-hero-dots {
+  position: absolute;
+  z-index: 6;
+  left: 0.4rem;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.scroll-hero-dots::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 0.4rem;
+  bottom: 0.4rem;
+  width: 1px;
+  background: var(--theme-border);
+}
+
+.scroll-hero-dot {
+  position: relative;
+  width: 2.4rem;
+  height: 2.4rem;
+  border-radius: 999px;
+  border: 1px solid var(--theme-border);
+  background: var(--theme-surface);
+  color: var(--theme-muted);
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.06em;
+  cursor: pointer;
+}
+
+.scroll-hero-dot[aria-current="step"] {
+  color: var(--theme-fg);
+  border-color: var(--theme-accent);
+  box-shadow: 0 0 16px rgba(63, 208, 255, 0.45);
+}
+
+.scroll-hero-bubble-slot {
+  position: absolute;
+  z-index: 6;
+  top: 4%;
+  left: 50%;
+  width: min(16rem, 70%);
+  transform: translateX(-50%);
+  pointer-events: none;
+}
+
+.scroll-hero-bubble {
+  margin: 0;
+  padding: 0.65rem 0.8rem;
+  border-radius: 16px 16px 16px 6px;
+  border: 1px solid color-mix(in srgb, var(--theme-accent) 55%, var(--theme-border));
+  background: color-mix(in srgb, var(--theme-surface) 88%, transparent);
+  color: var(--theme-fg);
+  font-size: 0.9rem;
+  line-height: 1.35;
+  box-shadow: 0 12px 30px rgba(0, 8, 31, 0.35);
+}
+
+.scroll-hero-cards {
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  pointer-events: none;
+}
+
+.scroll-hero-card {
+  position: absolute;
+  width: min(12.5rem, 46%);
+  padding: 0.75rem 0.8rem;
+  border-radius: 16px;
+  border: 1px solid var(--theme-border);
+  background: color-mix(in srgb, var(--theme-card) 92%, transparent);
+  box-shadow: 0 16px 36px rgba(0, 8, 31, 0.28);
+  opacity: 0.45;
+}
+
+.scroll-hero-card.is-active {
+  opacity: 1;
+  border-color: var(--theme-accent);
+  box-shadow: 0 0 22px rgba(63, 208, 255, 0.28), 0 16px 36px rgba(0, 8, 31, 0.32);
+}
+
+.scroll-hero-card--pick { top: 16%; left: 8%; }
+.scroll-hero-card--build { top: 34%; right: 4%; }
+.scroll-hero-card--ship { top: 62%; left: 10%; }
+
+.scroll-hero-kicker {
+  margin: 0 0 0.2rem;
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--theme-accent-soft);
+}
+
+.scroll-hero-card-title {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--theme-muted);
+}
+
+.scroll-hero-card.is-active .scroll-hero-card-title,
+.scroll-hero-card.is-active .scroll-hero-card-detail {
+  color: var(--theme-fg);
+}
+
+.scroll-hero-card-detail {
+  margin: 0.28rem 0 0;
+  font-size: 0.8rem;
+  line-height: 1.35;
+  color: var(--theme-muted);
+}
+
+.scroll-hero-terminal {
+  margin: 0.45rem 0 0;
+  padding: 0.4rem 0.5rem;
+  border-radius: 8px;
+  background: var(--theme-surface);
+  color: var(--theme-accent);
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  line-height: 1.4;
+  white-space: pre-wrap;
+}
+
+.scroll-hero-ready {
+  color: #86efac;
+}
+
+.scroll-hero-caret {
+  display: inline-block;
+  width: 0.4rem;
+  height: 0.8em;
+  margin-left: 1px;
+  background: var(--theme-accent);
+  vertical-align: text-bottom;
+}
+
+.scroll-hero-badge {
+  display: inline-block;
+  margin: 0.45rem 0 0;
+  padding: 0.15rem 0.45rem;
+  border-radius: 999px;
+  background: rgba(34, 197, 94, 0.16);
+  color: #86efac;
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.04em;
+}
+
+.scroll-hero-robot-tilt {
+  position: absolute;
+  inset: 8% 6% 4% 10%;
+  transform-style: preserve-3d;
+}
+
+.scroll-hero-robot-pose {
+  position: absolute;
+  inset: 0;
+  transform-style: preserve-3d;
+  will-change: transform;
+}
+
+.scroll-hero-shadow {
+  position: absolute;
+  left: 18%;
+  right: 18%;
+  bottom: 2%;
+  height: 14%;
+  border-radius: 999px;
+  background: radial-gradient(ellipse, rgba(63, 208, 255, 0.55), rgba(37, 99, 255, 0.05) 70%, transparent 75%);
+  filter: blur(6px);
+  pointer-events: none;
+  transform-origin: center;
+}
+
+.scroll-hero-robot {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+}
+
+.scroll-hero-robot::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 46%;
+  width: 70%;
+  height: 62%;
+  transform: translate(-50%, -50%);
+  background: radial-gradient(circle, rgba(63, 208, 255, 0.16), transparent 68%);
+  filter: blur(22px);
+  pointer-events: none;
+}
+
+.scroll-hero-robot::after {
+  content: "";
+  position: absolute;
+  inset: -4%;
+  z-index: 2;
+  pointer-events: none;
+  background: radial-gradient(
+    ellipse 74% 80% at 50% 48%,
+    transparent 32%,
+    color-mix(in srgb, var(--theme-bg) 72%, transparent) 54%,
+    var(--theme-bg) 68%,
+    transparent 86%
+  );
+}
+
+.scroll-hero-photo {
+  position: relative;
+  z-index: 1;
+  width: min(100%, 460px);
+  height: 100%;
+  object-fit: contain;
+  object-position: center bottom;
+  user-select: none;
+  -webkit-mask-image:
+    linear-gradient(to bottom, transparent 0%, #000 9%, #000 68%, transparent 100%),
+    radial-gradient(ellipse 92% 96% at 50% 48%, #000 28%, rgba(0, 0, 0, 0.55) 58%, transparent 86%);
+  mask-image:
+    linear-gradient(to bottom, transparent 0%, #000 9%, #000 68%, transparent 100%),
+    radial-gradient(ellipse 92% 96% at 50% 48%, #000 28%, rgba(0, 0, 0, 0.55) 58%, transparent 86%);
+  -webkit-mask-composite: source-in;
+  mask-composite: intersect;
+}
+
+.scroll-hero-hint {
+  position: absolute;
+  z-index: 6;
+  left: 0.9rem;
+  bottom: 0.7rem;
+  margin: 0;
+  max-width: 14rem;
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.03em;
+  color: var(--theme-muted);
+  pointer-events: none;
+}
+
+.internship-card h3,
+.why-card h3,
+.strategy-focus-card h3 {
+  font-size: var(--type-card-title);
+  font-weight: 700;
+}
+
+.internship-card > p,
+.why-card p,
+.strategy-focus-card p {
+  font-size: var(--type-card-body);
+}
+
+@media (max-width: 767px) {
+  .scroll-hero.is-pinned {
+    height: auto;
+  }
+
+  .scroll-hero-sticky,
+  .scroll-hero.is-stacked .scroll-hero-sticky {
+    position: relative;
+    top: auto;
+    height: auto;
+    min-height: calc(100svh - 5rem);
+  }
+
+  .scroll-hero-layout {
+    grid-template-columns: 1fr;
+    height: auto;
+  }
+
+  .scroll-hero-stage {
+    order: -1;
+    min-height: 58svh;
+    height: 58svh;
+  }
+
+  .scroll-hero-copy {
+    padding: 0.5rem 1.1rem 1.5rem;
+  }
+
+  .scroll-hero-cards {
+    inset: auto 0.4rem 1.8rem 2.6rem;
+    display: flex;
+    gap: 0.35rem;
+  }
+
+  .scroll-hero-card,
+  .scroll-hero-card--pick,
+  .scroll-hero-card--build,
+  .scroll-hero-card--ship {
+    position: relative;
+    top: auto;
+    right: auto;
+    bottom: auto;
+    left: auto;
+    flex: 1 1 0;
+    width: auto;
+    min-width: 0;
+    padding: 0.45rem;
+  }
+
+  .scroll-hero-card-detail,
+  .scroll-hero-terminal {
+    display: none;
+  }
+
+  .scroll-hero-card-title {
+    font-size: 0.78rem;
+  }
+
+  .scroll-hero-dots {
+    left: 0.15rem;
+  }
+
+  .scroll-hero-hint {
+    left: 0.45rem;
+    bottom: 0.25rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .scroll-hero.is-pinned {
+    height: auto;
+  }
+
+  .scroll-hero-sticky {
+    position: relative;
+    top: auto;
+    height: auto;
+    min-height: calc(100svh - 5rem);
   }
 }

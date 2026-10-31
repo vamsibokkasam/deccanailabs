@@ -55,9 +55,9 @@ const COMPANY_FACTS = [
     answer: `We offer hands-on internships and courses in ${PROGRAMS}. Each path includes projects, mentor feedback, and certificates on eligible completions. Visit Internships to apply.`,
   },
   {
-    keywords: ["msme", "ncs", "iso", "certified", "certification", "quality"],
+    keywords: ["msme", "ncs", "iso", "startupindia", "startup india", "aicte", "certified", "certification", "quality"],
     answer:
-      "Yes. DECCAN AI LABS Private Limited is MSME, NCS, and ISO certified.",
+      "Yes. DECCAN AI LABS Private Limited is MSME, NCS, ISO, StartupIndia, and AICTE certified.",
   },
   {
     keywords: ["instagram", "linkedin", "social"],

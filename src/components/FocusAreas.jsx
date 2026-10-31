@@ -53,9 +53,10 @@ function FocusAreas() {
     <section
       ref={sectionRef}
       className={`strategy-focus theme-section ${inView ? "is-inview" : ""}`}
+      data-cine
     >
       <div className="max-w-7xl mx-auto">
-        <div className="strategy-focus-head strategy-section-head text-center mb-14 md:mb-16">
+        <div className="strategy-focus-head strategy-section-head text-center mb-14 md:mb-16" data-cine-head>
           <p className="theme-label tracking-wider mb-4">
             STRATEGIC FOCUS AREAS
           </p>
@@ -66,36 +67,24 @@ function FocusAreas() {
           </p>
         </div>
 
-        <div className="strategy-focus-grid">
-          {areas.map(({ title, description, hint, Icon, wide }, index) => (
-            <article
+        <ol className="focus-index">
+          {areas.map(({ title, description, hint, Icon }, index) => (
+            <li
               key={title}
-              className={`strategy-focus-card group theme-card theme-card-hover ${
-                wide ? "strategy-focus-card--wide" : ""
-              }`}
-              style={{ "--focus-i": index }}
+              className="focus-line strategy-focus-card"
             >
-              <div className="strategy-focus-glow" aria-hidden="true" />
-
-              <div className="relative">
-                <div className="strategy-focus-card-top">
-                  <div className="strategy-focus-icon">
-                    <Icon size={22} strokeWidth={1.75} aria-hidden="true" />
-                  </div>
-                </div>
-
-                <p className="strategy-focus-hint mb-2">{hint}</p>
-
-                <h3 className="card-heading-hover text-xl md:text-2xl font-semibold mb-3 transition-colors duration-300">
-                  {title}
-                </h3>
-                <p className="text-muted leading-relaxed text-[15px] md:text-base">
-                  {description}
-                </p>
+              <span className="focus-index-num" aria-hidden="true">
+                {String(index + 1).padStart(2, "0")}
+              </span>
+              <Icon size={18} strokeWidth={1.75} aria-hidden="true" />
+              <div>
+                <p className="focus-kicker">{hint}</p>
+                <h3>{title}</h3>
               </div>
-            </article>
+              <p>{description}</p>
+            </li>
           ))}
-        </div>
+        </ol>
       </div>
     </section>
   );

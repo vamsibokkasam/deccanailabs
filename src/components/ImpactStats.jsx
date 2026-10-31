@@ -69,28 +69,13 @@ function StatCard({ stat, index, active }) {
   const Icon = stat.icon;
 
   return (
-    <article
-      className="home-reveal-item impact-stat-card group theme-card theme-card-hover relative overflow-hidden p-6 md:p-8 text-center"
-      style={{ "--i": index }}
-    >
-      <div className="impact-stat-glow" aria-hidden="true" />
-
-      <div className="relative">
-        <div className="impact-stat-icon mx-auto mb-5">
-          <Icon size={22} strokeWidth={1.75} aria-hidden="true" />
-        </div>
-
-        <p className="impact-stat-value text-3xl md:text-4xl font-semibold tracking-tight">
-          {stat.display ?? `${counted}${stat.suffix || ""}`}
-        </p>
-
-        <p className="text-fg font-medium text-sm md:text-base mt-3">
-          {stat.label}
-        </p>
-        <p className="text-subtle text-xs md:text-sm mt-1.5 leading-snug">
-          {stat.hint}
-        </p>
-      </div>
+    <article className="studio-figure impact-stat-card" style={{ "--i": index }}>
+      <Icon size={18} strokeWidth={1.75} aria-hidden="true" />
+      <p className="studio-figure-value">
+        {stat.display ?? `${counted}${stat.suffix || ""}`}
+      </p>
+      <p className="studio-figure-label">{stat.label}</p>
+      <p className="studio-figure-hint">{stat.hint}</p>
     </article>
   );
 }
@@ -104,11 +89,13 @@ function ImpactStats() {
       className={`impact-stats-section home-reveal py-16 md:py-20 px-6 ${
         inView ? "is-inview" : ""
       }`}
+      data-cine
     >
       <div className="max-w-7xl mx-auto">
         <div
           className="text-center mb-12 md:mb-14 home-reveal-item"
           style={{ "--i": 0 }}
+          data-cine-head
         >
           <p className="theme-label mb-4">IMPACT STATS</p>
           <h2 className="theme-heading">Our Achievements</h2>
@@ -118,7 +105,7 @@ function ImpactStats() {
           </p>
         </div>
 
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 md:gap-8">
+        <div className="studio-figures">
           {stats.map((stat, index) => (
             <StatCard
               key={stat.label}

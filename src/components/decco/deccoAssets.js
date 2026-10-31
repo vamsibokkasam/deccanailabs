@@ -30,31 +30,51 @@ export function isolateDeccoImage(src = DECCO_ORIGINAL) {
     canvas.width = w;
     canvas.height = h;
     const ctx = canvas.getContext("2d", { willReadFrequently: true });
-    if (!ctx) return src;
+    if (!ctx) return "";
 
     ctx.drawImage(img, 0, 0);
     const frame = ctx.getImageData(0, 0, w, h);
     const d = frame.data;
+    const seen = new Uint8Array(w * h);
+    const stack = [];
 
-    for (let i = 0; i < d.length; i += 4) {
-      const r = d[i];
-      const g = d[i + 1];
-      const b = d[i + 2];
+    const isBackground = (offset) => {
+      const r = d[offset];
+      const g = d[offset + 1];
+      const b = d[offset + 2];
       const lum = 0.299 * r + 0.587 * g + 0.114 * b;
-      const mx = Math.max(r, g, b);
-      const mn = Math.min(r, g, b);
-      const chroma = mx - mn;
+      const chroma = Math.max(r, g, b) - Math.min(r, g, b);
+      const accent = b > 90 && b > r + 30 && b + 8 >= g;
+      return !accent && lum < 96 && chroma < 58 && b + 12 >= r && b + 8 >= g;
+    };
 
-      // Preserve cyan/blue emissive accents even when dark
-      const isAccent = b > 70 && b > r + 18 && b >= g;
+    const push = (x, y) => {
+      if (x < 0 || y < 0 || x >= w || y >= h) return;
+      const pixel = y * w + x;
+      if (seen[pixel]) return;
+      if (!isBackground(pixel * 4)) return;
+      seen[pixel] = 1;
+      stack.push(pixel);
+    };
 
-      // Dark, low-chroma plate / floor (not robot shell, not accents)
-      if (!isAccent && lum < 52 && chroma < 38) {
-        d[i + 3] = 0;
-      } else if (!isAccent && lum < 68 && chroma < 28) {
-        // Soft edge falloff near the plate
-        d[i + 3] = Math.min(d[i + 3], Math.round(((lum - 52) / 16) * 255));
-      }
+    for (let x = 0; x < w; x += 1) {
+      push(x, 0);
+      push(x, h - 1);
+    }
+    for (let y = 0; y < h; y += 1) {
+      push(0, y);
+      push(w - 1, y);
+    }
+
+    while (stack.length) {
+      const pixel = stack.pop();
+      const x = pixel % w;
+      const y = (pixel - x) / w;
+      d[pixel * 4 + 3] = 0;
+      push(x + 1, y);
+      push(x - 1, y);
+      push(x, y + 1);
+      push(x, y - 1);
     }
 
     ctx.putImageData(frame, 0, 0);
@@ -62,12 +82,12 @@ export function isolateDeccoImage(src = DECCO_ORIGINAL) {
     const blob = await new Promise((resolve) =>
       canvas.toBlob(resolve, "image/png")
     );
-    if (!blob) return src;
+    if (!blob) return "";
 
     if (isolatedObjectUrl) URL.revokeObjectURL(isolatedObjectUrl);
     isolatedObjectUrl = URL.createObjectURL(blob);
     return isolatedObjectUrl;
-  })().catch(() => src);
+  })().catch(() => "");
 
   return isolatePromise;
 }

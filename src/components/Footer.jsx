@@ -47,14 +47,14 @@ function Footer() {
 
           <div className="sm:col-span-2 lg:col-span-1">
             <Link to="/" className="inline-block">
-              <BrandText className="text-xl" showLegal={false} />
+              <BrandText className="text-xl" />
             </Link>
             <p className="text-accent text-sm font-medium mt-3 tracking-wide">
               Innovate • Learn • Transform
             </p>
             <p className="text-muted text-sm mt-4 leading-relaxed max-w-xs">
               Empowering students through AI innovation, internships, and
-              industry-focused learning experiences. MSME · NCS · ISO certified.
+              industry-focused learning experiences. MSME · NCS · ISO · StartupIndia · AICTE certified.
             </p>
           </div>
 
@@ -65,7 +65,7 @@ function Footer() {
                 <li key={to}>
                   <Link
                     to={to}
-                    className="text-muted text-sm hover:text-accent transition"
+                    className="text-muted text-sm hover:text-fg transition"
                   >
                     {label}
                   </Link>
@@ -87,7 +87,7 @@ function Footer() {
                     {href ? (
                       <a
                         href={href}
-                        className="text-muted text-sm hover:text-accent transition"
+                        className="text-muted text-sm hover:text-fg transition"
                       >
                         {value}
                       </a>
@@ -107,7 +107,7 @@ function Footer() {
                 <li key={to}>
                   <Link
                     to={to}
-                    className="text-muted text-sm hover:text-accent transition"
+                    className="text-muted text-sm hover:text-fg transition"
                   >
                     {label}
                   </Link>

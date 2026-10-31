@@ -26,8 +26,10 @@ function About() {
             empowering learners with the knowledge, skills, and opportunities
             required to thrive in a rapidly evolving digital world. We are{" "}
             <span className="about-cert">MSME</span>,{" "}
-            <span className="about-cert">NCS</span>, and{" "}
-            <span className="about-cert">ISO</span> certified.
+            <span className="about-cert">NCS</span>,{" "}
+            <span className="about-cert">ISO</span>,{" "}
+            <span className="about-cert">StartupIndia</span>, and{" "}
+            <span className="about-cert">AICTE</span> certified.
           </p>
 
           <aside className="about-intro-note">
