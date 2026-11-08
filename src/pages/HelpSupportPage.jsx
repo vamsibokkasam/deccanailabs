@@ -1,11 +1,12 @@
 import { Link } from "react-router-dom";
+import { BRAND_LEGAL_NAME, BRAND_NAME } from "../config/branding";
 import LegalPageLayout, { LegalSection } from "../components/LegalPageLayout";
 
 function HelpSupportPage() {
   return (
     <LegalPageLayout label="SUPPORT" title="Help & Support">
       <p>
-        At DECCAN AI LABS, we are committed to providing timely assistance and
+        At {BRAND_LEGAL_NAME}, we are committed to providing timely assistance and
         support to our students, interns, applicants, and website visitors.
       </p>
 
@@ -24,7 +25,7 @@ function HelpSupportPage() {
 
       <LegalSection title="Contact Information">
         <div className="space-y-4">
-          <p className="font-medium text-fg">DECCAN AI LABS Support Team</p>
+          <p className="font-medium text-fg">{BRAND_NAME} Support Team</p>
           <p>
             <span className="text-fg">Phone: </span>
             <a href="tel:+919845428526" className="hover:text-accent transition">

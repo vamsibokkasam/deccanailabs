@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@import "./styles/services.css";
 
 @theme {
   --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
@@ -16,6 +17,13 @@
   --color-accent-warm: var(--theme-accent-warm);
   --color-border: var(--theme-border);
   --color-nav: var(--theme-nav);
+
+  /* Services premium palette */
+  --color-service-bg: var(--theme-service-bg);
+  --color-service-surface: var(--theme-service-surface);
+  --color-service-panel: var(--theme-service-panel);
+  --color-service-glow: var(--theme-service-glow);
+  --color-service-line: var(--theme-service-line);
 }
 
 :root {
@@ -39,6 +47,13 @@
   --theme-hero-to: #1b263b;
   --theme-decco-glow: #1b263b;
   --theme-decco-mist: #1b263b;
+
+  /* Match main site palette on services pages */
+  --theme-service-bg: var(--theme-bg);
+  --theme-service-surface: var(--theme-surface);
+  --theme-service-panel: var(--theme-card);
+  --theme-service-glow: color-mix(in oklab, var(--theme-accent-hover) 28%, transparent);
+  --theme-service-line: var(--theme-border);
 }
 
 html {
@@ -3684,3 +3699,144 @@ h6 {
     transform: none;
   }
 }
+
+/* Navbar — Our Services dropdown */
+.nav-services-trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.nav-services-chevron {
+  transition: transform 0.2s ease;
+}
+
+.nav-services-trigger[aria-expanded="true"] .nav-services-chevron {
+  transform: rotate(180deg);
+}
+
+.nav-services-menu {
+  position: absolute;
+  left: 50%;
+  top: calc(100% - 0.15rem);
+  z-index: 60;
+  padding-top: 0.85rem;
+  transform: translateX(-50%);
+}
+
+.nav-services-panel {
+  width: 19rem;
+  padding: 0.4rem;
+  border-radius: 1rem;
+  background: color-mix(in oklab, var(--theme-card) 92%, #0b1220);
+  border: 1px solid color-mix(in oklab, white 9%, transparent);
+  box-shadow:
+    0 22px 48px rgba(0, 0, 0, 0.42),
+    0 2px 0 color-mix(in oklab, var(--theme-accent) 18%, transparent);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  animation: nav-services-in 0.18s ease-out;
+}
+
+.nav-services-item {
+  display: flex;
+  gap: 0.85rem;
+  align-items: flex-start;
+  padding: 0.85rem 0.9rem;
+  border-radius: 0.8rem;
+  text-decoration: none;
+  transition:
+    background-color 0.2s ease,
+    transform 0.2s ease;
+}
+
+.nav-services-item:hover,
+.nav-services-item.is-active {
+  background: color-mix(in oklab, var(--theme-accent) 12%, transparent);
+}
+
+.nav-services-item:hover .nav-services-item-arrow {
+  opacity: 1;
+  transform: translate(1px, -1px);
+}
+
+.nav-services-item-icon {
+  display: grid;
+  place-items: center;
+  width: 2.35rem;
+  height: 2.35rem;
+  flex-shrink: 0;
+  border-radius: 0.7rem;
+  color: var(--theme-accent);
+  background: color-mix(in oklab, var(--theme-accent) 14%, transparent);
+  border: 1px solid color-mix(in oklab, var(--theme-accent) 22%, transparent);
+}
+
+.nav-services-item-copy {
+  min-width: 0;
+  flex: 1;
+}
+
+.nav-services-item-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  color: var(--theme-fg);
+  font-size: 0.95rem;
+  font-weight: 560;
+  letter-spacing: -0.01em;
+  line-height: 1.25;
+}
+
+.nav-services-item-desc {
+  margin-top: 0.28rem;
+  color: var(--theme-subtle);
+  font-size: 0.78rem;
+  line-height: 1.45;
+}
+
+.nav-services-item-arrow {
+  flex-shrink: 0;
+  color: var(--theme-accent);
+  opacity: 0.55;
+  transition:
+    opacity 0.2s ease,
+    transform 0.2s ease;
+}
+
+.nav-services-mobile {
+  margin-top: 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  padding: 0.4rem;
+  border-radius: 0.9rem;
+  background: color-mix(in oklab, var(--theme-card) 70%, transparent);
+  border: 1px solid color-mix(in oklab, white 7%, transparent);
+}
+
+@keyframes nav-services-in {
+  from {
+    opacity: 0;
+    transform: translateY(-8px) scale(0.98);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .nav-services-panel {
+    animation: none;
+  }
+
+  .nav-services-chevron,
+  .nav-services-item,
+  .nav-services-item-arrow {
+    transition: none;
+  }
+}
+

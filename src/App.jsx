@@ -16,6 +16,10 @@ import TermsPage from "./pages/TermsPage";
 import HelpSupportPage from "./pages/HelpSupportPage";
 import ApplicationPage from "./pages/ApplicationPage";
 import CertificateVerifyPage from "./pages/CertificateVerifyPage";
+import ServicesPage from "./pages/ServicesPage";
+import WebsiteDesignPage from "./pages/WebsiteDesignPage";
+import DynamicWebsiteDesignPage from "./pages/DynamicWebsiteDesignPage";
+import EcommerceWebsiteDesignPage from "./pages/EcommerceWebsiteDesignPage";
 function App() {
   return (
     <>
@@ -39,6 +43,36 @@ function App() {
         <Route
           path="programs"
           element={<ProgramsPage />}
+        />
+
+        <Route
+          path="services"
+          element={<ServicesPage />}
+        />
+
+        <Route
+          path="services/website-design"
+          element={<WebsiteDesignPage />}
+        />
+
+        <Route
+          path="services/website-design/dynamic"
+          element={<DynamicWebsiteDesignPage />}
+        />
+
+        <Route
+          path="services/website-design/ecommerce"
+          element={<EcommerceWebsiteDesignPage />}
+        />
+
+        <Route
+          path="services/dynamic-website-design"
+          element={<Navigate to="/services/website-design/dynamic" replace />}
+        />
+
+        <Route
+          path="services/ecommerce-website-design"
+          element={<Navigate to="/services/website-design/ecommerce" replace />}
         />
 
         <Route

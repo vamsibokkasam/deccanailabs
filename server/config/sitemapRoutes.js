@@ -3,6 +3,18 @@ export const STATIC_SITEMAP_ROUTES = [
   { path: "/about", changefreq: "monthly", priority: "0.9" },
   { path: "/team", changefreq: "monthly", priority: "0.8" },
   { path: "/programs", changefreq: "monthly", priority: "0.8" },
+  { path: "/services", changefreq: "monthly", priority: "0.9" },
+  { path: "/services/website-design", changefreq: "monthly", priority: "0.85" },
+  {
+    path: "/services/website-design/dynamic",
+    changefreq: "monthly",
+    priority: "0.8",
+  },
+  {
+    path: "/services/website-design/ecommerce",
+    changefreq: "monthly",
+    priority: "0.8",
+  },
   { path: "/internships", changefreq: "weekly", priority: "0.9" },
   { path: "/contact", changefreq: "monthly", priority: "0.8" },
   { path: "/privacy-policy", changefreq: "yearly", priority: "0.4" },

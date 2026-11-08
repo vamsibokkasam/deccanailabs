@@ -47,7 +47,7 @@ function Footer() {
 
           <div className="sm:col-span-2 lg:col-span-1">
             <Link to="/" className="inline-block">
-              <BrandText className="text-xl" showLegal={false} />
+              <BrandText className="text-xl" />
             </Link>
             <p className="text-accent text-sm font-medium mt-3 tracking-wide">
               Innovate • Learn • Transform

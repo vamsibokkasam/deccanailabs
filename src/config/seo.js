@@ -91,6 +91,34 @@ const ROUTE_SEO = {
     keywords:
       "technology programs, AI education, skill development programs, digital transformation training, DECCAN AI LABS strategy, learning programs India",
   },
+  "/services": {
+    title: buildPageTitle("Our Services"),
+    description:
+      "Explore DECCAN AI LABS digital services — website design, dynamic CMS sites, and ecommerce stores built for speed, clarity, and conversions.",
+    keywords:
+      "DECCAN AI LABS services, website design India, dynamic website, ecommerce website design, CMS website, digital services",
+  },
+  "/services/website-design": {
+    title: buildPageTitle("Website Design"),
+    description:
+      "Premium website design from DECCAN AI LABS. Choose dynamic CMS websites or ecommerce stores with a clear Discover → Design → Build → Launch process.",
+    keywords:
+      "website design, business website India, CMS website design, ecommerce design, DECCAN AI LABS website design",
+  },
+  "/services/website-design/dynamic": {
+    title: buildPageTitle("Dynamic Website Design"),
+    description:
+      "CMS-managed dynamic websites that are easy to update, SEO-ready, fast, and built for real business use by DECCAN AI LABS.",
+    keywords:
+      "dynamic website design, CMS website, editable website, SEO website, DECCAN AI LABS dynamic website",
+  },
+  "/services/website-design/ecommerce": {
+    title: buildPageTitle("Ecommerce Website Design"),
+    description:
+      "Ecommerce website design with product catalog, cart, checkout, Razorpay payments, inventory, and WhatsApp ordering from DECCAN AI LABS.",
+    keywords:
+      "ecommerce website design, online store India, Razorpay store, product catalog website, DECCAN AI LABS ecommerce",
+  },
   "/internships": {
     title: buildPageTitle("Internships"),
     description:
