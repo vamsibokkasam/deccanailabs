@@ -4,7 +4,9 @@ import Reveal from "../components/Reveal";
 import ServiceHero from "../components/services/ServiceHero";
 import ServiceOfferCard from "../components/services/ServiceOfferCard";
 import ServiceCtaBand from "../components/services/ServiceCtaBand";
+import ServiceWorkShowcase from "../components/services/ServiceWorkShowcase";
 import { websiteAudiences, websiteDesignServices } from "../data/services";
+import { serviceWork } from "../data/serviceWork";
 
 const processSteps = [
   {
@@ -92,6 +94,14 @@ function WebsiteDesignPage() {
           </div>
         </div>
       </section>
+
+      <ServiceWorkShowcase
+        eyebrow="SELECTED WORK"
+        title="Recent websites we've built"
+        description="Hover a site to scroll through the full website. Dynamic and ecommerce work is here together — click any card to open it."
+        items={serviceWork}
+        showCategory
+      />
 
       <section
         ref={processRef}

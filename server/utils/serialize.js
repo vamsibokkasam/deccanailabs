@@ -147,6 +147,25 @@ export function serializeContact(row) {
   };
 }
 
+export function serializeServiceQuote(row) {
+  if (!row) return row;
+
+  return {
+    _id: row.id,
+    name: row.name,
+    email: row.email,
+    phone: row.phone,
+    businessName: row.businessName,
+    serviceType: row.serviceType,
+    projectDetails: row.projectDetails,
+    budget: row.budget,
+    timeline: row.timeline,
+    sourcePage: row.sourcePage,
+    createdAt: row.createdAt,
+    updatedAt: row.updatedAt,
+  };
+}
+
 export function stripScreenshotFromApplication(row) {
   return serializeApplication(row, { includeScreenshot: false });
 }

@@ -153,6 +153,25 @@ model Contact {
   @@map("contacts")
 }
 
+model ServiceQuote {
+  id             String   @id @default(uuid())
+  name           String
+  email          String
+  phone          String
+  businessName   String   @default("")
+  serviceType    String
+  projectDetails String
+  budget         String   @default("")
+  timeline       String   @default("")
+  sourcePage     String   @default("")
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @default(now()) @updatedAt
+
+  @@index([createdAt])
+  @@index([email])
+  @@map("service_quotes")
+}
+
 model SequenceCounter {
   key   String @id
   value Int    @default(0)

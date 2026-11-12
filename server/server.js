@@ -6,6 +6,7 @@ import connectDB, { getDbStatus } from "./config/db.js";
 import seedPrograms from "./config/seedPrograms.js";
 import { warmupOfferLetterAssets } from "./services/offerLetterRenderer.js";
 import contactRoutes from "./routes/contactRoutes.js";
+import quoteRoutes from "./routes/quoteRoutes.js";
 import applicationRoutes from "./routes/applicationRoutes.js";
 import programRoutes from "./routes/programRoutes.js";
 import adminRoutes from "./routes/adminRoutes.js";
@@ -42,6 +43,7 @@ app.get("/api/health", (req, res) => {
 });
 
 app.use("/api/contacts", ensureDb, contactRoutes);
+app.use("/api/quotes", ensureDb, quoteRoutes);
 app.use("/api/applications", ensureDb, applicationRoutes);
 app.use("/api/programs", ensureDb, programRoutes);
 app.use("/api/admin", ensureDb, adminRoutes);

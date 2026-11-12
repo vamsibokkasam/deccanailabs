@@ -69,6 +69,7 @@ async function alreadyOnDatabase(filename) {
   if (filename === "004_offer_letter_emailed_at.sql") {
     return hasColumn("offer_letters", "emailedAt");
   }
+  if (filename === "005_service_quotes.sql") return hasTable("service_quotes");
   return false;
 }
 

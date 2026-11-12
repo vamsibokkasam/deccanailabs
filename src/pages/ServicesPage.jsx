@@ -8,7 +8,9 @@ import { Link } from "react-router-dom";
 import Reveal from "../components/Reveal";
 import ServiceHero from "../components/services/ServiceHero";
 import ServiceCtaBand from "../components/services/ServiceCtaBand";
+import ServiceWorkShowcase from "../components/services/ServiceWorkShowcase";
 import { services } from "../data/services";
+import { serviceWork } from "../data/serviceWork";
 
 const highlights = [
   {
@@ -103,6 +105,14 @@ function ServicesPage() {
           </Reveal>
         </div>
       </section>
+
+      <ServiceWorkShowcase
+        eyebrow="SELECTED WORK"
+        title="Work you can click through"
+        description="Hover a site to scroll through the full website. Click any card to open it."
+        items={serviceWork}
+        showCategory
+      />
 
       <ServiceCtaBand
         title="Ready to grow online?"

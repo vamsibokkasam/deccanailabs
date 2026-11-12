@@ -11,6 +11,8 @@ import ServiceHero from "../components/services/ServiceHero";
 import ServiceFaq from "../components/services/ServiceFaq";
 import ServiceCtaBand from "../components/services/ServiceCtaBand";
 import ServiceStickyBar from "../components/services/ServiceStickyBar";
+import ServiceWorkShowcase from "../components/services/ServiceWorkShowcase";
+import { getServiceWork } from "../data/serviceWork";
 
 const features = [
   {
@@ -108,6 +110,13 @@ function DynamicWebsiteDesignPage() {
           </div>
         </div>
       </section>
+
+      <ServiceWorkShowcase
+        eyebrow="SELECTED WORK"
+        title="Dynamic websites, live to explore"
+        description="Hover a site to scroll through the full website. A real client site plus restaurant and real-estate demos."
+        items={getServiceWork("dynamic")}
+      />
 
       <ServiceFaq
         titleId="dynamic-faq-title"

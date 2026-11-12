@@ -1,9 +1,11 @@
 import { useEffect, useState } from "react";
 import { X } from "lucide-react";
 
-const WHATSAPP_URL =
-  "https://wa.me/919845428526?text=" +
-  encodeURIComponent("Hi DECCAN AI LABS, I need help with internships/programs.");
+import { buildWhatsAppUrl } from "../config/whatsapp";
+
+const WHATSAPP_URL = buildWhatsAppUrl(
+  "Hi DECCAN AI LABS, I need help with internships/programs."
+);
 
 const STORAGE_KEY = "deccanailabs_wa_help_dismissed";
 

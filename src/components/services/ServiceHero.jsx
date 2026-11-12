@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { ArrowRight, Check, Sparkles } from "lucide-react";
 import { useInView } from "../../hooks/useInView";
+import { QUOTE_SECTION_ID, scrollToQuote } from "./ServiceQuoteForm";
 
 const DEFAULT_CHIPS = ["Free consultation", "Fast delivery", "MSME certified"];
 
@@ -11,8 +12,8 @@ function ServiceHero({
   accent,
   description,
   breadcrumbs = [],
-  primary = { label: "Get a free quote", to: "/contact" },
-  secondary = { label: "Explore my services", to: "/services" },
+  primary = { label: "Get a free quote", action: "quote" },
+  secondary = { label: "See my work", href: "#selected-work" },
   primaryLabel,
   primaryTo,
   secondaryLabel,
@@ -23,11 +24,13 @@ function ServiceHero({
 
   const primaryCta = {
     label: primary?.label ?? primaryLabel ?? "Get a free quote",
-    to: primary?.to ?? primaryTo ?? "/contact",
+    to: primary?.to ?? primaryTo,
+    action: primary?.action ?? (primary?.to || primaryTo ? undefined : "quote"),
   };
   const secondaryCta = {
-    label: secondary?.label ?? secondaryLabel ?? "Explore my services",
-    to: secondary?.to ?? secondaryTo ?? "/services",
+    label: secondary?.label ?? secondaryLabel ?? "See my work",
+    to: secondary?.to ?? secondaryTo,
+    href: secondary?.href ?? "#selected-work",
   };
 
   return (
@@ -90,24 +93,57 @@ function ServiceHero({
           </p>
 
           <div className="service-hero-actions service-hero-anim service-hero-anim--4">
-            <Link
-              to={primaryCta.to}
-              className="service-hero-btn-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-hover/70 focus-visible:ring-offset-2 focus-visible:ring-offset-service-bg"
-            >
-              <Sparkles size={16} aria-hidden="true" />
-              {primaryCta.label}
-            </Link>
-            <Link
-              to={secondaryCta.to}
-              className="service-hero-btn-secondary group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-hover/50 focus-visible:ring-offset-2 focus-visible:ring-offset-service-bg"
-            >
-              {secondaryCta.label}
-              <ArrowRight
-                size={16}
-                className="transition-transform duration-300 group-hover:translate-x-1"
-                aria-hidden="true"
-              />
-            </Link>
+            {primaryCta.action === "quote" ? (
+              <a
+                href={`#${QUOTE_SECTION_ID}`}
+                onClick={scrollToQuote}
+                className="service-hero-btn-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-hover/70 focus-visible:ring-offset-2 focus-visible:ring-offset-service-bg"
+              >
+                <Sparkles size={16} aria-hidden="true" />
+                {primaryCta.label}
+              </a>
+            ) : (
+              <Link
+                to={primaryCta.to || "/contact"}
+                className="service-hero-btn-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-hover/70 focus-visible:ring-offset-2 focus-visible:ring-offset-service-bg"
+              >
+                <Sparkles size={16} aria-hidden="true" />
+                {primaryCta.label}
+              </Link>
+            )}
+            {secondaryCta.to ? (
+              <Link
+                to={secondaryCta.to}
+                className="service-hero-btn-secondary group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-hover/50 focus-visible:ring-offset-2 focus-visible:ring-offset-service-bg"
+              >
+                {secondaryCta.label}
+                <ArrowRight
+                  size={16}
+                  className="transition-transform duration-300 group-hover:translate-x-1"
+                  aria-hidden="true"
+                />
+              </Link>
+            ) : (
+              <a
+                href={secondaryCta.href}
+                onClick={(event) => {
+                  if (!secondaryCta.href?.startsWith("#")) return;
+                  const target = document.getElementById(secondaryCta.href.slice(1));
+                  if (!target) return;
+                  event.preventDefault();
+                  target.scrollIntoView({ behavior: "smooth", block: "start" });
+                  window.history.replaceState(null, "", secondaryCta.href);
+                }}
+                className="service-hero-btn-secondary group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-hover/50 focus-visible:ring-offset-2 focus-visible:ring-offset-service-bg"
+              >
+                {secondaryCta.label}
+                <ArrowRight
+                  size={16}
+                  className="transition-transform duration-300 group-hover:translate-x-1"
+                  aria-hidden="true"
+                />
+              </a>
+            )}
           </div>
 
           {chips?.length ? (

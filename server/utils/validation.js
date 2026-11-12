@@ -2,6 +2,53 @@ const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const SHORT_NAME_REGEX = /^[a-zA-Z\s.'-]{2,50}$/;
 const PHONE_REGEX = /^[6-9]\d{9}$/;
 
+export function validateServiceQuote(data) {
+  const errors = {};
+  const { name, email, phone, businessName, serviceType, projectDetails } = data;
+  const NAME_REGEX = /^[a-zA-Z\s.'-]{2,100}$/;
+  const SERVICE_TYPES = new Set(["dynamic", "ecommerce", "website-design"]);
+
+  if (!name?.trim()) {
+    errors.name = "Name is required";
+  } else if (/\d/.test(name.trim())) {
+    errors.name = "Name must not contain numbers";
+  } else if (!NAME_REGEX.test(name.trim())) {
+    errors.name = "Name must be 2-100 letters only";
+  }
+
+  if (!email?.trim()) {
+    errors.email = "Email is required";
+  } else if (!email.trim().includes("@")) {
+    errors.email = "Email must contain @";
+  } else if (!EMAIL_REGEX.test(email.trim())) {
+    errors.email = "Please enter a valid email address";
+  }
+
+  if (!phone?.trim()) {
+    errors.phone = "WhatsApp number is required";
+  } else if (!PHONE_REGEX.test(phone.trim().replace(/\s/g, ""))) {
+    errors.phone = "Enter a valid 10-digit mobile number";
+  }
+
+  if (businessName?.trim() && businessName.trim().length > 120) {
+    errors.businessName = "Business name must not exceed 120 characters";
+  }
+
+  if (!serviceType?.trim() || !SERVICE_TYPES.has(serviceType.trim())) {
+    errors.serviceType = "Please choose the service you need";
+  }
+
+  if (!projectDetails?.trim()) {
+    errors.projectDetails = "Please describe your project";
+  } else if (projectDetails.trim().length < 10) {
+    errors.projectDetails = "Please add a little more detail (at least 10 characters)";
+  } else if (projectDetails.trim().length > 2000) {
+    errors.projectDetails = "Project details must not exceed 2000 characters";
+  }
+
+  return errors;
+}
+
 export function validateContact(data) {
   const errors = {};
   const { firstName, lastName, email, whatsapp, internship, message } = data;

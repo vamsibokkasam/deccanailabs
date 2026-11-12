@@ -95,6 +95,19 @@ export function submitContact(formData) {
   });
 }
 
+export function submitServiceQuote(formData) {
+  return request("/quotes", {
+    method: "POST",
+    body: JSON.stringify(formData),
+  });
+}
+
+export function getServiceQuotes(adminKey) {
+  return request("/quotes", {
+    headers: adminHeaders(adminKey),
+  });
+}
+
 export async function submitApplication(formData) {
   const response = await fetchWithTimeout(`${API_URL}/applications`, {
     method: "POST",

@@ -18,6 +18,7 @@ import {
   Layers,
   Loader2,
   Mail,
+  MessageSquare,
   Pencil,
   FileText,
   Plus,
@@ -48,6 +49,7 @@ import {
   getAdminStats,
   getApplications,
   getContacts,
+  getServiceQuotes,
   openCertificatePdfBlob,
   updateApplicationStatus,
   updatePaymentStatus,
@@ -1910,6 +1912,129 @@ function StatusBreakdownChart({ statusCounts, totalApplications, onStatusClick }
   );
 }
 
+const QUOTE_SERVICE_LABELS = {
+  dynamic: "Dynamic website",
+  ecommerce: "Ecommerce website",
+  "website-design": "Website design",
+};
+
+function QuotesTable({ quotes }) {
+  const [expandedId, setExpandedId] = useState(null);
+
+  const copyText = async (value) => {
+    if (!value) return;
+    try {
+      await navigator.clipboard.writeText(value);
+    } catch {
+      /* clipboard unavailable */
+    }
+  };
+
+  return (
+    <div className="theme-card overflow-hidden">
+      <div className="overflow-x-auto">
+        <table className="w-full min-w-[900px] text-sm">
+          <thead>
+            <tr className="border-b border-border bg-surface/60">
+              <th className="w-10 px-3 py-3" aria-label="Expand row" />
+              <th className="text-left px-4 py-3 text-subtle text-xs font-medium uppercase tracking-wider">
+                Name
+              </th>
+              <th className="text-left px-4 py-3 text-subtle text-xs font-medium uppercase tracking-wider">
+                Contact
+              </th>
+              <th className="text-left px-4 py-3 text-subtle text-xs font-medium uppercase tracking-wider">
+                Service
+              </th>
+              <th className="text-left px-4 py-3 text-subtle text-xs font-medium uppercase tracking-wider">
+                Project
+              </th>
+              <th className="text-left px-4 py-3 text-subtle text-xs font-medium uppercase tracking-wider">
+                Date
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            {quotes.map((quote) => {
+              const isExpanded = expandedId === quote._id;
+              return (
+                <Fragment key={quote._id}>
+                  <tr
+                    className={`border-b border-border transition-colors hover:bg-surface/40 ${
+                      isExpanded ? "bg-surface/30" : ""
+                    }`}
+                  >
+                    <td className="px-3 py-3">
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setExpandedId((current) => (current === quote._id ? null : quote._id))
+                        }
+                        className="p-1.5 rounded-lg text-muted hover:text-accent hover:bg-surface border border-transparent hover:border-border transition"
+                        aria-expanded={isExpanded}
+                        aria-label={isExpanded ? "Collapse row" : "Expand row"}
+                      >
+                        {isExpanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+                      </button>
+                    </td>
+                    <td className="px-4 py-3">
+                      <p className="font-medium text-fg">{quote.name}</p>
+                      {quote.businessName ? (
+                        <p className="text-xs text-muted mt-0.5">{quote.businessName}</p>
+                      ) : null}
+                    </td>
+                    <td className="px-4 py-3">
+                      <p className="text-fg">{quote.email}</p>
+                      <p className="text-xs text-muted mt-0.5">{quote.phone}</p>
+                    </td>
+                    <td className="px-4 py-3 text-fg">
+                      {QUOTE_SERVICE_LABELS[quote.serviceType] || quote.serviceType}
+                    </td>
+                    <td className="px-4 py-3 text-muted max-w-[18rem] truncate">
+                      {quote.projectDetails}
+                    </td>
+                    <td className="px-4 py-3 text-muted whitespace-nowrap">
+                      {new Date(quote.createdAt).toLocaleString()}
+                    </td>
+                  </tr>
+                  {isExpanded ? (
+                    <tr className="border-b border-border bg-surface/20">
+                      <td colSpan={6} className="px-6 py-4">
+                        <div className="grid sm:grid-cols-2 gap-4 text-sm">
+                          <p>
+                            <span className="text-subtle">Timeline: </span>
+                            <span className="text-fg">{quote.timeline || "—"}</span>
+                          </p>
+                          <p>
+                            <span className="text-subtle">Source: </span>
+                            <span className="text-fg">{quote.sourcePage || "—"}</span>
+                          </p>
+                          <p>
+                            <button
+                              type="button"
+                              className="text-accent hover:underline"
+                              onClick={() => copyText(`${quote.email} / ${quote.phone}`)}
+                            >
+                              Copy contact
+                            </button>
+                          </p>
+                        </div>
+                        <p className="mt-3 text-muted leading-relaxed whitespace-pre-wrap">
+                          {quote.projectDetails}
+                        </p>
+                      </td>
+                    </tr>
+                  ) : null}
+                </Fragment>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
+
 function AdminPage() {
   const [adminKey, setAdminKey] = useState(
     () => sessionStorage.getItem(ADMIN_KEY_STORAGE) || ""
@@ -1918,6 +2043,7 @@ function AdminPage() {
   const [authenticated, setAuthenticated] = useState(false);
   const [activeTab, setActiveTab] = useState("dashboard");
   const [contacts, setContacts] = useState([]);
+  const [quotes, setQuotes] = useState([]);
   const [applications, setApplications] = useState([]);
   const [programs, setPrograms] = useState([]);
   const [stats, setStats] = useState(null);
@@ -1957,14 +2083,16 @@ function AdminPage() {
     setError("");
 
     try {
-      const [contactsRes, applicationsRes, programsRes, statsRes] =
+      const [contactsRes, quotesRes, applicationsRes, programsRes, statsRes] =
         await Promise.all([
           getContacts(key),
+          getServiceQuotes(key),
           getApplications(key),
           getAdminPrograms(key),
           getAdminStats(key),
         ]);
       setContacts(contactsRes.data);
+      setQuotes(quotesRes.data);
       setApplications(applicationsRes.data);
       setPrograms(programsRes.data);
       setStats(statsRes.data);
@@ -2032,6 +2160,7 @@ function AdminPage() {
     setLoginForm(emptyLoginForm);
     setAuthenticated(false);
     setContacts([]);
+    setQuotes([]);
     setApplications([]);
     setPrograms([]);
     setStats(null);
@@ -2565,6 +2694,21 @@ function AdminPage() {
       );
     }
 
+    if (activeTab === "quotes") {
+      return (
+        <div className="space-y-6">
+          {quotes.length === 0 ? (
+            <div className="theme-card p-12 text-center">
+              <MessageSquare className="text-subtle mx-auto mb-4" size={40} />
+              <p className="text-muted">No website quote requests yet.</p>
+            </div>
+          ) : (
+            <QuotesTable quotes={quotes} />
+          )}
+        </div>
+      );
+    }
+
     if (activeTab === "applications") {
       const pendingCount = applications.filter(
         (app) => app.payment?.transactionId && app.payment?.status === "pending"
@@ -2819,6 +2963,7 @@ function AdminPage() {
         counts={{
           applications: applications.length,
           contacts: contacts.length,
+          quotes: quotes.length,
           programs: programs.length,
         }}
       >

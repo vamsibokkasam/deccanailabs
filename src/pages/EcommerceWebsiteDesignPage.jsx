@@ -3,7 +3,6 @@ import {
   MessageCircle,
   Package,
   PackageSearch,
-  ShoppingBag,
   ShoppingCart,
   Warehouse,
 } from "lucide-react";
@@ -12,6 +11,8 @@ import ServiceHero from "../components/services/ServiceHero";
 import ServiceFaq from "../components/services/ServiceFaq";
 import ServiceCtaBand from "../components/services/ServiceCtaBand";
 import ServiceStickyBar from "../components/services/ServiceStickyBar";
+import ServiceWorkShowcase from "../components/services/ServiceWorkShowcase";
+import { getServiceWork } from "../data/serviceWork";
 
 const features = [
   {
@@ -72,7 +73,7 @@ function EcommerceWebsiteDesignPage() {
         title="Ecommerce Website"
         accent="Design"
         description="Online stores built to showcase products, take payments, and keep selling 24/7."
-        primary={{ label: "Start your online store", to: "/contact" }}
+        primary={{ label: "Start your online store", action: "quote" }}
         breadcrumbs={[
           { label: "Services", to: "/services" },
           { label: "Website Design", to: "/services/website-design" },
@@ -111,6 +112,13 @@ function EcommerceWebsiteDesignPage() {
         </div>
       </section>
 
+      <ServiceWorkShowcase
+        eyebrow="SELECTED WORK"
+        title="An ecommerce store you can browse"
+        description="Hover the store to scroll through the full website — catalog, collections, and cart. Click to open the demo."
+        items={getServiceWork("ecommerce")}
+      />
+
       <ServiceFaq
         titleId="ecommerce-faq-title"
         description="Straight answers about launching and running your online store."
@@ -120,8 +128,6 @@ function EcommerceWebsiteDesignPage() {
       <ServiceCtaBand
         title="Ready to sell online?"
         description="Tell us what you sell and we will help you plan a store that works for your business."
-        buttonLabel="Start your online store"
-        icon={ShoppingBag}
       />
 
       <ServiceStickyBar label="Start your online store" />
