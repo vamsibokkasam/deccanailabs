@@ -4,9 +4,6 @@ import Reveal from "../components/Reveal";
 import ServiceHero from "../components/services/ServiceHero";
 import ServiceOfferCard from "../components/services/ServiceOfferCard";
 import ServiceCtaBand from "../components/services/ServiceCtaBand";
-import WebsiteDesignVisual from "../components/services/visuals/WebsiteDesignVisual";
-import DynamicWebsiteVisual from "../components/services/visuals/DynamicWebsiteVisual";
-import EcommerceVisual from "../components/services/visuals/EcommerceVisual";
 import { websiteAudiences, websiteDesignServices } from "../data/services";
 
 const processSteps = [
@@ -43,21 +40,9 @@ const processSteps = [
 function WebsiteDesignPage() {
   const [processRef, processInView] = useInView({ threshold: 0.12 });
 
-  const offerVisuals = {
-    "/services/website-design/dynamic": {
-      visual: <DynamicWebsiteVisual />,
-      label: "CMS dashboard beside a live website preview",
-    },
-    "/services/website-design/ecommerce": {
-      visual: <EcommerceVisual />,
-      label: "Ecommerce product cards, cart, and payment badge",
-    },
-  };
-
   return (
     <div className="service-shell">
       <ServiceHero
-        className="service-hero--photo"
         eyebrow="SERVICES"
         title="Website"
         accent="Design"
@@ -66,8 +51,6 @@ function WebsiteDesignPage() {
           { label: "Services", to: "/services" },
           { label: "Website Design" },
         ]}
-        visual={<WebsiteDesignVisual />}
-        visualLabel="Website design hero preview with laptop, phone, PageSpeed, and conversion metrics"
       />
 
       <section className="service-section">
@@ -103,8 +86,6 @@ function WebsiteDesignPage() {
                 title={service.title}
                 description={service.description}
                 link={service.link}
-                visual={offerVisuals[service.link]?.visual}
-                visualLabel={offerVisuals[service.link]?.label}
                 index={index}
               />
             ))}

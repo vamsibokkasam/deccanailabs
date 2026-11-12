@@ -18,52 +18,43 @@
 .service-hero {
   position: relative;
   overflow: hidden;
-  padding: 2.25rem 0 1.75rem;
+  padding: 2.75rem 0 2.5rem;
   background: var(--theme-service-bg);
+  text-align: center;
 }
 
-.service-hero--photo .service-hero-orb--b {
-  opacity: 0.45;
-}
-
-.service-hero--photo .service-hero-grid {
-  opacity: 0.14;
-}
-
+.service-hero-atmosphere,
 .service-hero-bg {
   position: absolute;
   inset: 0;
   pointer-events: none;
+  z-index: 0;
 }
 
 .service-hero-orb {
   position: absolute;
   border-radius: 50%;
-  filter: blur(40px);
+  filter: blur(48px);
 }
 
 .service-hero-orb--a {
-  width: min(28rem, 70vw);
-  height: min(28rem, 70vw);
-  left: -8%;
-  top: -18%;
+  width: min(32rem, 80vw);
+  height: min(32rem, 80vw);
+  left: 50%;
+  top: -28%;
+  translate: -50% 0;
   background: var(--theme-service-glow);
   animation: service-glow-pulse 6s ease-in-out infinite;
 }
 
 .service-hero-orb--b {
-  width: min(22rem, 55vw);
-  height: min(22rem, 55vw);
-  right: -6%;
-  bottom: -20%;
-  background: color-mix(in oklab, var(--theme-accent-warm) 22%, transparent);
-  animation: service-glow-pulse 7s ease-in-out infinite reverse;
+  display: none;
 }
 
 .service-hero-grid {
   position: absolute;
   inset: 0;
-  opacity: 0.22;
+  opacity: 0.12;
   background-image:
     radial-gradient(circle at 1px 1px, color-mix(in oklab, white 18%, transparent) 1px, transparent 0);
   background-size: 22px 22px;
@@ -73,9 +64,14 @@
 .service-hero-inner {
   position: relative;
   z-index: 1;
-  display: grid;
-  gap: 2rem;
-  align-items: center;
+  width: min(100%, 48rem);
+  margin-inline: auto;
+  padding-inline: 1.25rem;
+}
+
+.service-hero--classic .service-hero-copy {
+  max-width: 40rem;
+  margin-inline: auto;
 }
 
 .service-hero-crumbs {
@@ -85,9 +81,9 @@
 }
 
 .service-hero-title {
-  max-width: 18ch;
-  font-size: clamp(1.9rem, 5vw, 3.1rem);
-  font-weight: 560;
+  max-width: none;
+  font-size: clamp(2rem, 5vw, 3.25rem);
+  font-weight: 600;
   letter-spacing: -0.03em;
   line-height: 1.12;
   color: var(--theme-fg);
@@ -95,7 +91,8 @@
 
 .service-hero-desc {
   margin-top: 0.9rem;
-  max-width: 36rem;
+  margin-inline: auto;
+  max-width: 34rem;
   font-size: 1.02rem;
   line-height: 1.65;
 }
@@ -103,6 +100,8 @@
 .service-hero-actions {
   display: flex;
   flex-direction: column;
+  align-items: stretch;
+  justify-content: center;
   gap: 0.75rem;
   margin-top: 1.35rem;
 }
@@ -119,6 +118,7 @@
   font-size: 0.95rem;
   font-weight: 600;
   text-decoration: none;
+  white-space: nowrap;
   transition:
     transform 0.2s ease,
     box-shadow 0.2s ease,
@@ -157,76 +157,33 @@
 .service-audience-chips {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.55rem;
+  justify-content: center;
+  gap: 0.5rem;
   margin-top: 1.15rem;
   list-style: none;
   padding: 0;
 }
 
+.service-audience-chips {
+  justify-content: flex-start;
+}
+
 .service-hero-chip {
-  padding: 0.4rem 0.75rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.3rem 0.75rem;
   border-radius: 999px;
   border: 1px solid var(--theme-service-line);
   background: color-mix(in oklab, var(--theme-service-surface) 80%, transparent);
   color: var(--theme-muted);
-  font-size: 0.78rem;
+  font-size: 0.75rem;
   font-weight: 550;
 }
 
-.service-hero-visual {
-  min-width: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  overflow: visible;
-}
-
-.svc-visual--photo {
-  min-height: 0;
-  width: 100%;
-}
-
-.svc-hero-photo {
-  position: relative;
-  width: 100%;
-  margin-inline: auto;
-  isolation: isolate;
-}
-
-/* Blend PNG into hero — no framed “photo card” look */
-.svc-hero-photo img {
-  display: block;
-  width: 112%;
-  max-width: none;
-  height: auto;
-  margin-left: -6%;
-  object-fit: contain;
-  object-position: center right;
-  border-radius: 0;
-  background: transparent;
-  filter: drop-shadow(0 18px 36px rgba(0, 0, 0, 0.35));
-  -webkit-mask-image:
-    linear-gradient(to right, transparent 0%, black 10%, black 94%, transparent 100%),
-    linear-gradient(to bottom, transparent 0%, black 8%, black 92%, transparent 100%);
-  mask-image:
-    linear-gradient(to right, transparent 0%, black 10%, black 94%, transparent 100%),
-    linear-gradient(to bottom, transparent 0%, black 8%, black 92%, transparent 100%);
-  -webkit-mask-composite: source-in;
-  mask-composite: intersect;
-}
-
-.svc-hero-photo-glow {
-  position: absolute;
-  inset: 12% 8% 8%;
-  z-index: -1;
-  border-radius: 50%;
-  background: radial-gradient(
-    circle,
-    color-mix(in oklab, var(--theme-accent-hover) 28%, transparent),
-    transparent 72%
-  );
-  filter: blur(36px);
-  pointer-events: none;
+.service-hero-chip svg {
+  color: var(--theme-accent-hover);
+  flex-shrink: 0;
 }
 
 .service-hero-anim {
@@ -368,18 +325,20 @@
     0 0 0 1px color-mix(in oklab, var(--theme-accent) 16%, transparent);
 }
 
-.service-offer-card-visual {
-  min-height: 14rem;
-  padding: 0.85rem;
-  background: var(--theme-service-surface);
-}
-
-.service-offer-card-visual .svc-visual {
-  min-height: 12.5rem;
+.service-offer-card--text {
+  min-height: 100%;
 }
 
 .service-offer-card-body {
-  padding: 1.15rem 1.2rem 1.3rem;
+  padding: 1.35rem 1.35rem 1.45rem;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.service-offer-card--text .service-offer-card-cta {
+  margin-top: auto;
+  padding-top: 1rem;
 }
 
 .service-offer-card-title {
@@ -862,6 +821,14 @@
   .service-hero-actions {
     flex-direction: row;
     flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+  }
+
+  .service-hero-btn-primary,
+  .service-hero-btn-secondary {
+    width: auto;
   }
 
   .service-feature-grid {
@@ -881,60 +848,32 @@
 
 @media (min-width: 900px) {
   .service-hero {
-    padding: 3rem 0 2.25rem;
+    padding: 3.75rem 0 3rem;
   }
 
   .service-hero-inner {
-    grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
-    gap: 2rem 2.75rem;
-    align-items: center;
+    width: min(100%, 52rem);
   }
 
-  .service-hero-visual {
-    justify-content: flex-end;
-    align-self: stretch;
-  }
-
-  .svc-hero-photo {
-    max-width: none;
-    height: 100%;
-    display: flex;
-    align-items: center;
-  }
-
-  .svc-hero-photo img {
-    width: 118%;
-    margin-left: -4%;
-    max-height: min(34rem, 58vh);
+  .service-hero--classic .service-hero-copy {
+    max-width: 44rem;
   }
 
   .service-feature-grid {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
-
-  .svc-visual {
-    min-height: 22rem;
-  }
-
-  .svc-visual--photo {
-    min-height: 0;
-    height: 100%;
-  }
-}
-
-@media (max-width: 899px) {
-  .svc-hero-photo img {
-    width: 100%;
-    margin-left: 0;
-    max-height: min(22rem, 70vw);
-    -webkit-mask-image:
-      linear-gradient(to bottom, transparent 0%, black 6%, black 94%, transparent 100%);
-    mask-image:
-      linear-gradient(to bottom, transparent 0%, black 6%, black 94%, transparent 100%);
-  }
 }
 
 @media (max-width: 639px) {
+  .service-hero {
+    padding: 2.25rem 0 2rem;
+  }
+
+  .service-hero-btn-primary,
+  .service-hero-btn-secondary {
+    width: 100%;
+  }
+
   .svc-cms-board,
   .svc-shop-grid {
     grid-template-columns: 1fr;

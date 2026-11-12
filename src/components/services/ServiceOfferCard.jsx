@@ -1,20 +1,13 @@
 import { Link } from "react-router-dom";
 import { ArrowUpRight } from "lucide-react";
 
-function ServiceOfferCard({ title, description, link, visual, visualLabel, index = 0 }) {
+function ServiceOfferCard({ title, description, link, index = 0 }) {
   return (
     <Link
       to={link}
-      className="service-offer-card group"
+      className="service-offer-card service-offer-card--text group"
       style={{ "--card-i": index }}
     >
-      <div
-        className="service-offer-card-visual"
-        role="img"
-        aria-label={visualLabel || title}
-      >
-        {visual}
-      </div>
       <div className="service-offer-card-body">
         <h2 className="service-offer-card-title">{title}</h2>
         <p className="service-offer-card-desc">{description}</p>

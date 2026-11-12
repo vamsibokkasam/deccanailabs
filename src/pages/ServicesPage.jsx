@@ -8,7 +8,6 @@ import { Link } from "react-router-dom";
 import Reveal from "../components/Reveal";
 import ServiceHero from "../components/services/ServiceHero";
 import ServiceCtaBand from "../components/services/ServiceCtaBand";
-import ServicesVisual from "../components/services/visuals/ServicesVisual";
 import { services } from "../data/services";
 
 const highlights = [
@@ -40,8 +39,6 @@ function ServicesPage() {
         title="Our"
         accent="Services"
         description="Practical digital solutions designed to help your business grow online — from modern websites to conversion-focused stores."
-        visual={<ServicesVisual />}
-        visualLabel="Collage of floating service cards for web, design, apps, and AI"
       />
 
       <section className="service-section">

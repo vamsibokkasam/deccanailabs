@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { ArrowRight, Sparkles } from "lucide-react";
+import { ArrowRight, Check, Sparkles } from "lucide-react";
 import { useInView } from "../../hooks/useInView";
 
 const DEFAULT_CHIPS = ["Free consultation", "Fast delivery", "MSME certified"];
@@ -11,35 +11,43 @@ function ServiceHero({
   accent,
   description,
   breadcrumbs = [],
-  primaryLabel = "Get a free quote",
-  primaryTo = "/contact",
-  secondaryLabel = "Explore my services",
-  secondaryTo = "/services",
+  primary = { label: "Get a free quote", to: "/contact" },
+  secondary = { label: "Explore my services", to: "/services" },
+  primaryLabel,
+  primaryTo,
+  secondaryLabel,
+  secondaryTo,
   chips = DEFAULT_CHIPS,
-  visual,
-  visualLabel = "Service preview",
 }) {
-  const [ref, inView] = useInView({ threshold: 0.15 });
+  const [ref, inView] = useInView({ threshold: 0.12 });
+
+  const primaryCta = {
+    label: primary?.label ?? primaryLabel ?? "Get a free quote",
+    to: primary?.to ?? primaryTo ?? "/contact",
+  };
+  const secondaryCta = {
+    label: secondary?.label ?? secondaryLabel ?? "Explore my services",
+    to: secondary?.to ?? secondaryTo ?? "/services",
+  };
 
   return (
     <header
       ref={ref}
-      className={`service-hero ${className} ${inView ? "is-inview" : ""}`.trim()}
+      className={`service-hero service-hero--classic ${className} ${inView ? "is-inview" : ""}`.trim()}
     >
-      <div className="service-hero-bg" aria-hidden="true">
+      <div className="service-hero-atmosphere" aria-hidden="true">
         <span className="service-hero-orb service-hero-orb--a" />
-        <span className="service-hero-orb service-hero-orb--b" />
         <span className="service-hero-grid" />
       </div>
 
-      <div className="service-hero-inner max-w-7xl mx-auto px-6">
+      <div className="service-hero-inner">
         <div className="service-hero-copy">
           {breadcrumbs.length > 0 ? (
             <nav
               className="service-hero-crumbs service-hero-anim service-hero-anim--1"
               aria-label="Breadcrumb"
             >
-              <ol className="flex flex-wrap items-center gap-x-2 gap-y-1">
+              <ol className="flex flex-wrap items-center justify-center gap-x-2 gap-y-1">
                 {breadcrumbs.map(({ label, to }, index) => {
                   const isLast = index === breadcrumbs.length - 1;
                   return (
@@ -83,17 +91,17 @@ function ServiceHero({
 
           <div className="service-hero-actions service-hero-anim service-hero-anim--4">
             <Link
-              to={primaryTo}
+              to={primaryCta.to}
               className="service-hero-btn-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-hover/70 focus-visible:ring-offset-2 focus-visible:ring-offset-service-bg"
             >
               <Sparkles size={16} aria-hidden="true" />
-              {primaryLabel}
+              {primaryCta.label}
             </Link>
             <Link
-              to={secondaryTo}
+              to={secondaryCta.to}
               className="service-hero-btn-secondary group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-hover/50 focus-visible:ring-offset-2 focus-visible:ring-offset-service-bg"
             >
-              {secondaryLabel}
+              {secondaryCta.label}
               <ArrowRight
                 size={16}
                 className="transition-transform duration-300 group-hover:translate-x-1"
@@ -106,19 +114,12 @@ function ServiceHero({
             <ul className="service-hero-chips service-hero-anim service-hero-anim--5">
               {chips.map((chip) => (
                 <li key={chip} className="service-hero-chip">
+                  <Check size={12} strokeWidth={2.5} aria-hidden="true" />
                   {chip}
                 </li>
               ))}
             </ul>
           ) : null}
-        </div>
-
-        <div
-          className="service-hero-visual service-hero-anim service-hero-anim--3"
-          role="img"
-          aria-label={visualLabel}
-        >
-          {visual}
         </div>
       </div>
     </header>

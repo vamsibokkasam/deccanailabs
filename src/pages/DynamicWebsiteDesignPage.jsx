@@ -11,7 +11,6 @@ import ServiceHero from "../components/services/ServiceHero";
 import ServiceFaq from "../components/services/ServiceFaq";
 import ServiceCtaBand from "../components/services/ServiceCtaBand";
 import ServiceStickyBar from "../components/services/ServiceStickyBar";
-import DynamicWebsiteVisual from "../components/services/visuals/DynamicWebsiteVisual";
 
 const features = [
   {
@@ -77,8 +76,6 @@ function DynamicWebsiteDesignPage() {
           { label: "Website Design", to: "/services/website-design" },
           { label: "Dynamic" },
         ]}
-        visual={<DynamicWebsiteVisual />}
-        visualLabel="CMS content editor next to a live website preview"
       />
 
       <section className="service-section">

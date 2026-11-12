@@ -12,7 +12,6 @@ import ServiceHero from "../components/services/ServiceHero";
 import ServiceFaq from "../components/services/ServiceFaq";
 import ServiceCtaBand from "../components/services/ServiceCtaBand";
 import ServiceStickyBar from "../components/services/ServiceStickyBar";
-import EcommerceVisual from "../components/services/visuals/EcommerceVisual";
 
 const features = [
   {
@@ -73,14 +72,12 @@ function EcommerceWebsiteDesignPage() {
         title="Ecommerce Website"
         accent="Design"
         description="Online stores built to showcase products, take payments, and keep selling 24/7."
-        primaryLabel="Start your online store"
+        primary={{ label: "Start your online store", to: "/contact" }}
         breadcrumbs={[
           { label: "Services", to: "/services" },
           { label: "Website Design", to: "/services/website-design" },
           { label: "Ecommerce" },
         ]}
-        visual={<EcommerceVisual />}
-        visualLabel="Ecommerce product cards, shopping cart, and secure payment badge"
       />
 
       <section className="service-section">
