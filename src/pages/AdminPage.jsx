@@ -488,12 +488,115 @@ function ContactFilters({ filters, onChange, internshipOptions, resultCount, tot
   );
 }
 
+const SUGGESTED_DURATIONS = ["45 Days", "2 Months", "4 Months", "6 Months"];
+
 const emptyProgramForm = {
   title: "",
   description: "",
-  duration: "8-12 weeks",
+  durations: ["45 Days"],
+  durationDraft: "",
   isActive: true,
 };
+
+function normalizeProgramDurations(program) {
+  if (Array.isArray(program?.durations) && program.durations.length) {
+    return program.durations.map((value) => String(value).trim()).filter(Boolean);
+  }
+  if (program?.duration?.trim()) {
+    return program.duration
+      .split(/[,|/]/)
+      .map((value) => value.trim())
+      .filter(Boolean);
+  }
+  return ["45 Days"];
+}
+
+function DurationOptionsEditor({
+  durations,
+  draft,
+  onDraftChange,
+  onAdd,
+  onRemove,
+  onQuickAdd,
+  error = "",
+  disabled = false,
+}) {
+  return (
+    <div className="space-y-3">
+      <div className="flex flex-wrap gap-2">
+        {durations.length === 0 ? (
+          <p className="text-sm text-muted">No duration options yet.</p>
+        ) : (
+          durations.map((duration) => (
+            <span
+              key={duration}
+              className="inline-flex items-center gap-2 rounded-full border border-border bg-surface/70 px-3 py-1.5 text-sm text-fg"
+            >
+              {duration}
+              {!disabled && (
+                <button
+                  type="button"
+                  onClick={() => onRemove(duration)}
+                  className="text-muted hover:text-red-400 transition"
+                  title={`Remove ${duration}`}
+                >
+                  <X size={14} />
+                </button>
+              )}
+            </span>
+          ))
+        )}
+      </div>
+
+      {!disabled && (
+        <>
+          <div className="flex flex-col sm:flex-row gap-2">
+            <input
+              type="text"
+              value={draft}
+              onChange={(e) => onDraftChange(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  e.preventDefault();
+                  onAdd();
+                }
+              }}
+              placeholder="Add duration (e.g. 2 Months)"
+              className={inputClass(!!error)}
+            />
+            <button
+              type="button"
+              onClick={onAdd}
+              className="theme-btn-outline px-4 py-2 whitespace-nowrap"
+            >
+              Add Duration
+            </button>
+          </div>
+
+          <div className="flex flex-wrap gap-2">
+            {SUGGESTED_DURATIONS.map((suggestion) => {
+              const alreadyAdded = durations.some(
+                (duration) => duration.toLowerCase() === suggestion.toLowerCase()
+              );
+              return (
+                <button
+                  key={suggestion}
+                  type="button"
+                  disabled={alreadyAdded}
+                  onClick={() => onQuickAdd(suggestion)}
+                  className="text-xs px-3 py-1.5 rounded-full border border-border text-muted hover:text-accent hover:border-accent/40 disabled:opacity-40 disabled:cursor-not-allowed transition"
+                >
+                  + {suggestion}
+                </button>
+              );
+            })}
+          </div>
+        </>
+      )}
+
+    </div>
+  );
+}
 
 function formatDate(date) {
   return new Date(date).toLocaleString("en-IN", {
@@ -1183,6 +1286,11 @@ function ApplicationsTable({
                     </td>
                     <td className="px-4 py-3 text-fg max-w-[120px]">
                       <span className="line-clamp-2">{app.program}</span>
+                      {app.selectedDuration ? (
+                        <span className="mt-1 block text-xs text-muted">
+                          {app.selectedDuration}
+                        </span>
+                      ) : null}
                       {app.source === "course" ? (
                         <span className="mt-1 inline-flex text-[10px] uppercase tracking-wider text-accent">
                           Course
@@ -1333,6 +1441,12 @@ function ApplicationsTable({
                                 </p>
                                 <p className="text-muted">
                                   Program: <span className="text-fg">{app.program || "—"}</span>
+                                </p>
+                                <p className="text-muted">
+                                  Duration:{" "}
+                                  <span className="text-fg">
+                                    {app.selectedDuration || "—"}
+                                  </span>
                                 </p>
                                 <p className="text-muted">
                                   Application ID:{" "}
@@ -2279,7 +2393,8 @@ function AdminPage() {
     setProgramForm({
       title: program.title,
       description: program.description,
-      duration: program.duration || "8-12 weeks",
+      durations: normalizeProgramDurations(program),
+      durationDraft: "",
       isActive: program.isActive,
     });
     setFieldErrors({});
@@ -2304,10 +2419,46 @@ function AdminPage() {
     }
   };
 
+  const addProgramDuration = (rawValue = programForm.durationDraft) => {
+    const value = String(rawValue || "").trim().slice(0, 50);
+    if (!value) return;
+
+    const exists = (programForm.durations || []).some(
+      (duration) => duration.toLowerCase() === value.toLowerCase()
+    );
+    if (exists) {
+      setProgramForm({ ...programForm, durationDraft: "" });
+      return;
+    }
+
+    setProgramForm({
+      ...programForm,
+      durations: [...(programForm.durations || []), value],
+      durationDraft: "",
+    });
+    if (fieldErrors.durations) {
+      setFieldErrors({ ...fieldErrors, durations: "" });
+    }
+  };
+
+  const removeProgramDuration = (value) => {
+    setProgramForm({
+      ...programForm,
+      durations: (programForm.durations || []).filter((duration) => duration !== value),
+    });
+  };
+
   const handleProgramSubmit = async (e) => {
     e.preventDefault();
 
-    const errors = validateProgramForm(programForm);
+    const payload = {
+      title: programForm.title,
+      description: programForm.description,
+      durations: programForm.durations || [],
+      isActive: programForm.isActive,
+    };
+
+    const errors = validateProgramForm(payload);
     if (Object.keys(errors).length > 0) {
       setFieldErrors(errors);
       setProgramStatus({ type: "error", message: "Please fix the errors below" });
@@ -2320,14 +2471,14 @@ function AdminPage() {
 
     try {
       if (editingProgram) {
-        const result = await updateProgram(editingProgram._id, programForm, adminKey);
+        const result = await updateProgram(editingProgram._id, payload, adminKey);
         setPrograms((prev) =>
           prev.map((p) => (p._id === editingProgram._id ? result.data : p))
         );
         setProgramStatus({ type: "success", message: result.message });
         closeProgramModal();
       } else {
-        const result = await createProgram(programForm, adminKey);
+        const result = await createProgram(payload, adminKey);
         setPrograms((prev) => [...prev, result.data]);
         setProgramForm(emptyProgramForm);
         setProgramStatus({ type: "success", message: result.message });
@@ -2691,17 +2842,22 @@ function AdminPage() {
                   />
                 </FormField>
 
-                <FormField error={fieldErrors.duration}>
-                  <input
-                    type="text"
-                    name="duration"
-                    value={editingProgram ? "" : programForm.duration}
-                    onChange={handleProgramChange}
-                    placeholder="Duration (e.g. 8-12 weeks)"
-                    disabled={!!editingProgram}
-                    className={inputClass(fieldErrors.duration)}
-                  />
-                </FormField>
+                <div className="md:col-span-2">
+                  <FormField label="Internship Durations" error={fieldErrors.durations}>
+                    <DurationOptionsEditor
+                      durations={editingProgram ? [] : programForm.durations || []}
+                      draft={editingProgram ? "" : programForm.durationDraft || ""}
+                      onDraftChange={(value) =>
+                        setProgramForm({ ...programForm, durationDraft: value })
+                      }
+                      onAdd={() => addProgramDuration()}
+                      onRemove={removeProgramDuration}
+                      onQuickAdd={addProgramDuration}
+                      error={fieldErrors.durations}
+                      disabled={!!editingProgram}
+                    />
+                  </FormField>
+                </div>
 
                 <div className="md:col-span-2">
                   <FormField error={fieldErrors.description}>
@@ -2762,7 +2918,12 @@ function AdminPage() {
                             </span>
                           )}
                         </div>
-                        <p className="text-muted text-sm mb-2">{program.duration}</p>
+                        <p className="text-muted text-sm mb-2">
+                          {(program.durations?.length
+                            ? program.durations
+                            : [program.duration].filter(Boolean)
+                          ).join(" · ") || "No durations"}
+                        </p>
                         <p className="text-muted">{program.description}</p>
                       </div>
 
@@ -2865,14 +3026,17 @@ function AdminPage() {
                   />
                 </FormField>
 
-                <FormField error={fieldErrors.duration}>
-                  <input
-                    type="text"
-                    name="duration"
-                    value={programForm.duration}
-                    onChange={handleProgramChange}
-                    placeholder="Duration"
-                    className={inputClass(fieldErrors.duration)}
+                <FormField label="Internship Durations" error={fieldErrors.durations}>
+                  <DurationOptionsEditor
+                    durations={programForm.durations || []}
+                    draft={programForm.durationDraft || ""}
+                    onDraftChange={(value) =>
+                      setProgramForm({ ...programForm, durationDraft: value })
+                    }
+                    onAdd={() => addProgramDuration()}
+                    onRemove={removeProgramDuration}
+                    onQuickAdd={addProgramDuration}
+                    error={fieldErrors.durations}
                   />
                 </FormField>
 

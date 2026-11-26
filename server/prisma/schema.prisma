@@ -39,7 +39,8 @@ model Program {
   id          String   @id @default(uuid())
   title       String
   description String
-  duration    String   @default("8-12 weeks")
+  duration    String   @default("45 Days")
+  durations   String[] @default(["45 Days"])
   isActive    Boolean  @default(true)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @default(now()) @updatedAt
@@ -79,6 +80,7 @@ model InternshipApplication {
   batchId               String?
   batch                 Batch?             @relation(fields: [batchId], references: [id], onDelete: SetNull)
   program               String
+  selectedDuration      String?
   message               String             @default("")
   source                ApplicationSource  @default(internship)
   feeAmount             Float              @default(0)

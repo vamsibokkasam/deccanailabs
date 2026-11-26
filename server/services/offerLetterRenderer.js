@@ -47,6 +47,7 @@ export const SAMPLE_OFFER_APPLICATION = {
   department: "Computer Science & Engineering",
   registrationNo: "DCAL-05092026-A001",
   program: "AI & Machine Learning",
+  selectedDuration: "45 Days",
   internshipStartDate: new Date("2025-11-24"),
   internshipEndDate: new Date("2026-03-31"),
   batch: {
@@ -127,12 +128,22 @@ function resolveLogoPath({ key, names }) {
   return null;
 }
 
+function formatOfferDuration(selectedDuration) {
+  const raw = String(selectedDuration || "45 Days").trim() || "45 Days";
+  const fortyFive = raw.match(/^45[\s-]*(day|days)$/i);
+  if (fortyFive) return "45-Day";
+  return raw;
+}
+
 function letterFields(application) {
   const program = String(application.program || "Internship").trim();
+  const durationLabel = formatOfferDuration(application.selectedDuration);
   return {
     name: application.fullName || "-",
     applicationId: application.applicationId || "-",
     program,
+    durationLabel,
+    durationPhrase: durationLabel.toLowerCase(),
   };
 }
 
@@ -142,7 +153,7 @@ function bodyBlocks(fields) {
     [{ text: "Dear " }, { text: fields.name, bold: true }, { text: "," }],
     [
       { text: "We are delighted to welcome you to the " },
-      { text: `45-Day ${fields.program}`, bold: true },
+      { text: `${fields.durationLabel} ${fields.program}`, bold: true },
       { text: " course at " },
       { text: "DECCAN AI LABS PVT.LTD.", bold: true },
     ],
@@ -152,7 +163,7 @@ function bodyBlocks(fields) {
       },
       { text: fields.program, bold: true },
       {
-        text: ". Throughout the 45-day learning journey, you will gain exposure to modern tools, real-world use cases, guided projects, and structured training that will help strengthen your technical foundation.",
+        text: `. Throughout the ${fields.durationPhrase} learning journey, you will gain exposure to modern tools, real-world use cases, guided projects, and structured training that will help strengthen your technical foundation.`,
       },
     ],
     [

@@ -28,11 +28,18 @@ export function serializePayment(row, { includeScreenshot = true } = {}) {
 export function serializeProgram(row) {
   if (!row) return row;
 
+  const durations = Array.isArray(row.durations) && row.durations.length
+    ? row.durations
+    : row.duration
+      ? [row.duration]
+      : ["45 Days"];
+
   return {
     _id: row.id,
     title: row.title,
     description: row.description,
-    duration: row.duration,
+    duration: row.duration || durations.join(" / "),
+    durations,
     isActive: row.isActive,
     createdAt: row.createdAt,
     updatedAt: row.updatedAt,
@@ -109,6 +116,7 @@ export function serializeApplication(row, { includeScreenshot = true } = {}) {
     internshipEndDate: row.internshipEndDate,
     batchId,
     program: row.program,
+    selectedDuration: row.selectedDuration || null,
     message: row.message,
     source: row.source,
     feeAmount: row.feeAmount,

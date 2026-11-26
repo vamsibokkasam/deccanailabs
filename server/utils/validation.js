@@ -49,7 +49,16 @@ export function validateContact(data) {
 
 export function validateApplication(data) {
   const errors = {};
-  const { fullName, email, phone, program, message, college, department } = data;
+  const {
+    fullName,
+    email,
+    phone,
+    program,
+    message,
+    college,
+    department,
+    selectedDuration,
+  } = data;
   const NAME_REGEX = /^[a-zA-Z\s.'-]{2,100}$/;
   const COLLEGE_REGEX = /^[a-zA-Z0-9\s.'&,()-]{2,200}$/;
   const DEPARTMENT_REGEX = /^[a-zA-Z0-9\s.'&,()-]{2,200}$/;
@@ -90,6 +99,10 @@ export function validateApplication(data) {
     errors.department = "Department is required";
   } else if (!DEPARTMENT_REGEX.test(department.trim())) {
     errors.department = "Enter a valid department name";
+  }
+
+  if (selectedDuration?.trim() && selectedDuration.trim().length > 50) {
+    errors.selectedDuration = "Duration must not exceed 50 characters";
   }
 
   if (message?.trim() && message.trim().length > 1000) {
@@ -156,7 +169,7 @@ export function validateBatch(data) {
 
 export function validateProgram(data) {
   const errors = {};
-  const { title, description, duration } = data;
+  const { title, description, duration, durations } = data;
 
   if (!title?.trim()) {
     errors.title = "Program title is required";
@@ -172,6 +185,23 @@ export function validateProgram(data) {
     errors.description = "Description must be at least 10 characters";
   } else if (description.trim().length > 500) {
     errors.description = "Description must not exceed 500 characters";
+  }
+
+  const durationList = Array.isArray(durations)
+    ? durations
+    : duration?.trim()
+      ? [duration]
+      : [];
+  const cleaned = durationList
+    .map((value) => String(value || "").trim())
+    .filter(Boolean);
+
+  if (cleaned.length === 0) {
+    errors.durations = "Add at least one duration option";
+  } else if (cleaned.some((value) => value.length > 50)) {
+    errors.durations = "Each duration must not exceed 50 characters";
+  } else if (cleaned.length > 12) {
+    errors.durations = "You can add up to 12 duration options";
   }
 
   if (duration?.trim() && duration.trim().length > 50) {
