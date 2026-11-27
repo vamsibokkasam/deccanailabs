@@ -97,7 +97,7 @@ export function sanitizeUpiTransactionId(value) {
 
 export function validateRegistrationForm(data) {
   const errors = validateApplicationForm(data);
-  const { college, department } = data;
+  const { college, department, selectedDuration, durationOptions } = data;
 
   if (!college?.trim()) {
     errors.college = "College name is required";
@@ -109,6 +109,22 @@ export function validateRegistrationForm(data) {
     errors.department = "Department is required";
   } else if (!DEPARTMENT_REGEX.test(department.trim())) {
     errors.department = "Enter a valid department name (letters, numbers, spaces only)";
+  }
+
+  const options = Array.isArray(durationOptions)
+    ? durationOptions.map((value) => String(value || "").trim()).filter(Boolean)
+    : [];
+
+  if (options.length > 0) {
+    if (!selectedDuration?.trim()) {
+      errors.selectedDuration = "Select an internship duration";
+    } else if (
+      !options.some(
+        (option) => option.toLowerCase() === selectedDuration.trim().toLowerCase()
+      )
+    ) {
+      errors.selectedDuration = "Select a valid internship duration";
+    }
   }
 
   return errors;
@@ -158,7 +174,7 @@ export function validateBatchForm(data) {
 
 export function validateProgramForm(data) {
   const errors = {};
-  const { title, description, duration } = data;
+  const { title, description, duration, durations } = data;
 
   if (!title?.trim()) {
     errors.title = "Program title is required";
@@ -174,6 +190,23 @@ export function validateProgramForm(data) {
     errors.description = "Description must be at least 10 characters";
   } else if (description.trim().length > 500) {
     errors.description = "Description must not exceed 500 characters";
+  }
+
+  const durationList = Array.isArray(durations)
+    ? durations
+    : duration?.trim()
+      ? [duration]
+      : [];
+  const cleaned = durationList
+    .map((value) => String(value || "").trim())
+    .filter(Boolean);
+
+  if (cleaned.length === 0) {
+    errors.durations = "Add at least one duration option";
+  } else if (cleaned.some((value) => value.length > 50)) {
+    errors.durations = "Each duration must not exceed 50 characters";
+  } else if (cleaned.length > 12) {
+    errors.durations = "You can add up to 12 duration options";
   }
 
   if (duration?.trim() && duration.trim().length > 50) {

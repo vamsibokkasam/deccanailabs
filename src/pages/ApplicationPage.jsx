@@ -15,6 +15,7 @@ import {
   User,
 } from "lucide-react";
 import FormField from "../components/FormField";
+import SelectField from "../components/SelectField";
 import { getPrograms, submitApplication } from "../services/api";
 import { inputClass } from "../utils/themeClasses";
 import {
@@ -139,12 +140,23 @@ function StepHeader({ title, subtitle }) {
 }
 
 function StatCard({ icon: Icon, value, label }) {
+  const longValue = String(value || "").length > 18;
   return (
-    <div className="theme-card theme-card-hover px-6 py-5 rounded-2xl text-center min-w-[130px] flex-1 max-w-[180px]">
+    <div
+      className={`theme-card theme-card-hover px-6 py-5 rounded-2xl text-center min-w-[130px] flex-1 ${
+        longValue ? "max-w-[320px]" : "max-w-[180px]"
+      }`}
+    >
       <div className="w-10 h-10 rounded-xl bg-accent/10 border border-accent/20 flex items-center justify-center mx-auto mb-3">
         <Icon className="text-accent" size={20} />
       </div>
-      <h3 className="text-xl md:text-2xl font-semibold text-fg">{value}</h3>
+      <h3
+        className={`font-semibold text-fg leading-snug ${
+          longValue ? "text-base md:text-lg" : "text-xl md:text-2xl"
+        }`}
+      >
+        {value}
+      </h3>
       <p className="text-subtle text-sm mt-1">{label}</p>
     </div>
   );
@@ -208,6 +220,7 @@ function ApplicationPage() {
     phone: "",
     college: "",
     department: "",
+    selectedDuration: "",
   });
 
   useEffect(() => {
@@ -236,20 +249,39 @@ function ApplicationPage() {
   const programTitle = matchedProgram?.title || knownTitle;
   const canonicalSlug = courseTitleToSlug(programTitle);
 
+  const durationOptions = matchedProgram
+    ? Array.isArray(matchedProgram.durations) && matchedProgram.durations.length
+      ? matchedProgram.durations.map((value) => String(value).trim()).filter(Boolean)
+      : String(matchedProgram.duration || "")
+          .split(/[,|/·]/)
+          .map((value) => value.trim())
+          .filter(Boolean)
+    : [];
+
+  const fallbackDuration = knownCourse?.duration || "45 Days";
+  const resolvedDurationOptions =
+    durationOptions.length > 0 ? durationOptions : [fallbackDuration];
+  const durationSummary =
+    resolvedDurationOptions.length > 1
+      ? resolvedDurationOptions.join(" · ")
+      : resolvedDurationOptions[0] || fallbackDuration;
+
   const selectedCourse = matchedProgram
     ? {
         title: /internship/i.test(matchedProgram.title)
           ? matchedProgram.title
           : `${matchedProgram.title} Internship`,
         description: matchedProgram.description,
-        duration: matchedProgram.duration || knownCourse?.duration || "45 Days",
+        duration: durationSummary,
+        durations: resolvedDurationOptions,
         programTitle: matchedProgram.title,
       }
     : knownCourse
       ? {
           title: knownCourse.title,
           description: knownCourse.description,
-          duration: knownCourse.duration,
+          duration: durationSummary,
+          durations: resolvedDurationOptions,
           programTitle: knownTitle,
         }
       : null;
@@ -259,6 +291,24 @@ function ApplicationPage() {
       navigate(`/internship/apply/${canonicalSlug}`, { replace: true });
     }
   }, [courseName, canonicalSlug, navigate]);
+
+  useEffect(() => {
+    // Wait for program API data so we don't lock onto the hardcoded "45 Days" fallback.
+    if (!programsLoaded || !matchedProgram) return;
+    if (!resolvedDurationOptions.length) return;
+
+    setFormData((prev) => {
+      const current = String(prev.selectedDuration || "").trim();
+      const stillValid = resolvedDurationOptions.some(
+        (option) => option.toLowerCase() === current.toLowerCase()
+      );
+      if (stillValid) return prev;
+      return {
+        ...prev,
+        selectedDuration: resolvedDurationOptions[0],
+      };
+    });
+  }, [programsLoaded, matchedProgram?._id, resolvedDurationOptions.join("|")]);
 
   useEffect(() => {
     window.scrollTo({ top: 0, left: 0, behavior: "smooth" });
@@ -282,7 +332,10 @@ function ApplicationPage() {
   };
 
   const handleSubmitApplication = async () => {
-    const errors = validateRegistrationForm(formData);
+    const errors = validateRegistrationForm({
+      ...formData,
+      durationOptions: resolvedDurationOptions,
+    });
 
     if (Object.keys(errors).length > 0) {
       setFieldErrors(errors);
@@ -306,6 +359,8 @@ function ApplicationPage() {
         college: formData.college,
         department: formData.department,
         program: selectedCourse?.programTitle || programTitle,
+        selectedDuration:
+          formData.selectedDuration || resolvedDurationOptions[0],
       });
 
       setStep(2);
@@ -494,6 +549,17 @@ function ApplicationPage() {
                 </div>
               </FormField>
 
+              <FormField label="Internship Duration" error={fieldErrors.selectedDuration}>
+                <SelectField
+                  name="selectedDuration"
+                  value={formData.selectedDuration}
+                  onChange={handleChange}
+                  options={resolvedDurationOptions}
+                  placeholder="Select duration"
+                  hasError={!!fieldErrors.selectedDuration}
+                />
+              </FormField>
+
               {submitError && (
                 <p className="text-red-400 text-sm text-center bg-red-500/10 border border-red-500/20 rounded-xl py-3 px-4">
                   {submitError}
@@ -550,6 +616,10 @@ function ApplicationPage() {
               <SummaryRow label="Phone" value={formData.phone} />
               <SummaryRow label="College" value={formData.college} />
               <SummaryRow label="Department" value={formData.department} />
+              <SummaryRow
+                label="Duration"
+                value={formData.selectedDuration || selectedCourse?.duration || "—"}
+              />
             </div>
 
             <div className="bg-surface border border-border rounded-2xl p-6 max-w-md mx-auto mb-8 text-left">

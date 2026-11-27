@@ -1,5 +1,18 @@
 import prisma from "../config/prisma.js";
+import { displayDuration, normalizeDurations } from "../utils/durations.js";
 import { serializeProgram } from "../utils/serialize.js";
+
+function programDurationFields(body = {}) {
+  const durations = normalizeDurations(
+    body.durations !== undefined ? body.durations : body.duration,
+    body.duration
+  );
+
+  return {
+    durations,
+    duration: displayDuration(durations),
+  };
+}
 
 export const getPrograms = async (req, res, next) => {
   try {
@@ -26,13 +39,15 @@ export const getAllPrograms = async (req, res, next) => {
 
 export const createProgram = async (req, res, next) => {
   try {
-    const { title, description, duration } = req.body;
+    const { title, description } = req.body;
+    const { durations, duration } = programDurationFields(req.body);
 
     const program = await prisma.program.create({
       data: {
         title: title.trim(),
         description: description.trim(),
-        duration: duration?.trim() || "8-12 weeks",
+        duration,
+        durations,
       },
     });
 
@@ -48,14 +63,22 @@ export const createProgram = async (req, res, next) => {
 
 export const updateProgram = async (req, res, next) => {
   try {
-    const { title, description, duration, isActive } = req.body;
+    const { title, description, isActive } = req.body;
+    const hasDurationUpdate =
+      req.body.durations !== undefined || req.body.duration !== undefined;
+    const durationFields = hasDurationUpdate
+      ? programDurationFields(req.body)
+      : null;
 
     const program = await prisma.program.update({
       where: { id: req.params.id },
       data: {
         ...(title !== undefined && { title: title.trim() }),
         ...(description !== undefined && { description: description.trim() }),
-        ...(duration !== undefined && { duration: duration.trim() }),
+        ...(durationFields && {
+          duration: durationFields.duration,
+          durations: durationFields.durations,
+        }),
         ...(isActive !== undefined && { isActive }),
       },
     });

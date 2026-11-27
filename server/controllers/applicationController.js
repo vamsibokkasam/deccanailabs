@@ -3,6 +3,10 @@ import { generateApplicationId } from "../utils/applicationId.js";
 import { isPrismaUniqueError } from "../utils/prismaErrors.js";
 import { validatePaymentScreenshot } from "../utils/saveScreenshot.js";
 import {
+  normalizeDurations,
+  resolveSelectedDuration,
+} from "../utils/durations.js";
+import {
   serializeApplication,
   serializeCertificate,
   stripScreenshotFromApplication,
@@ -13,9 +17,48 @@ import { OFFER_LETTER_META_SELECT, queueOfferLetterIssuance } from "../services/
 
 const TX_OPTIONS = { maxWait: 10000, timeout: 15000 };
 
+async function resolveProgramDuration(programTitle, selectedDuration) {
+  const program = await prisma.program.findFirst({
+    where: {
+      title: { equals: String(programTitle || "").trim(), mode: "insensitive" },
+      isActive: true,
+    },
+    select: { duration: true, durations: true },
+  });
+
+  const options = normalizeDurations(program?.durations, program?.duration || "45 Days");
+  const requested = String(selectedDuration || "").trim();
+
+  if (requested) {
+    const match = options.find(
+      (option) => option.toLowerCase() === requested.toLowerCase()
+    );
+    if (!match) {
+      const error = new Error("Select a valid internship duration for this program");
+      error.statusCode = 400;
+      error.errors = { selectedDuration: error.message };
+      throw error;
+    }
+    return match;
+  }
+
+  return resolveSelectedDuration("", options, program?.duration || "45 Days");
+}
+
 export const createApplication = async (req, res, next) => {
   try {
-    const { fullName, email, phone, program, message, college, department } = req.body;
+    const {
+      fullName,
+      email,
+      phone,
+      program,
+      message,
+      college,
+      department,
+      selectedDuration,
+    } = req.body;
+
+    const duration = await resolveProgramDuration(program, selectedDuration);
 
     const application = await prisma.internshipApplication.create({
       data: {
@@ -25,6 +68,7 @@ export const createApplication = async (req, res, next) => {
         college: college?.trim() || "",
         department: department?.trim() || "",
         program: program.trim(),
+        selectedDuration: duration,
         message: message?.trim() || "",
         feeAmount: 0,
         status: "pending",
@@ -37,6 +81,13 @@ export const createApplication = async (req, res, next) => {
       data: serializeApplication(application),
     });
   } catch (error) {
+    if (error.statusCode === 400) {
+      return res.status(400).json({
+        success: false,
+        message: error.message,
+        errors: error.errors || undefined,
+      });
+    }
     if (error.message?.includes("application ID")) {
       return res.status(400).json({
         success: false,
@@ -56,6 +107,7 @@ export const createApplicationWithPayment = async (req, res, next) => {
       college,
       department,
       program,
+      selectedDuration,
       transactionId,
       screenshotBase64,
       source,
@@ -64,6 +116,7 @@ export const createApplicationWithPayment = async (req, res, next) => {
     const applicationSource = source === "course" ? "course" : "internship";
     const parsedFee = String(program || "").trim() === "Web Development" ? 499 : 599;
     const normalizedTxnId = transactionId.trim();
+    const duration = await resolveProgramDuration(program, selectedDuration);
 
     const existingPayment = await prisma.internshipApplication.findUnique({
       where: { paymentTransactionId: normalizedTxnId },
@@ -91,6 +144,7 @@ export const createApplicationWithPayment = async (req, res, next) => {
           college: college.trim(),
           department: department.trim(),
           program: program.trim(),
+          selectedDuration: duration,
           source: applicationSource,
           feeAmount: parsedFee,
           paymentMethod: "upi",
@@ -108,6 +162,13 @@ export const createApplicationWithPayment = async (req, res, next) => {
       data: stripScreenshotFromApplication(application),
     });
   } catch (error) {
+    if (error.statusCode === 400) {
+      return res.status(400).json({
+        success: false,
+        message: error.message,
+        errors: error.errors || undefined,
+      });
+    }
     if (
       error.message?.includes("screenshot") ||
       error.message?.includes("Image") ||
